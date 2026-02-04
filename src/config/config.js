@@ -15,7 +15,7 @@ module.exports = {
   meta: {
     appId: process.env.META_APP_ID,
     appSecret: process.env.META_APP_SECRET,
-    redirectUri: process.env.META_REDIRECT_URI || 'https://reasonly-studio-staging.herokuapp.com/api/oauth/meta/callback',
+    redirectUri: process.env.META_REDIRECT_URI || 'http://localhost:3000/api/oauth/meta/callback',
     scopes: [
       'ads_read',
       'ads_management',
@@ -28,7 +28,7 @@ module.exports = {
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    redirectUri: process.env.GOOGLE_REDIRECT_URI || 'https://reasonly-studio-staging.herokuapp.com/api/oauth/google/callback',
+    redirectUri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/oauth/google/callback',
     developerToken: process.env.GOOGLE_DEVELOPER_TOKEN,
   },
 
@@ -36,7 +36,7 @@ module.exports = {
   tiktok: {
     appId: process.env.TIKTOK_APP_ID,
     appSecret: process.env.TIKTOK_APP_SECRET,
-    redirectUri: process.env.TIKTOK_REDIRECT_URI || 'https://reasonly-studio-staging.herokuapp.com/api/oauth/tiktok/callback',
+    redirectUri: process.env.TIKTOK_REDIRECT_URI || 'http://localhost:3000/api/oauth/tiktok/callback',
   },
 
   // LinkedIn Ads OAuth
@@ -50,7 +50,7 @@ module.exports = {
   searchConsole: {
     clientId: process.env.SEARCH_CONSOLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.SEARCH_CONSOLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET,
-    redirectUri: process.env.SEARCH_CONSOLE_REDIRECT_URI || 'https://reasonly-studio-staging.herokuapp.com/api/oauth/search-console/callback',
+    redirectUri: process.env.SEARCH_CONSOLE_REDIRECT_URI || 'http://localhost:3000/api/oauth/search-console/callback',
   },
 
   // Anthropic AI
@@ -65,6 +65,6 @@ module.exports = {
     secure: process.env.EMAIL_SECURE === 'true',
     user: process.env.EMAIL_USER,
     password: process.env.EMAIL_PASSWORD,
-    from: process.env.EMAIL_FROM || 'Reasonly Studio <noreply@reasonly.com>',
+    from: process.env.EMAIL_FROM || 'AdsData Platform <noreply@adsdata.com>',
   },
 };

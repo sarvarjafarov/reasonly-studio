@@ -1,0 +1,57 @@
+const express = require('express');
+const healthRoutes = require('./healthRoutes');
+const adsRoutes = require('./adsRoutes');
+const authRoutes = require('./authRoutes');
+const adminRoutes = require('./adminRoutes');
+const oauthRoutes = require('./oauthRoutes');
+const workspaceRoutes = require('./workspaceRoutes');
+const dashboardRoutes = require('./dashboardRoutes');
+const metricsRoutes = require('./metricsRoutes');
+const alertRoutes = require('./alertRoutes');
+const searchConsoleRoutes = require('./searchConsoleRoutes');
+const budgetRoutes = require('./budgetRoutes');
+const anomalyRoutes = require('./anomalyRoutes');
+// const campaignRoutes = require('./campaignRoutes');
+const reportRoutes = require('./reportRoutes');
+const filterRoutes = require('./filterRoutes');
+const goalRoutes = require('./goalRoutes');
+const exportRoutes = require('./exportRoutes');
+const commentRoutes = require('./commentRoutes');
+const tiktokRoutes = require('./tiktokRoutes');
+const linkedinRoutes = require('./linkedinRoutes');
+const unifiedReportingRoutes = require('./unifiedReportingRoutes');
+const customDataRoutes = require('./customDataRoutes');
+const webhookRoutes = require('./webhookRoutes');
+const websiteAuditRoutes = require('./websiteAuditRoutes');
+const experimentRoutes = require('./experimentRoutes');
+
+const router = express.Router();
+
+router.use('/health', healthRoutes);
+router.use('/auth', authRoutes);
+router.use('/ads', adsRoutes);
+router.use('/admin', adminRoutes);
+router.use('/oauth', oauthRoutes);
+// More specific path first so /workspaces/:id/custom-data/* is handled by customDataRoutes
+router.use('/workspaces/:workspaceId/custom-data', customDataRoutes);
+router.use('/workspaces', workspaceRoutes);
+router.use('/dashboards', dashboardRoutes);
+router.use('/metrics', metricsRoutes);
+router.use('/alerts', alertRoutes);
+router.use('/search-console', searchConsoleRoutes);
+router.use('/budget', budgetRoutes);
+router.use('/anomalies', anomalyRoutes);
+// router.use('/campaigns', campaignRoutes);
+router.use('/reports', reportRoutes);
+router.use('/filters', filterRoutes);
+router.use('/goals', goalRoutes);
+router.use('/export', exportRoutes);
+router.use('/comments', commentRoutes);
+router.use('/tiktok', tiktokRoutes);
+router.use('/linkedin', linkedinRoutes);
+router.use('/unified', unifiedReportingRoutes);
+router.use('/webhooks', webhookRoutes);
+router.use('/website-audit', websiteAuditRoutes);
+router.use('/experiments', experimentRoutes);
+
+module.exports = router;

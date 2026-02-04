@@ -7,28 +7,13 @@ const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
 
-// Parse DATABASE_URL for Heroku or use individual params for local
-let poolConfig;
-
-if (process.env.DATABASE_URL) {
-  // Heroku provides DATABASE_URL as a single connection string
-  poolConfig = {
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }, // Always use SSL for Heroku
-  };
-} else {
-  // Local development uses individual parameters
-  poolConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
-    database: process.env.DB_NAME || 'adsdata',
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
-    ssl: false,
-  };
-}
-
-const pool = new Pool(poolConfig);
+// Parse DATABASE_URL for Heroku
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? {
+    rejectUnauthorized: false
+  } : false
+});
 
 async function runMigrations() {
   const client = await pool.connect();
@@ -91,24 +76,6 @@ async function runMigrations() {
             'INSERT INTO schema_migrations (migration_name) VALUES ($1) ON CONFLICT DO NOTHING',
             [file]
           );
-        } else if (err.message.includes('does not exist') && err.message.includes('role')) {
-          // Skip GRANT errors for roles that don't exist (common on Heroku)
-          console.log(`⚠️  ${file} contains GRANT statements for non-existent role, skipping those and continuing`);
-          // Try to apply migration without GRANT statements
-          const sqlWithoutGrants = sql.split('\n').filter(line => !line.trim().toUpperCase().startsWith('GRANT')).join('\n');
-          try {
-            await client.query('BEGIN');
-            await client.query(sqlWithoutGrants);
-            await client.query(
-              'INSERT INTO schema_migrations (migration_name) VALUES ($1)',
-              [file]
-            );
-            await client.query('COMMIT');
-            console.log(`✅ Applied ${file} (without GRANT statements)`);
-          } catch (retryErr) {
-            await client.query('ROLLBACK');
-            throw retryErr;
-          }
         } else {
           throw err;
         }
