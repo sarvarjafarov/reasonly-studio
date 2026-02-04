@@ -91,6 +91,24 @@ async function runMigrations() {
             'INSERT INTO schema_migrations (migration_name) VALUES ($1) ON CONFLICT DO NOTHING',
             [file]
           );
+        } else if (err.message.includes('does not exist') && err.message.includes('role')) {
+          // Skip GRANT errors for roles that don't exist (common on Heroku)
+          console.log(`⚠️  ${file} contains GRANT statements for non-existent role, skipping those and continuing`);
+          // Try to apply migration without GRANT statements
+          const sqlWithoutGrants = sql.split('\n').filter(line => !line.trim().toUpperCase().startsWith('GRANT')).join('\n');
+          try {
+            await client.query('BEGIN');
+            await client.query(sqlWithoutGrants);
+            await client.query(
+              'INSERT INTO schema_migrations (migration_name) VALUES ($1)',
+              [file]
+            );
+            await client.query('COMMIT');
+            console.log(`✅ Applied ${file} (without GRANT statements)`);
+          } catch (retryErr) {
+            await client.query('ROLLBACK');
+            throw retryErr;
+          }
         } else {
           throw err;
         }
