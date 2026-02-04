@@ -6,14 +6,12 @@ let poolConfig;
 
 if (process.env.DATABASE_URL) {
   // Heroku provides DATABASE_URL as a single connection string
-  // Ensure SSL mode is set in connection string for Heroku Postgres
-  let connectionString = process.env.DATABASE_URL;
-  if (!connectionString.includes('sslmode=')) {
-    connectionString += (connectionString.includes('?') ? '&' : '?') + 'sslmode=require';
-  }
+  // Heroku Postgres requires SSL but we don't verify certificates
   poolConfig = {
-    connectionString: connectionString,
-    ssl: { rejectUnauthorized: false },
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false, // Don't verify SSL certificate (required for Heroku)
+    },
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000, // Increase timeout for Heroku
