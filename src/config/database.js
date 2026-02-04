@@ -6,12 +6,17 @@ let poolConfig;
 
 if (process.env.DATABASE_URL) {
   // Heroku provides DATABASE_URL as a single connection string
+  // Ensure SSL mode is set in connection string for Heroku Postgres
+  let connectionString = process.env.DATABASE_URL;
+  if (!connectionString.includes('sslmode=')) {
+    connectionString += (connectionString.includes('?') ? '&' : '?') + 'sslmode=require';
+  }
   poolConfig = {
-    connectionString: process.env.DATABASE_URL,
+    connectionString: connectionString,
     ssl: { rejectUnauthorized: false },
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    connectionTimeoutMillis: 10000, // Increase timeout for Heroku
   };
 } else {
   // Local development uses individual parameters
