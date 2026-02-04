@@ -564,6 +564,38 @@ This is an automated email from AdsData Platform.
   }
 
   /**
+   * Notify admins when a verified user is ready for review
+   */
+  async sendAdminApprovalNotification({ user }) {
+    if (!config.adminEmails || config.adminEmails.length === 0) {
+      return;
+    }
+
+    const adminPortalUrl = `${config.appUrl}/admin/users`;
+    const subject = `AdsData: ${user.username} verified their email`;
+    const html = `
+      <div style="font-family: 'Inter', sans-serif; color: #111;">
+        <h2>New verified account</h2>
+        <p><strong>${user.username}</strong> (${user.email}) just completed email verification.</p>
+        <p>Please review the account in the admin console and approve or reject it.</p>
+        <p><a href="${adminPortalUrl}" style="color: #1a73e8;">Open pending users list</a></p>
+      </div>
+    `;
+    const text = `
+New verified account: ${user.username} (${user.email})
+Review and approve/reject: ${adminPortalUrl}
+    `;
+
+    await this.transporter.sendMail({
+      from: config.email?.from || 'AdsData Platform <noreply@adsdata.com>',
+      to: config.adminEmails.join(', '),
+      subject,
+      html,
+      text,
+    });
+  }
+
+  /**
    * Test email configuration
    */
   async testConnection() {

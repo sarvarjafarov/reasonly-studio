@@ -6,6 +6,13 @@ const CustomDataSource = require('../models/CustomDataSource');
 const CustomDataParser = require('../services/customDataParser');
 const AICustomData = require('../services/aiCustomData');
 
+/** True if value looks like a placeholder (not a real credential) */
+function isPlaceholder(value) {
+  if (!value || typeof value !== 'string') return true;
+  const v = value.trim().toUpperCase();
+  return v.startsWith('YOUR_') || v.startsWith('PLACEHOLDER') || v === '' || v.length < 10;
+}
+
 /**
  * Initiate Meta OAuth flow
  * Redirects user to Meta's OAuth consent page
@@ -21,10 +28,10 @@ const initiateMetaOAuth = (req, res) => {
       });
     }
 
-    if (!config.meta.appId) {
-      return res.status(500).json({
+    if (!config.meta.appId || isPlaceholder(config.meta.appId)) {
+      return res.status(503).json({
         success: false,
-        message: 'Meta OAuth is not configured. Please set META_APP_ID in environment variables.',
+        message: 'Meta OAuth is not configured. In Heroku: Settings → Reveal Config Vars → set META_APP_ID and META_APP_SECRET. In Meta Developer Console, add the app and set the redirect URI to your app URL + /api/oauth/meta/callback.',
       });
     }
 
@@ -352,8 +359,11 @@ const initiateSearchConsoleOAuth = (req, res) => {
     if (!workspaceId) {
       return res.status(400).json({ success: false, message: 'Workspace ID is required' });
     }
-    if (!config.google?.clientId) {
-      return res.status(500).json({ success: false, message: 'Google OAuth is not configured' });
+    if (!config.google?.clientId || isPlaceholder(config.google.clientId)) {
+      return res.status(503).json({
+        success: false,
+        message: 'Google OAuth is not configured. In Heroku set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET. In Google Cloud Console create OAuth credentials and set redirect URI to your app URL + /api/oauth/search-console/callback.',
+      });
     }
 
     const state = Buffer.from(JSON.stringify({
@@ -405,8 +415,11 @@ const initiateGoogleOAuth = (req, res) => {
     if (!workspaceId) {
       return res.status(400).json({ success: false, message: 'Workspace ID is required' });
     }
-    if (!config.google?.clientId) {
-      return res.status(500).json({ success: false, message: 'Google OAuth is not configured' });
+    if (!config.google?.clientId || isPlaceholder(config.google.clientId)) {
+      return res.status(503).json({
+        success: false,
+        message: 'Google OAuth is not configured. In Heroku set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET. In Google Cloud Console create OAuth credentials and set redirect URI to your app URL + /api/oauth/google/callback.',
+      });
     }
 
     const state = Buffer.from(JSON.stringify({

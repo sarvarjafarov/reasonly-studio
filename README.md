@@ -97,6 +97,35 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123
 ```
 
+### Platform OAuth configuration
+
+The Connect cards on the dashboard rely on OAuth flows. Populate the following variables before trying to link any ad account:
+
+| Variable | Purpose |
+| --- | --- |
+| `META_APP_ID`, `META_APP_SECRET`, `META_REDIRECT_URI` | Meta Ads (Facebook/Instagram) OAuth credentials. See `META_OAUTH_SETUP.md` for the Meta-specific steps. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `GOOGLE_DEVELOPER_TOKEN` | Google Ads OAuth configuration sourced from a Google Cloud OAuth client. Redirect URI must match `http://localhost:3000/api/oauth/google/callback` (or your production URL). |
+| `SEARCH_CONSOLE_CLIENT_ID`, `SEARCH_CONSOLE_CLIENT_SECRET`, `SEARCH_CONSOLE_REDIRECT_URI` | Google Search Console OAuth (can share the same Google project as Google Ads). |
+| `TIKTOK_APP_ID`, `TIKTOK_APP_SECRET`, `TIKTOK_REDIRECT_URI` | TikTok Ads OAuth credentials from TikTok for Business. |
+| `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, `LINKEDIN_REDIRECT_URI` | LinkedIn Campaign Manager OAuth credentials. |
+
+After updating the credentials, restart the server (`npm run dev`) so the backend picks up the new values. When you visit `http://localhost:3000/dashboard`, select a workspace and click a Connect button. Successful OAuth flows redirect you back with `?oauth=success&platform=...`, while failures show a warning in the alert area.
+
+For deployments, make sure the production callback URLs (`https://yourdomain.com/api/oauth/<platform>/callback`) are registered with each provider and that the same env vars are set through your hosting provider (Heroku `config:set`, Render secrets, etc.). `PROJECT_B_DEPLOYMENT_GUIDE.md` includes the exact Heroku commands used for each platform.
+
+### Email & Notification settings
+
+Verification and admin notification emails default to the SMTP credentials in `.env` (or your staging deploy). Set the following values so `emailService` can send real mail instead of just logging the payload:
+
+| Variable | Description |
+| --- | --- |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_SECURE`, `EMAIL_USER`, `EMAIL_PASSWORD` | SMTP host/port/credentials. For Gmail you can use an App Password and `smtp.gmail.com` on port 587 (secure=false). |
+| `EMAIL_FROM` | The friendly sender address shown in verification emails (e.g., `Reasonly Studio <noreply@reasonly.com>`). |
+| `APP_URL` | The base URL your clients hit (`https://reasonly-studio-staging-...herokuapp.com`). Used to build the verification link and admin approval URL. |
+| `ADMIN_EMAILS` | Comma-separated list of admin contacts who should receive new-user notifications after email verification. |
+
+Once SMTP is configured and `NODE_ENV=production`, new signups will receive the verification link in Gmail (check Spam/Promotions if necessary) and the admin list will automatically be notified so you can approve the account. You can also resend verification via `/api/auth/resend-verification`.
+
 ### Running the Application
 
 Development mode (with auto-reload):

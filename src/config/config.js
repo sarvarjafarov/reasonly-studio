@@ -10,6 +10,11 @@ module.exports = {
   jwtExpire: process.env.JWT_EXPIRE || '7d',
   adminUsername: process.env.ADMIN_USERNAME || 'admin',
   adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
+  adminEmails: (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || 'admin@adsdata.com')
+    .split(',')
+    .map(email => email.trim())
+    .filter(email => email.length > 0),
+  appUrl: process.env.APP_URL || 'http://localhost:3000',
 
   // Meta Ads OAuth
   meta: {

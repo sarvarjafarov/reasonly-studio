@@ -255,6 +255,12 @@ const verifyEmail = async (req, res) => {
       // Continue anyway - workspace can be created on first login
     }
 
+    try {
+      await emailService.sendAdminApprovalNotification({ user });
+    } catch (notificationError) {
+      console.error('Admin notification error:', notificationError);
+    }
+
     res.json({
       success: true,
       message: 'Email verified successfully! You can now log in to your account.',
