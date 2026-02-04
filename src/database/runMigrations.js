@@ -7,13 +7,28 @@ const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
 
-// Parse DATABASE_URL for Heroku
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? {
-    rejectUnauthorized: false
-  } : false
-});
+// Parse DATABASE_URL for Heroku or use individual params for local
+let poolConfig;
+
+if (process.env.DATABASE_URL) {
+  // Heroku provides DATABASE_URL as a single connection string
+  poolConfig = {
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }, // Always use SSL for Heroku
+  };
+} else {
+  // Local development uses individual parameters
+  poolConfig = {
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    database: process.env.DB_NAME || 'adsdata',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
+    ssl: false,
+  };
+}
+
+const pool = new Pool(poolConfig);
 
 async function runMigrations() {
   const client = await pool.connect();
