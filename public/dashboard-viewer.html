@@ -1,0 +1,6001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Viewer - AdsData Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #000000;
+      color: #ffffff;
+      min-height: 100vh;
+    }
+
+    .header {
+      background-color: #0a0a0a;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .header-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0;
+      background-color: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      color: #b7fa31;
+    }
+
+    .header-main {
+      padding: 2rem;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 3rem;
+    }
+
+    .dashboard-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .dashboard-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+
+    .dashboard-description {
+      font-size: 0.9375rem;
+      color: rgba(255, 255, 255, 0.5);
+      line-height: 1.6;
+      max-width: 700px;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .widgets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .widget {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      cursor: grab;
+      min-height: 180px;
+      max-height: 420px; /* CRITICAL: Prevents vertical expansion causing layout shift */
+      overflow-y: auto; /* Allow scrolling if content exceeds max-height */
+      overflow-x: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    }
+
+    .widget:active {
+      cursor: grabbing;
+    }
+
+    .widget.dragging {
+      opacity: 0.5;
+      transform: scale(0.98);
+    }
+
+    .widget.drag-over {
+      border: 2px dashed #b7fa31;
+      background-color: rgba(183, 250, 49, 0.05);
+    }
+
+    .widget-drag-handle {
+      cursor: grab;
+      padding: 0.25rem;
+      margin-right: 0.5rem;
+      color: rgba(255, 255, 255, 0.3);
+      transition: color 0.2s ease;
+    }
+
+    .widget-drag-handle:hover {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .widget-drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .widget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .widget-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .widget-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .widget-action {
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      padding: 0.25rem;
+      font-size: 0.875rem;
+      transition: color 0.2s ease;
+    }
+
+    .widget-action:hover {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .widget-action.delete:hover {
+      color: #ef4444;
+    }
+
+    .loading-spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 200px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(183, 250, 49, 0.2);
+      border-top-color: #b7fa31;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .refresh-indicator {
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(183, 250, 49, 0.15);
+      color: #b7fa31;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      display: none;
+      z-index: 1000;
+    }
+
+    .refresh-indicator.show {
+      display: block;
+      animation: fadeInOut 2s ease;
+    }
+
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0; }
+      20%, 80% { opacity: 1; }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .global-date-picker {
+      display: flex;
+      align-items: center;
+    }
+
+    .global-date-picker label {
+      display: none;
+    }
+
+    .global-date-picker select {
+      padding: 0.5rem 0.875rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 0.5rem;
+      color: #ffffff;
+      font-size: 0.8125rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .global-date-picker select:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .global-date-picker select:focus {
+      outline: none;
+      border-color: #b7fa31;
+    }
+
+    .custom-date-inputs {
+      display: none;
+      gap: 0.5rem;
+      align-items: center;
+      margin-left: 0.5rem;
+    }
+
+    .custom-date-inputs.show {
+      display: flex;
+    }
+
+    .custom-date-inputs input[type="date"] {
+      padding: 0.4rem 0.5rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.375rem;
+      color: #ffffff;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .custom-date-inputs input[type="date"]:focus {
+      outline: none;
+      border-color: #b7fa31;
+    }
+
+    .custom-date-inputs input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+
+    .custom-date-inputs span {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.75rem;
+    }
+
+    .apply-dates-btn {
+      padding: 0.4rem 0.75rem;
+      background-color: #b7fa31;
+      color: #000000;
+      border: none;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .apply-dates-btn:hover {
+      background-color: #a8eb22;
+    }
+
+    /* Share and Export Buttons */
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .action-btn.primary {
+      background-color: #b7fa31;
+      color: #000000;
+      border-color: #b7fa31;
+    }
+
+    .action-btn.primary:hover {
+      background-color: #a8eb22;
+    }
+
+    /* Share Link Display */
+    .share-link-container {
+      display: flex;
+      gap: 0.5rem;
+      align-items: stretch;
+    }
+
+    .share-link-input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.75rem;
+      font-family: monospace;
+    }
+
+    .copy-btn {
+      padding: 0.75rem 1rem;
+      background-color: #b7fa31;
+      color: #000000;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background-color: #a8eb22;
+    }
+
+    .copy-btn.copied {
+      background-color: #22c55e;
+      color: #ffffff;
+    }
+
+    /* Share Options */
+    .share-options {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .share-option {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .share-option input[type="checkbox"] {
+      width: 1.25rem;
+      height: 1.25rem;
+      accent-color: #b7fa31;
+    }
+
+    .share-option label {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+    }
+
+    /* Existing Share Links */
+    .existing-shares {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .existing-shares h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 1rem;
+    }
+
+    .share-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .share-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      background-color: rgba(255, 255, 255, 0.03);
+      border-radius: 0.5rem;
+    }
+
+    .share-item-info {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .share-item-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .share-item-btn {
+      padding: 0.375rem 0.625rem;
+      font-size: 0.75rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .share-item-btn.delete {
+      background-color: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    .share-item-btn.delete:hover {
+      background-color: rgba(239, 68, 68, 0.25);
+    }
+
+    .share-item-btn.toggle {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Export Options */
+    .export-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .export-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .export-option:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .export-option-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .export-option-name {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .metric-card {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      position: relative;
+    }
+
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #b7fa31;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-label {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-change {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .metric-change.positive {
+      background-color: rgba(183, 250, 49, 0.15);
+      color: #b7fa31;
+    }
+
+    .metric-change.negative {
+      background-color: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    .metric-change.neutral {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .metric-sparkline {
+      margin-top: 0.75rem;
+      height: 40px;
+    }
+
+    .metric-sparkline canvas {
+      width: 100% !important;
+      height: 40px !important;
+    }
+
+    .metric-date-range {
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 0.5rem;
+    }
+
+    .metric-comparison {
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 0.25rem;
+    }
+
+    /* Table Widget Styles */
+    .table-widget {
+      padding: 0.5rem;
+      overflow-x: auto;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 0.75rem 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .data-table td {
+      padding: 0.75rem 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .data-table .value-cell {
+      font-weight: 600;
+      color: #b7fa31;
+    }
+
+    .data-table .change-cell {
+      font-size: 0.75rem;
+    }
+
+    .data-table .change-positive {
+      color: #b7fa31;
+    }
+
+    .data-table .change-negative {
+      color: #ef4444;
+    }
+
+    /* Comparison Widget Styles */
+    .comparison-widget {
+      padding: 1rem;
+    }
+
+    .comparison-container {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .comparison-item {
+      text-align: center;
+    }
+
+    .comparison-period {
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .comparison-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .comparison-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 0.25rem;
+    }
+
+    .comparison-divider {
+      width: 1px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .comparison-change {
+      text-align: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .comparison-change-value {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .comparison-change-value.positive {
+      color: #b7fa31;
+    }
+
+    .comparison-change-value.negative {
+      color: #ef4444;
+    }
+
+    .comparison-change-label {
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 0.25rem;
+    }
+
+    /* KPI Tracker Widget Styles */
+    .kpi-tracker-widget {
+      padding: 1rem;
+    }
+
+    .kpi-tracker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .kpi-tracker-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .kpi-tracker-target {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .kpi-tracker-status {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .kpi-tracker-status.on-track {
+      background: rgba(183, 250, 49, 0.2);
+      color: #b7fa31;
+    }
+
+    .kpi-tracker-status.at-risk {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+    }
+
+    .kpi-tracker-status.behind {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .kpi-progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .kpi-progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .kpi-progress-fill.excellent {
+      background: linear-gradient(90deg, #b7fa31 0%, #8fd417 100%);
+    }
+
+    .kpi-progress-fill.good {
+      background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+    }
+
+    .kpi-progress-fill.warning {
+      background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+    }
+
+    .kpi-progress-fill.danger {
+      background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .kpi-progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .kpi-tracker-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.75rem;
+    }
+
+    .kpi-remaining {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .kpi-trend {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .kpi-trend.positive {
+      color: #b7fa31;
+    }
+
+    .kpi-trend.negative {
+      color: #ef4444;
+    }
+
+    /* Gauge Widget Styles */
+    .gauge-widget {
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .gauge-container {
+      position: relative;
+      width: 160px;
+      height: 80px;
+      margin: 0 auto 1rem;
+    }
+
+    .gauge-background {
+      position: absolute;
+      width: 160px;
+      height: 80px;
+      border-radius: 80px 80px 0 0;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .gauge-fill {
+      position: absolute;
+      width: 160px;
+      height: 80px;
+      border-radius: 80px 80px 0 0;
+      transform-origin: center bottom;
+      transition: transform 0.5s ease;
+    }
+
+    .gauge-fill.excellent {
+      background: linear-gradient(90deg, #b7fa31 0%, #8fd417 100%);
+    }
+
+    .gauge-fill.good {
+      background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+    }
+
+    .gauge-fill.warning {
+      background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+    }
+
+    .gauge-fill.danger {
+      background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .gauge-center {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 60px;
+      background: #1a1a1a;
+      border-radius: 60px 60px 0 0;
+    }
+
+    .gauge-value {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 0.5rem;
+    }
+
+    .gauge-target-info {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 0.5rem;
+    }
+
+    /* Budget Pacing Widget Styles */
+    .budget-pacing-widget {
+      padding: 1.5rem;
+    }
+
+    .budget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+
+    .budget-amounts {
+      flex: 1;
+    }
+
+    .budget-current {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.25rem;
+    }
+
+    .budget-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .budget-total {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 0.25rem;
+    }
+
+    .budget-alert {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .budget-alert.on-track {
+      background: rgba(183, 250, 49, 0.1);
+      color: #b7fa31;
+      border: 1px solid rgba(183, 250, 49, 0.2);
+    }
+
+    .budget-alert.ahead-of-pace {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .budget-alert.warning {
+      background: rgba(251, 191, 36, 0.1);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .budget-alert.critical {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .budget-alert.exceeded {
+      background: rgba(220, 38, 38, 0.15);
+      color: #dc2626;
+      border: 1px solid rgba(220, 38, 38, 0.3);
+    }
+
+    .budget-progress-container {
+      margin: 1.5rem 0;
+    }
+
+    .budget-progress-bar {
+      height: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .budget-progress-fill {
+      height: 100%;
+      transition: width 0.5s ease;
+      position: relative;
+    }
+
+    .budget-progress-fill.on-track {
+      background: linear-gradient(90deg, #b7fa31 0%, #8fd417 100%);
+    }
+
+    .budget-progress-fill.ahead-of-pace {
+      background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+    }
+
+    .budget-progress-fill.warning {
+      background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+    }
+
+    .budget-progress-fill.critical {
+      background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .budget-progress-fill.exceeded {
+      background: linear-gradient(90deg, #dc2626 0%, #991b1b 100%);
+    }
+
+    .budget-progress-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .budget-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .budget-stat {
+      text-align: center;
+    }
+
+    .budget-stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.25rem;
+    }
+
+    .budget-stat-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .budget-projection {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .budget-projection-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 0.5rem;
+    }
+
+    .budget-projection-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .budget-projection-diff {
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .budget-projection-diff.positive {
+      color: #b7fa31;
+    }
+
+    .budget-projection-diff.negative {
+      color: #ef4444;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    /* Notification Bell Styles */
+    .notification-bell-container {
+      position: relative;
+    }
+
+    .notification-bell-btn {
+      position: relative;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #ef4444;
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 2px 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    .notification-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 400px;
+      max-height: 500px;
+      background: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      overflow: hidden;
+      flex-direction: column;
+    }
+
+    .notification-panel.show {
+      display: flex;
+    }
+
+    .notification-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .notification-header h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .mark-all-read-btn {
+      background: none;
+      border: none;
+      color: #b7fa31;
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      transition: opacity 0.2s;
+    }
+
+    .mark-all-read-btn:hover {
+      opacity: 0.8;
+    }
+
+    .notification-list {
+      overflow-y: auto;
+      max-height: 440px;
+    }
+
+    .notification-loading,
+    .notification-empty {
+      padding: 2rem;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.875rem;
+    }
+
+    .notification-item {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .notification-item:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .notification-item.unread {
+      background: rgba(183, 250, 49, 0.03);
+      border-left: 3px solid #b7fa31;
+    }
+
+    .notification-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+
+    .notification-title {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #ffffff;
+      flex: 1;
+    }
+
+    .notification-severity {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-left: 0.5rem;
+    }
+
+    .notification-severity.critical {
+      background: rgba(220, 38, 38, 0.2);
+      color: #dc2626;
+    }
+
+    .notification-severity.high {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .notification-severity.medium {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+    }
+
+    .notification-severity.low,
+    .notification-severity.info {
+      background: rgba(59, 130, 246, 0.2);
+      color: #3b82f6;
+    }
+
+    .notification-message {
+      font-size: 0.8125rem;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.4;
+      margin-bottom: 0.5rem;
+    }
+
+    .notification-time {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .empty-state-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .empty-state-description {
+      font-size: 0.875rem;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background-color: #b7fa31;
+      color: #000000;
+    }
+
+    .btn-primary:hover {
+      background-color: #a8eb22;
+      transform: translateY(-1px);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .chart-placeholder {
+      background: linear-gradient(180deg, rgba(183, 250, 49, 0.1) 0%, rgba(183, 250, 49, 0.02) 100%);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.875rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn-secondary {
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-header h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      color: #ffffff;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      color: #ffffff;
+      font-size: 0.875rem;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #b7fa31;
+    }
+
+    .form-group select option {
+      background-color: #1a1a1a;
+      color: #ffffff;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+    }
+
+    .widget-type-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .widget-type-option {
+      padding: 1rem;
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .widget-type-option:hover:not(.selected) {
+      border-color: rgba(255, 255, 255, 0.3);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .widget-type-option.selected {
+      border-color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.15);
+      box-shadow: 0 0 0 1px #b7fa31;
+    }
+
+    .widget-type-option.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      font-size: 0.65rem;
+      color: #b7fa31;
+    }
+
+    .widget-type-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .widget-type-name {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .add-widget-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 50%;
+      background-color: #b7fa31;
+      color: #000000;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(183, 250, 49, 0.4);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .add-widget-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(183, 250, 49, 0.5);
+    }
+
+    .alert {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 1rem 1.5rem;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      z-index: 1001;
+      animation: slideIn 0.3s ease;
+    }
+
+    .alert-success {
+      background-color: rgba(183, 250, 49, 0.15);
+      color: #b7fa31;
+      border: 1px solid rgba(183, 250, 49, 0.3);
+    }
+
+    .alert-error {
+      background-color: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Auto-refresh control */
+    .auto-refresh-control select {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      color: #fff;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    /* Last updated bar */
+    .last-updated-bar {
+      padding: 0.5rem 2rem;
+      background: rgba(0, 0, 0, 0.2);
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Skeleton loader */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+
+    .skeleton-text {
+      height: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .skeleton-value {
+      height: 2.5rem;
+      width: 60%;
+      margin-bottom: 0.5rem;
+    }
+
+    .skeleton-chart {
+      height: 100px;
+      margin-top: 1rem;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Sortable table headers */
+    .data-table th.sortable {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      padding-right: 1.5rem;
+    }
+
+    .data-table th.sortable:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .data-table th.sortable::after {
+      content: '⇅';
+      position: absolute;
+      right: 0.5rem;
+      opacity: 0.3;
+      font-size: 0.7rem;
+    }
+
+    .data-table th.sortable.asc::after {
+      content: '↑';
+      opacity: 1;
+    }
+
+    .data-table th.sortable.desc::after {
+      content: '↓';
+      opacity: 1;
+    }
+
+    /* Truncated text with tooltip */
+    .truncate-cell {
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      position: relative;
+      cursor: default;
+    }
+
+    .truncate-cell:hover::after {
+      content: attr(data-full-text);
+      position: absolute;
+      left: 0;
+      top: 100%;
+      background: #1a1a2e;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.5rem;
+      border-radius: 4px;
+      z-index: 1000;
+      white-space: normal;
+      max-width: 300px;
+      font-size: 0.75rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Color-coded position changes */
+    .position-improved {
+      color: #10b981;
+    }
+
+    .position-declined {
+      color: #ef4444;
+    }
+
+    .position-neutral {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Error state with retry */
+    .widget-error {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .widget-error-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      opacity: 0.5;
+    }
+
+    .widget-error-message {
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .retry-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+
+    .retry-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Widget refresh button */
+    .widget-refresh-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      padding: 0.25rem;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .widget-refresh-btn:hover {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .widget-refresh-btn.loading {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Icon styles - replacing emojis with styled elements */
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1em;
+      height: 1em;
+    }
+
+    .icon-ai::before {
+      content: "AI";
+      font-size: 0.65em;
+      font-weight: 700;
+      background: linear-gradient(135deg, #b7fa31 0%, #8fd417 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .icon-edit::before {
+      content: "✎";
+      font-size: 1em;
+    }
+
+    .icon-delete::before {
+      content: "×";
+      font-size: 1.4em;
+      font-weight: 300;
+    }
+
+    .icon-refresh::before {
+      content: "↻";
+      font-size: 1em;
+    }
+
+    .icon-drag::before {
+      content: "⋮⋮";
+      font-size: 0.9em;
+      letter-spacing: -2px;
+    }
+
+    .icon-expand::before {
+      content: "⤢";
+      font-size: 1.1em;
+    }
+
+    .icon-warning {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: rgba(251, 191, 36, 0.15);
+      border: 2px solid rgba(251, 191, 36, 0.3);
+      color: #fbbf24;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .icon-warning::before {
+      content: "!";
+    }
+
+    .icon-chart {
+      width: 4rem;
+      height: 4rem;
+      border-radius: 50%;
+      background: rgba(183, 250, 49, 0.1);
+      border: 2px solid rgba(183, 250, 49, 0.2);
+      color: rgba(183, 250, 49, 0.4);
+      font-size: 2rem;
+    }
+
+    .icon-chart::before {
+      content: "📊";
+      font-style: normal;
+    }
+
+    .icon-lightbulb {
+      width: 1.2em;
+      height: 1.2em;
+      border-radius: 50%;
+      background: rgba(183, 250, 49, 0.15);
+      color: #b7fa31;
+      font-size: 0.9em;
+    }
+
+    .icon-lightbulb::before {
+      content: "💡";
+      font-style: normal;
+    }
+
+    /* Loading state improvements */
+    .widget-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 1rem;
+    }
+
+    .widget-loading-spinner {
+      width: 2rem;
+      height: 2rem;
+      border: 2px solid rgba(183, 250, 49, 0.2);
+      border-top-color: #b7fa31;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .widget-loading-text {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* No data state */
+    .no-data-state {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .no-data-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .no-data-message {
+      font-size: 0.875rem;
+    }
+
+    /* Widget timestamp */
+    .widget-timestamp {
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.3);
+      margin-left: auto;
+      padding-left: 0.5rem;
+    }
+
+    /* Template cards */
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+      padding: 1rem 0;
+    }
+
+    .template-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .template-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #b7fa31;
+      transform: translateY(-2px);
+    }
+
+    .template-card button {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      margin-top: 1rem;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #b7fa31 0%, #8fd417 100%);
+      color: #0a0a0a;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .template-card button:hover {
+      background: linear-gradient(135deg, #c4ff4d 0%, #9fe527 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(183, 250, 49, 0.3);
+    }
+
+    .template-card button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .template-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .template-name {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .template-description {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 0.75rem;
+    }
+
+    .template-widgets {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .template-account-select {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .template-account-select label {
+      display: block;
+      font-size: 0.75rem;
+      margin-bottom: 0.5rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .template-account-select select {
+      width: 100%;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      color: #fff;
+      font-size: 0.875rem;
+    }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      .header-nav {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .header-actions {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .action-btn {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+      }
+
+      .header-main {
+        padding: 1.25rem 1rem;
+      }
+
+      .header-content {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .header-top {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .dashboard-title {
+        font-size: 1.5rem;
+      }
+
+      .dashboard-description {
+        font-size: 0.875rem;
+      }
+
+      .container {
+        padding: 1rem;
+      }
+
+      .widgets-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .widget {
+        padding: 1.25rem;
+        border-radius: 1rem;
+      }
+
+      .widget-header {
+        flex-wrap: wrap;
+      }
+
+      .widget-title {
+        font-size: 0.9375rem;
+      }
+
+      .widget-actions {
+        gap: 0.375rem;
+      }
+
+      .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        max-height: 85vh;
+      }
+
+      .modal-header h3 {
+        font-size: 1.25rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .form-group label {
+        font-size: 0.8125rem;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.8125rem;
+      }
+
+      .modal-footer {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+      }
+
+      .modal-footer button {
+        width: 100%;
+      }
+
+      .btn {
+        padding: 0.625rem 1rem;
+        font-size: 0.8125rem;
+      }
+
+      .kpi-value {
+        font-size: 1.75rem;
+      }
+
+      .kpi-label {
+        font-size: 0.8125rem;
+      }
+
+      .change-indicator {
+        font-size: 0.75rem;
+      }
+
+      table {
+        font-size: 0.8125rem;
+      }
+
+      th, td {
+        padding: 0.625rem 0.5rem;
+      }
+
+      .filter-section {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .filter-item {
+        width: 100%;
+      }
+
+      .date-range-inputs {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .tabs {
+        gap: 0.25rem;
+      }
+
+      .tab-btn {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.8125rem;
+      }
+
+      .insights-list {
+        gap: 0.75rem;
+      }
+
+      .insight-item {
+        padding: 0.875rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header-nav {
+        padding: 0.625rem 0.75rem;
+      }
+
+      .back-btn {
+        font-size: 0.75rem;
+      }
+
+      .action-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+      }
+
+      .header-main {
+        padding: 1rem 0.75rem;
+      }
+
+      .dashboard-title {
+        font-size: 1.25rem;
+      }
+
+      .dashboard-description {
+        font-size: 0.8125rem;
+      }
+
+      .container {
+        padding: 0.75rem;
+      }
+
+      .widget {
+        padding: 1rem;
+      }
+
+      .widget-title {
+        font-size: 0.875rem;
+      }
+
+      .kpi-value {
+        font-size: 1.5rem;
+      }
+
+      .modal-content {
+        width: 98%;
+        padding: 1.25rem;
+      }
+
+      .modal-header h3 {
+        font-size: 1.125rem;
+      }
+
+      table {
+        font-size: 0.75rem;
+      }
+
+      th, td {
+        padding: 0.5rem 0.375rem;
+      }
+    }
+
+    /* AI Analysis Modal */
+    .ai-analysis-modal {
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .analysis-widget-info {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .analysis-widget-info h4 {
+      margin: 0 0 5px 0;
+      color: #ffffff;
+      font-size: 1rem;
+    }
+
+    .analysis-widget-info p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+    }
+
+    /* AI Loading State */
+    .ai-loading {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .ai-loading .spinner {
+      border: 4px solid rgba(183, 250, 49, 0.1);
+      border-top: 4px solid #b7fa31;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    .ai-loading p {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Analysis Sections */
+    .analysis-section {
+      margin-bottom: 25px;
+      padding: 20px;
+      background: #1a1a1a;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .analysis-section h4 {
+      margin: 0 0 15px 0;
+      color: #b7fa31;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    /* Status Badge */
+    .status-section {
+      text-align: center;
+      border: 2px solid rgba(183, 250, 49, 0.2);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .status-badge.status-excellent {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 2px solid #22c55e;
+    }
+
+    .status-badge.status-good {
+      background: rgba(183, 250, 49, 0.2);
+      color: #b7fa31;
+      border: 2px solid #b7fa31;
+    }
+
+    .status-badge.status-concerning {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+      border: 2px solid #fbbf24;
+    }
+
+    .status-badge.status-critical {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 2px solid #ef4444;
+    }
+
+    #performanceStatusText {
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.6;
+      margin: 10px 0 0 0;
+    }
+
+    /* Insights List */
+    .insight-item, .risk-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      background: rgba(183, 250, 49, 0.05);
+      border-left: 3px solid #b7fa31;
+      border-radius: 4px;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.5;
+    }
+
+    .risk-item {
+      background: rgba(239, 68, 68, 0.1);
+      border-left-color: #ef4444;
+    }
+
+    #criticalInsightsList, #riskAlertsList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Recommendations */
+    .recommendation-card {
+      padding: 15px;
+      margin-bottom: 15px;
+      background: rgba(183, 250, 49, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(183, 250, 49, 0.2);
+    }
+
+    .recommendation-card.priority-high {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    .recommendation-card.priority-medium {
+      border-color: #fbbf24;
+      background: rgba(251, 191, 36, 0.05);
+    }
+
+    .rec-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .rec-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #b7fa31 0%, #7fd858 100%);
+      color: #000000;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .rec-priority {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .recommendation-card h5 {
+      margin: 0 0 8px 0;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .recommendation-card p {
+      margin: 0 0 10px 0;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+    }
+
+    .rec-impact {
+      font-size: 0.85rem;
+      color: #b7fa31;
+      font-weight: 500;
+    }
+
+    /* Trend Section */
+    .trend-section p {
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Widget Action Button for AI */
+    .widget-action-btn {
+      font-size: 1.1rem;
+      transition: all 0.3s;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+      opacity: 0.7;
+    }
+
+    .widget-action-btn:hover {
+      transform: scale(1.15);
+      opacity: 1;
+    }
+
+    /* Widget Zoom Modal */
+    .widget-zoom-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.95);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .widget-zoom-modal.show {
+      display: flex;
+    }
+
+    .widget-zoom-content {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.5rem;
+      width: 100%;
+      max-width: 1400px;
+      max-height: 90vh;
+      overflow: auto;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .widget-zoom-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      position: sticky;
+      top: 0;
+      background-color: #1a1a1a;
+      z-index: 1;
+    }
+
+    .widget-zoom-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .widget-zoom-close {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      line-height: 1;
+      transition: all 0.2s ease;
+      border-radius: 0.5rem;
+    }
+
+    .widget-zoom-close:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .widget-zoom-body {
+      padding: 2rem;
+    }
+
+    .widget-zoom-body .widget {
+      cursor: default;
+    }
+
+    .widget-zoom-body .widget-drag-handle {
+      display: none;
+    }
+
+    /* Widget Grid Sizing */
+    .widget[data-grid-size="small"] {
+      grid-column: span 1;
+    }
+
+    .widget[data-grid-size="medium"] {
+      grid-column: span 2;
+    }
+
+    .widget[data-grid-size="large"] {
+      grid-column: span 3;
+    }
+
+    /* Default: auto size based on grid */
+    .widget:not([data-grid-size]) {
+      grid-column: auto;
+    }
+
+    /* Grid size controls */
+    .widget-size-controls {
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
+      margin-right: 0.5rem;
+      padding-right: 0.5rem;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .widget:hover .widget-size-controls {
+      opacity: 1;
+    }
+
+    .widget-size-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      padding: 0.2rem 0.45rem;
+      font-size: 0.65rem;
+      border-radius: 0.25rem;
+      transition: all 0.2s ease;
+      font-weight: 600;
+      min-width: 1.5rem;
+      text-align: center;
+    }
+
+    .widget-size-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .widget-size-btn.active {
+      background: rgba(183, 250, 49, 0.15);
+      border-color: rgba(183, 250, 49, 0.3);
+      color: #b7fa31;
+      opacity: 1;
+    }
+
+    /* Keep active button visible even when not hovering */
+    .widget-size-controls:has(.widget-size-btn.active) {
+      opacity: 0.5;
+    }
+
+    .widget:hover .widget-size-controls:has(.widget-size-btn.active) {
+      opacity: 1;
+    }
+
+    /* Improved widgets grid for column spanning - FIXED COLUMNS TO PREVENT AUTO-FIT REFLOW */
+    .widgets-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr); /* DEFAULT: 3 columns on desktop */
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    /* Responsive grid - EXPLICIT COLUMN COUNTS */
+    @media (min-width: 1200px) {
+      .widgets-grid {
+        grid-template-columns: repeat(3, 1fr); /* 3 columns on large screens */
+      }
+    }
+
+    @media (min-width: 768px) and (max-width: 1199px) {
+      .widgets-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on tablets */
+      }
+    }
+
+    @media (max-width: 767px) {
+      .widgets-grid {
+        grid-template-columns: 1fr; /* 1 column on mobile */
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-nav">
+      <a href="/dashboard" class="back-btn">
+        ← Back to Dashboards
+      </a>
+      <div class="header-actions">
+        <button class="action-btn" onclick="openShareModal()">
+          Share
+        </button>
+        <button class="action-btn" onclick="openExportModal()">
+          Export
+        </button>
+      </div>
+    </div>
+    <div class="header-main">
+      <div class="header-content">
+        <div class="dashboard-info">
+          <div class="dashboard-title" id="dashboardTitle">Loading...</div>
+          <div class="dashboard-description" id="dashboardDescription"></div>
+        </div>
+        <div class="header-right">
+          <div class="global-date-picker">
+            <select id="globalDateRange" onchange="onGlobalDateRangeChange()">
+              <option value="last_7_days">Last 7 Days</option>
+              <option value="last_30_days" selected>Last 30 Days</option>
+              <option value="last_90_days">Last 90 Days</option>
+              <option value="this_month">This Month</option>
+              <option value="last_month">Last Month</option>
+              <option value="custom">Custom Range</option>
+            </select>
+            <div class="custom-date-inputs" id="customDateInputs">
+              <input type="date" id="customStartDate" />
+              <span>to</span>
+              <input type="date" id="customEndDate" />
+              <button class="apply-dates-btn" onclick="applyCustomDates()">Apply</button>
+            </div>
+          </div>
+          <div class="auto-refresh-control">
+            <select id="autoRefreshInterval" onchange="setAutoRefresh()">
+              <option value="0">Auto-refresh: Off</option>
+              <option value="30000">Every 30s</option>
+              <option value="60000">Every 1min</option>
+              <option value="300000">Every 5min</option>
+            </select>
+          </div>
+          <button class="action-btn" onclick="openTemplateModal()" title="Apply Template">
+            📋 Templates
+          </button>
+          <button class="action-btn" onclick="exportDashboardCSV()" title="Export to CSV">
+            ⬇ Export
+          </button>
+          <button class="action-btn" onclick="refreshAllWidgets()">
+            ↻ Refresh
+          </button>
+          <div class="notification-bell-container">
+            <button class="action-btn notification-bell-btn" onclick="toggleNotifications()" title="Notifications">
+              🔔
+              <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+            </button>
+            <div class="notification-panel" id="notificationPanel">
+              <div class="notification-header">
+                <h3>Notifications</h3>
+                <button class="mark-all-read-btn" onclick="markAllNotificationsRead()">Mark all as read</button>
+              </div>
+              <div class="notification-list" id="notificationList">
+                <div class="notification-loading">Loading notifications...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="last-updated-bar">
+        <span id="lastUpdatedTime">Last updated: --</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="widgetsContainer">
+      <div class="loading">Loading dashboard...</div>
+    </div>
+  </div>
+
+  <!-- Floating Add Widget Button -->
+  <button class="add-widget-btn" onclick="openWidgetModal()" title="Add Widget">+</button>
+
+  <!-- Refresh Indicator -->
+  <div id="refreshIndicator" class="refresh-indicator">Refreshing data...</div>
+
+  <!-- Template Modal -->
+  <div id="templateModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3>Dashboard Templates</h3>
+        <button class="close-btn" onclick="closeTemplateModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: rgba(255,255,255,0.6); margin-bottom: 1rem;">Select a template to quickly set up your dashboard with pre-configured widgets.</p>
+        <div class="template-grid" id="templateGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Container -->
+  <div id="alertContainer"></div>
+
+  <!-- Widget Builder Modal -->
+  <div id="widgetModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Widget</h3>
+        <button class="close-btn" onclick="closeWidgetModal()">&times;</button>
+      </div>
+      <form id="widgetForm" onsubmit="saveWidget(event)">
+        <div class="form-group">
+          <label>Widget Type</label>
+          <div class="widget-type-grid" id="widgetTypeGrid">
+            <div class="widget-type-option selected" data-type="kpi_card">
+              <div class="widget-type-icon">📊</div>
+              <div class="widget-type-name">KPI Card</div>
+            </div>
+            <div class="widget-type-option" data-type="line_chart">
+              <div class="widget-type-icon">📈</div>
+              <div class="widget-type-name">Line Chart</div>
+            </div>
+            <div class="widget-type-option" data-type="bar_chart">
+              <div class="widget-type-icon">📊</div>
+              <div class="widget-type-name">Bar Chart</div>
+            </div>
+            <div class="widget-type-option" data-type="pie_chart">
+              <div class="widget-type-icon">🥧</div>
+              <div class="widget-type-name">Pie Chart</div>
+            </div>
+            <div class="widget-type-option" data-type="table">
+              <div class="widget-type-icon">📋</div>
+              <div class="widget-type-name">Table</div>
+            </div>
+            <div class="widget-type-option" data-type="comparison">
+              <div class="widget-type-icon">⚖️</div>
+              <div class="widget-type-name">Comparison</div>
+            </div>
+            <div class="widget-type-option" data-type="kpi_tracker">
+              <div class="widget-type-icon">🎯</div>
+              <div class="widget-type-name">KPI Tracker</div>
+            </div>
+            <div class="widget-type-option" data-type="gauge">
+              <div class="widget-type-icon">🌡️</div>
+              <div class="widget-type-name">Gauge</div>
+            </div>
+            <div class="widget-type-option" data-type="budget_pacing">
+              <div class="widget-type-icon">💰</div>
+              <div class="widget-type-name">Budget Pacing</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="widgetTitle">Widget Title *</label>
+          <input type="text" id="widgetTitle" required placeholder="e.g., Total Spend This Month">
+        </div>
+
+        <div class="form-group">
+          <label for="widgetDescription">Description</label>
+          <input type="text" id="widgetDescription" placeholder="Brief description of this widget">
+        </div>
+
+        <div class="form-group">
+          <label for="adAccount">Ad Account *</label>
+          <select id="adAccount" required>
+            <option value="">Select an ad account</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="metric">Metric *</label>
+          <select id="metric" required>
+            <option value="">Select a metric</option>
+            <option value="spend">Spend</option>
+            <option value="impressions">Impressions</option>
+            <option value="clicks">Clicks</option>
+            <option value="ctr">CTR (Click-Through Rate)</option>
+            <option value="cpc">CPC (Cost Per Click)</option>
+            <option value="cpm">CPM (Cost Per 1000 Impressions)</option>
+            <option value="reach">Reach</option>
+            <option value="frequency">Frequency</option>
+            <option value="conversions">Conversions</option>
+            <option value="cost_per_conversion">Cost Per Conversion</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="dateRange">Date Range</label>
+          <select id="dateRange">
+            <option value="last_7_days">Last 7 Days</option>
+            <option value="last_30_days" selected>Last 30 Days</option>
+            <option value="last_90_days">Last 90 Days</option>
+            <option value="this_month">This Month</option>
+            <option value="last_month">Last Month</option>
+          </select>
+        </div>
+
+        <div class="form-group target-group" id="targetGroup" style="display: none;">
+          <label for="targetValue">Target Value</label>
+          <input type="number" id="targetValue" placeholder="e.g., 10000" step="any">
+          <small style="color: rgba(255,255,255,0.5); font-size: 0.75rem;">Set a target to track progress against</small>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeWidgetModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="modalSubmitBtn">Add Widget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div id="shareModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Share Dashboard</h3>
+        <button class="close-btn" onclick="closeShareModal()">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <label>Generate Share Link</label>
+        <div class="share-link-container">
+          <input type="text" id="shareLink" class="share-link-input" readonly placeholder="Click 'Generate' to create a share link">
+          <button class="copy-btn" id="copyBtn" onclick="copyShareLink()">Copy</button>
+        </div>
+      </div>
+
+      <div class="share-options">
+        <div class="share-option">
+          <input type="checkbox" id="allowExport" checked>
+          <label for="allowExport">Allow viewers to export data</label>
+        </div>
+        <div class="share-option">
+          <input type="checkbox" id="requirePassword">
+          <label for="requirePassword">Require password</label>
+        </div>
+        <div class="form-group" id="passwordGroup" style="display: none; margin-top: 0.5rem; margin-bottom: 0;">
+          <input type="password" id="sharePassword" placeholder="Enter password for this share link">
+        </div>
+        <div class="share-option">
+          <input type="checkbox" id="setExpiry">
+          <label for="setExpiry">Set expiration date</label>
+        </div>
+        <div class="form-group" id="expiryGroup" style="display: none; margin-top: 0.5rem; margin-bottom: 0;">
+          <input type="datetime-local" id="shareExpiry">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeShareModal()">Close</button>
+        <button type="button" class="btn btn-primary" onclick="generateShareLink()">Generate Link</button>
+      </div>
+
+      <div class="existing-shares" id="existingShares">
+        <h4>Existing Share Links</h4>
+        <div class="share-list" id="shareList">
+          <div style="color: rgba(255,255,255,0.5); font-size: 0.875rem;">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="exportModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Export Dashboard</h3>
+        <button class="close-btn" onclick="closeExportModal()">&times;</button>
+      </div>
+
+      <div class="export-options">
+        <div class="export-option" onclick="exportToPNG()">
+          <div class="export-option-icon">🖼️</div>
+          <div class="export-option-name">PNG Image</div>
+        </div>
+        <div class="export-option" onclick="exportToPDF()">
+          <div class="export-option-icon">📄</div>
+          <div class="export-option-name">PDF Document</div>
+        </div>
+        <div class="export-option" onclick="exportToCSV()">
+          <div class="export-option-icon">📊</div>
+          <div class="export-option-name">CSV Data</div>
+        </div>
+        <div class="export-option" onclick="printDashboard()">
+          <div class="export-option-icon">🖨️</div>
+          <div class="export-option-name">Print</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeExportModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Widget Analysis Modal -->
+  <div id="aiAnalysisModal" class="modal">
+    <div class="modal-content ai-analysis-modal">
+      <div class="modal-header">
+        <h3>🤖 AI Performance Analysis</h3>
+        <button class="close-btn" onclick="closeAIAnalysisModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Widget Title -->
+        <div class="analysis-widget-info">
+          <h4 id="analysisWidgetTitle"></h4>
+          <p id="analysisWidgetMetric"></p>
+        </div>
+
+        <!-- Loading State -->
+        <div id="aiAnalysisLoading" class="ai-loading">
+          <div class="spinner"></div>
+          <p>AI is analyzing your widget data...</p>
+        </div>
+
+        <!-- Analysis Results -->
+        <div id="aiAnalysisResults" style="display: none;">
+          <!-- Performance Status -->
+          <div class="analysis-section status-section">
+            <div class="status-badge" id="performanceStatus"></div>
+            <p id="performanceStatusText"></p>
+          </div>
+
+          <!-- Critical Insights -->
+          <div class="analysis-section insights-section">
+            <h4>💡 Critical Insights</h4>
+            <ul id="criticalInsightsList"></ul>
+          </div>
+
+          <!-- Risk Alerts (if any) -->
+          <div class="analysis-section risk-section" id="riskSection" style="display: none;">
+            <h4>⚠️ Risk Alerts</h4>
+            <ul id="riskAlertsList"></ul>
+          </div>
+
+          <!-- Recommendations -->
+          <div class="analysis-section recommendations-section">
+            <h4>🎯 Recommended Actions</h4>
+            <div id="recommendationsList"></div>
+          </div>
+
+          <!-- Trend Analysis -->
+          <div class="analysis-section trend-section">
+            <h4>📈 Trend Analysis</h4>
+            <p id="trendAnalysisText"></p>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="aiAnalysisError" class="error-message" style="display: none;"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeAIAnalysisModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Widget Zoom Modal -->
+  <div id="widgetZoomModal" class="widget-zoom-modal">
+    <div class="widget-zoom-content">
+      <div class="widget-zoom-header">
+        <div class="widget-zoom-title" id="widgetZoomTitle">Widget</div>
+        <button class="widget-zoom-close" onclick="closeWidgetZoom()">&times;</button>
+      </div>
+      <div class="widget-zoom-body" id="widgetZoomBody">
+        <!-- Widget content will be rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========================================
+    // VERSION: v112 - Layout Shift Fix: MAX-HEIGHT Constraint
+    // ROOT CAUSE IDENTIFIED:
+    //   - Widgets render immediately with empty placeholders
+    //   - loadWidgetMetrics() fetches data asynchronously (~5 seconds)
+    //   - When data loads, chart summaries + table rows are injected
+    //   - Content height exceeds initial render, causing vertical expansion
+    //   - Grid reflows, pushing other widgets down = LAYOUT SHIFT
+    //
+    // CRITICAL FIXES:
+    // 1. Fixed grid (not auto-fit): repeat(3, 1fr)
+    // 2. Inline grid-column styles with !important
+    // 3. min-height: 180px (prevents collapse)
+    // 4. max-height: 420px + overflow-y: auto (PREVENTS EXPANSION!)
+    // 5. Tables already have max-height: 350px with overflow
+    // ========================================
+    console.log('%c🚀 Dashboard Viewer v112 Loaded - MAX-HEIGHT FIX', 'background: #1a1a2e; color: #b7fa31; font-weight: bold; font-size: 16px; padding: 8px;');
+    console.log('%c✅ Root cause: Async data loading causes height expansion', 'color: #FF6B6B; font-weight: bold;');
+    console.log('%c🔒 Solution: max-height: 420px + overflow-y: auto', 'color: #4CAF50; font-weight: bold;');
+
+    let dashboardId = null;
+    let dashboard = null;
+    let adAccounts = [];
+    let selectedWidgetType = 'kpi_card';
+    let editingWidgetId = null;
+    let refreshInterval = null;
+    let autoRefreshIntervalId = null;
+    const REFRESH_INTERVAL_MS = 60000; // Default auto-refresh every 60 seconds
+
+    // Cache for widget data (5 minute TTL)
+    const widgetCache = new Map();
+    const CACHE_TTL = 5 * 60 * 1000;
+
+    // Store table data for sorting
+    const tableDataStore = new Map();
+
+    // Track widget export data
+    const exportDataStore = new Map();
+
+    window.addEventListener('load', async () => {
+      // Get dashboard ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      dashboardId = urlParams.get('id');
+
+      if (!dashboardId) {
+        showError('No dashboard ID provided');
+        return;
+      }
+
+      // Setup widget type selection with event delegation
+      setupWidgetTypeSelection();
+
+      await loadDashboard();
+      await loadAdAccounts();
+      startAutoRefresh();
+    });
+
+    function setupWidgetTypeSelection() {
+      const grid = document.getElementById('widgetTypeGrid');
+      grid.addEventListener('click', (e) => {
+        // Find the clicked option (might be the icon or name child)
+        const option = e.target.closest('.widget-type-option');
+        if (!option) return;
+
+        const type = option.dataset.type;
+        if (!type) return;
+
+        // Update selection
+        selectedWidgetType = type;
+
+        // Update visual state
+        grid.querySelectorAll('.widget-type-option').forEach(el => {
+          el.classList.remove('selected');
+        });
+        option.classList.add('selected');
+
+        // Show/hide target field based on widget type
+        const targetGroup = document.getElementById('targetGroup');
+        if (type === 'kpi_tracker' || type === 'gauge') {
+          targetGroup.style.display = 'block';
+        } else {
+          targetGroup.style.display = 'none';
+        }
+
+        // Hide metric selection for budget_pacing (it always uses spend)
+        const metricGroup = document.getElementById('metricSelect')?.closest('.form-group');
+        if (metricGroup) {
+          if (type === 'budget_pacing') {
+            metricGroup.style.display = 'none';
+          } else {
+            metricGroup.style.display = 'block';
+          }
+        }
+
+        console.log('Selected widget type:', selectedWidgetType);
+      });
+    }
+
+    function startAutoRefresh() {
+      // Clear existing interval if any
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+
+      // Set up auto-refresh
+      refreshInterval = setInterval(async () => {
+        const indicator = document.getElementById('refreshIndicator');
+        indicator.classList.add('show');
+        await loadWidgetMetrics();
+        setTimeout(() => indicator.classList.remove('show'), 2000);
+      }, REFRESH_INTERVAL_MS);
+    }
+
+    function stopAutoRefresh() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+      }
+    }
+
+    async function loadDashboard() {
+      try {
+        const response = await fetch(`/api/dashboards/${dashboardId}`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load dashboard');
+        }
+
+        const result = await response.json();
+        dashboard = result.data;
+
+        renderDashboard();
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+        showError('Failed to load dashboard');
+      }
+    }
+
+    async function loadAdAccounts() {
+      try {
+        // Get the workspace ID from the dashboard
+        if (!dashboard || !dashboard.workspace_id) return;
+
+        const response = await fetch(`/api/oauth/accounts/${dashboard.workspace_id}`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load ad accounts');
+        }
+
+        const result = await response.json();
+        adAccounts = result.data || [];
+
+        // Populate the ad account dropdown
+        const select = document.getElementById('adAccount');
+        select.innerHTML = '<option value="">Select an ad account</option>';
+
+        adAccounts.forEach(account => {
+          const option = document.createElement('option');
+          option.value = account.id;
+          option.dataset.platform = account.platform;
+          option.textContent = `${account.account_name} (${account.platform})`;
+          select.appendChild(option);
+        });
+
+        // Add event listener for platform-specific metrics
+        select.addEventListener('change', updateMetricsForPlatform);
+      } catch (error) {
+        console.error('Error loading ad accounts:', error);
+      }
+    }
+
+    // Platform-specific metrics configuration
+    const platformMetrics = {
+      meta: [
+        { value: 'spend', label: 'Spend' },
+        { value: 'impressions', label: 'Impressions' },
+        { value: 'clicks', label: 'Clicks' },
+        { value: 'ctr', label: 'CTR (Click-Through Rate)' },
+        { value: 'cpc', label: 'CPC (Cost Per Click)' },
+        { value: 'cpm', label: 'CPM (Cost Per 1000 Impressions)' },
+        { value: 'reach', label: 'Reach' },
+        { value: 'frequency', label: 'Frequency' },
+        { value: 'conversions', label: 'Conversions' },
+        { value: 'cost_per_conversion', label: 'Cost Per Conversion' },
+      ],
+      google: [
+        { value: 'spend', label: 'Spend' },
+        { value: 'impressions', label: 'Impressions' },
+        { value: 'clicks', label: 'Clicks' },
+        { value: 'ctr', label: 'CTR (Click-Through Rate)' },
+        { value: 'cpc', label: 'CPC (Cost Per Click)' },
+        { value: 'conversions', label: 'Conversions' },
+        { value: 'cost_per_conversion', label: 'Cost Per Conversion' },
+      ],
+      search_console: [
+        { value: 'clicks', label: 'Clicks' },
+        { value: 'impressions', label: 'Impressions' },
+        { value: 'ctr', label: 'CTR (Click-Through Rate)' },
+        { value: 'position', label: 'Average Position' },
+        { value: 'top_queries', label: 'Top Keywords/Queries (Table)' },
+        { value: 'top_pages', label: 'Top Pages (Table)' },
+        { value: 'device_breakdown', label: 'Device Breakdown (Table)' },
+        { value: 'country_breakdown', label: 'Country Breakdown (Table)' },
+      ],
+      tiktok: [
+        { value: 'spend', label: 'Spend' },
+        { value: 'impressions', label: 'Impressions' },
+        { value: 'clicks', label: 'Clicks' },
+        { value: 'ctr', label: 'CTR (Click-Through Rate)' },
+        { value: 'cpc', label: 'CPC (Cost Per Click)' },
+        { value: 'conversions', label: 'Conversions' },
+      ],
+      linkedin: [
+        { value: 'spend', label: 'Spend' },
+        { value: 'impressions', label: 'Impressions' },
+        { value: 'clicks', label: 'Clicks' },
+        { value: 'ctr', label: 'CTR (Click-Through Rate)' },
+        { value: 'cpc', label: 'CPC (Cost Per Click)' },
+        { value: 'conversions', label: 'Conversions' },
+      ],
+    };
+
+    function updateMetricsForPlatform() {
+      const adAccountSelect = document.getElementById('adAccount');
+      const metricSelect = document.getElementById('metric');
+      const selectedOption = adAccountSelect.options[adAccountSelect.selectedIndex];
+      const platform = selectedOption?.dataset?.platform || 'meta';
+
+      const metrics = platformMetrics[platform] || platformMetrics.meta;
+
+      metricSelect.innerHTML = '<option value="">Select a metric</option>';
+      metrics.forEach(metric => {
+        const option = document.createElement('option');
+        option.value = metric.value;
+        option.textContent = metric.label;
+        metricSelect.appendChild(option);
+      });
+    }
+
+    function renderDashboard() {
+      // Update header
+      document.getElementById('dashboardTitle').textContent = dashboard.name;
+      document.getElementById('dashboardDescription').textContent = dashboard.description || '';
+
+      // Render widgets
+      const container = document.getElementById('widgetsContainer');
+
+      if (!dashboard.widgets || dashboard.widgets.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon"><div class="icon icon-chart"></div></div>
+            <div class="empty-state-title">No Widgets Yet</div>
+            <div class="empty-state-description">
+              Add widgets to visualize your ad performance metrics and track your campaigns.
+            </div>
+            <button class="btn btn-primary" onclick="openWidgetModal()">Add Your First Widget</button>
+          </div>
+        `;
+        return;
+      }
+
+      // Render widgets
+      console.log('[DASHBOARD] Starting to render widgets. localStorage widgetGridSizes:', localStorage.getItem('widgetGridSizes'));
+      const widgetsHTML = dashboard.widgets.map(widget => {
+        return renderWidget(widget);
+      }).join('');
+
+      container.innerHTML = `<div class="widgets-grid">${widgetsHTML}</div>`;
+
+      console.log('[DASHBOARD] Widgets HTML inserted into DOM. Checking rendered grid sizes...');
+      dashboard.widgets.forEach(widget => {
+        const widgetEl = document.querySelector(`[data-widget-id="${widget.id}"]`);
+        if (widgetEl) {
+          console.log(`[DASHBOARD] Widget ${widget.id} (${widget.title}) has data-grid-size: ${widgetEl.getAttribute('data-grid-size')}`);
+        }
+      });
+
+      // Initialize drag and drop
+      setupDragAndDrop();
+
+      // Load actual metrics for widgets
+      // Note: Grid sizes are now applied during renderWidget(), no separate restoration needed
+      console.log('[DASHBOARD] About to call loadWidgetMetrics()');
+      loadWidgetMetrics();
+    }
+
+    // Drag and Drop functionality
+    let draggedWidget = null;
+
+    function setupDragAndDrop() {
+      const widgets = document.querySelectorAll('.widget');
+
+      widgets.forEach(widget => {
+        widget.addEventListener('dragstart', handleDragStart);
+        widget.addEventListener('dragend', handleDragEnd);
+        widget.addEventListener('dragover', handleDragOver);
+        widget.addEventListener('dragenter', handleDragEnter);
+        widget.addEventListener('dragleave', handleDragLeave);
+        widget.addEventListener('drop', handleDrop);
+      });
+    }
+
+    function handleDragStart(e) {
+      draggedWidget = this;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', this.dataset.widgetId);
+    }
+
+    function handleDragEnd(e) {
+      this.classList.remove('dragging');
+      document.querySelectorAll('.widget').forEach(widget => {
+        widget.classList.remove('drag-over');
+      });
+      draggedWidget = null;
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDragEnter(e) {
+      e.preventDefault();
+      if (this !== draggedWidget) {
+        this.classList.add('drag-over');
+      }
+    }
+
+    function handleDragLeave(e) {
+      this.classList.remove('drag-over');
+    }
+
+    async function handleDrop(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+
+      if (this === draggedWidget) return;
+
+      // Get the widgets grid
+      const grid = document.querySelector('.widgets-grid');
+      const widgets = Array.from(grid.querySelectorAll('.widget'));
+
+      // Find positions
+      const draggedIndex = widgets.indexOf(draggedWidget);
+      const targetIndex = widgets.indexOf(this);
+
+      // Reorder in DOM
+      if (draggedIndex < targetIndex) {
+        this.parentNode.insertBefore(draggedWidget, this.nextSibling);
+      } else {
+        this.parentNode.insertBefore(draggedWidget, this);
+      }
+
+      // Update order in dashboard data and save
+      const newOrder = Array.from(grid.querySelectorAll('.widget')).map(w => w.dataset.widgetId);
+      await saveWidgetOrder(newOrder);
+
+      showAlert('Widget order updated', 'success');
+    }
+
+    async function saveWidgetOrder(order) {
+      try {
+        // Update the position of each widget
+        for (let i = 0; i < order.length; i++) {
+          const widgetId = order[i];
+          const widget = dashboard.widgets.find(w => w.id === widgetId);
+          if (widget) {
+            widget.position = { ...widget.position, order: i };
+
+            // Save to backend
+            await fetch(`/api/dashboards/widgets/${widgetId}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                position: { order: i }
+              }),
+            });
+          }
+        }
+
+        // Reorder dashboard.widgets array to match new order
+        dashboard.widgets.sort((a, b) => {
+          const aIndex = order.indexOf(a.id);
+          const bIndex = order.indexOf(b.id);
+          return aIndex - bIndex;
+        });
+      } catch (error) {
+        console.error('Error saving widget order:', error);
+        showAlert('Failed to save widget order', 'error');
+      }
+    }
+
+    function formatMetricLabel(metric) {
+      // Handle acronyms and special formatting
+      const metricLabels = {
+        'spend': 'Spend',
+        'impressions': 'Impressions',
+        'clicks': 'Clicks',
+        'ctr': 'CTR',
+        'cpc': 'CPC',
+        'cpm': 'CPM',
+        'reach': 'Reach',
+        'frequency': 'Frequency',
+        'conversions': 'Conversions',
+        'cost_per_conversion': 'Cost Per Conversion'
+      };
+      return metricLabels[metric] || metric.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function renderWidget(widget) {
+      const dataSource = widget.data_source || {};
+      const metricName = dataSource.metric || 'Metric';
+      const formattedMetric = formatMetricLabel(metricName);
+      const widgetType = widget.widget_type || 'kpi_card';
+
+      let contentHTML = '';
+
+      if (widgetType === 'kpi_card') {
+        contentHTML = `
+          <div class="metric-card">
+            <div class="metric-value" id="metric-${widget.id}">
+              <div class="widget-loading">
+                <div class="widget-loading-spinner"></div>
+                <div class="widget-loading-text">Loading...</div>
+              </div>
+            </div>
+            <div class="metric-label">${formattedMetric}</div>
+            <div class="metric-change neutral" id="change-${widget.id}">
+              <span>—</span> vs previous period
+            </div>
+            <div class="metric-sparkline">
+              <canvas id="sparkline-${widget.id}"></canvas>
+            </div>
+            <div class="metric-date-range">
+              ${formatDateRange(dataSource.dateRange || 'last_30_days')}
+            </div>
+          </div>
+        `;
+      } else if (widgetType === 'line_chart' || widgetType === 'bar_chart' || widgetType === 'pie_chart') {
+        contentHTML = `
+          <div id="chart-summary-${widget.id}" style="padding: 0.75rem 1rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <!-- Summary stats will be populated by renderChart -->
+          </div>
+          <div style="padding: 1rem; height: 200px;">
+            <canvas id="chart-${widget.id}"></canvas>
+          </div>
+          <div style="text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.4); padding-bottom: 0.5rem;">
+            ${formattedMetric} - ${formatDateRange(dataSource.dateRange || 'last_30_days')}
+          </div>
+        `;
+      } else if (widgetType === 'table') {
+        contentHTML = `
+          <div class="table-widget" id="table-${widget.id}">
+            <div id="table-container-${widget.id}">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="text-align: left;">Week</th>
+                    <th style="text-align: right;">${formattedMetric}</th>
+                    <th style="text-align: right;">vs Prev Week</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body-${widget.id}">
+                  <tr>
+                    <td colspan="3" style="text-align: center; color: rgba(255,255,255,0.4);">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      } else if (widgetType === 'comparison') {
+        contentHTML = `
+          <div class="comparison-widget" id="comparison-${widget.id}">
+            <div class="comparison-container">
+              <div class="comparison-item">
+                <div class="comparison-period">Current Period</div>
+                <div class="comparison-value" id="current-${widget.id}">--</div>
+                <div class="comparison-label">${formattedMetric}</div>
+              </div>
+              <div class="comparison-divider"></div>
+              <div class="comparison-item">
+                <div class="comparison-period">Previous Period</div>
+                <div class="comparison-value" id="previous-${widget.id}">--</div>
+                <div class="comparison-label">${formattedMetric}</div>
+              </div>
+            </div>
+            <div class="comparison-change">
+              <div class="comparison-change-value" id="change-value-${widget.id}">--</div>
+              <div class="comparison-change-label">Period over Period Change</div>
+            </div>
+          </div>
+        `;
+      } else if (widgetType === 'kpi_tracker') {
+        const target = dataSource.target || 0;
+        contentHTML = `
+          <div class="kpi-tracker-widget">
+            <div class="kpi-tracker-header">
+              <div>
+                <div class="kpi-tracker-value" id="kpi-value-${widget.id}">Loading...</div>
+                <div class="kpi-tracker-target">Target: <span id="kpi-target-${widget.id}">${formatMetricValue(target, metricName)}</span></div>
+              </div>
+              <div class="kpi-tracker-status on-track" id="kpi-status-${widget.id}">On Track</div>
+            </div>
+            <div class="kpi-progress-bar">
+              <div class="kpi-progress-fill excellent" id="kpi-progress-${widget.id}" style="width: 0%"></div>
+            </div>
+            <div class="kpi-progress-info">
+              <span id="kpi-percent-${widget.id}">0%</span>
+              <span>${formattedMetric}</span>
+            </div>
+            <div class="kpi-tracker-footer">
+              <div class="kpi-remaining" id="kpi-remaining-${widget.id}">--</div>
+              <div class="kpi-trend positive" id="kpi-trend-${widget.id}">
+                <span>--</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (widgetType === 'gauge') {
+        const target = dataSource.target || 100;
+        contentHTML = `
+          <div class="gauge-widget">
+            <div style="padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div>
+                  <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Current</div>
+                  <div style="font-size: 2rem; font-weight: 700; color: #b7fa31;" id="gauge-actual-value-${widget.id}">--</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Target</div>
+                  <div style="font-size: 1.25rem; font-weight: 600; color: rgba(255,255,255,0.6);" id="gauge-target-value-${widget.id}">${formatMetricValue(target, metricName)}</div>
+                </div>
+              </div>
+              <div style="padding: 0.5rem 0.75rem; background: rgba(183, 250, 49, 0.05); border-left: 2px solid rgba(183, 250, 49, 0.3); border-radius: 4px;">
+                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7);">
+                  <span id="gauge-status-icon-${widget.id}">
+                    <div class="widget-loading-spinner" style="width: 1em; height: 1em; border-width: 2px; display: inline-block;"></div>
+                  </span>
+                  <span id="gauge-status-text-${widget.id}">Loading...</span>
+                </div>
+              </div>
+            </div>
+            <div class="gauge-container">
+              <div class="gauge-background"></div>
+              <div class="gauge-fill excellent" id="gauge-fill-${widget.id}" style="clip-path: polygon(0 100%, 50% 100%, 50% 0, 0 0);"></div>
+              <div class="gauge-center"></div>
+              <div class="gauge-value" id="gauge-value-${widget.id}">--</div>
+            </div>
+            <div class="gauge-labels">
+              <span>0</span>
+              <span id="gauge-max-${widget.id}">${formatMetricValue(target, metricName)}</span>
+            </div>
+            <div class="gauge-target-info">
+              ${formattedMetric} - ${formatDateRange(dataSource.dateRange || 'last_30_days')}
+            </div>
+          </div>
+        `;
+      } else if (widgetType === 'budget_pacing') {
+        contentHTML = `
+          <div class="budget-pacing-widget" id="budget-pacing-${widget.id}">
+            <div class="budget-header">
+              <div class="budget-amounts">
+                <div class="budget-label">Current Spend</div>
+                <div class="budget-current" id="budget-current-${widget.id}">Loading...</div>
+                <div class="budget-total" id="budget-total-${widget.id}">of -- budget</div>
+              </div>
+              <div class="budget-alert on-track" id="budget-alert-${widget.id}">On Track</div>
+            </div>
+            <div class="budget-progress-container">
+              <div class="budget-progress-bar">
+                <div class="budget-progress-fill on-track" id="budget-progress-${widget.id}" style="width: 0%"></div>
+              </div>
+              <div class="budget-progress-labels">
+                <span id="budget-percent-${widget.id}">0%</span>
+                <span id="budget-month-progress-${widget.id}">0% of month elapsed</span>
+              </div>
+            </div>
+            <div class="budget-stats">
+              <div class="budget-stat">
+                <div class="budget-stat-value" id="budget-avg-daily-${widget.id}">--</div>
+                <div class="budget-stat-label">Avg Daily Spend</div>
+              </div>
+              <div class="budget-stat">
+                <div class="budget-stat-value" id="budget-days-passed-${widget.id}">--</div>
+                <div class="budget-stat-label">Days Passed</div>
+              </div>
+              <div class="budget-stat">
+                <div class="budget-stat-value" id="budget-days-remaining-${widget.id}">--</div>
+                <div class="budget-stat-label">Days Remaining</div>
+              </div>
+            </div>
+            <div class="budget-projection" id="budget-projection-${widget.id}">
+              <div class="budget-projection-label">Projected Month-End Spend</div>
+              <div class="budget-projection-value" id="budget-projected-${widget.id}">--</div>
+              <div class="budget-projection-diff" id="budget-projection-diff-${widget.id}">--</div>
+            </div>
+          </div>
+        `;
+      } else {
+        contentHTML = `
+          <div class="metric-card">
+            <div class="metric-value" id="metric-${widget.id}">Loading...</div>
+            <div class="metric-label">${formattedMetric}</div>
+          </div>
+        `;
+      }
+
+      // Get saved grid size from localStorage
+      const gridSizePrefs = JSON.parse(localStorage.getItem('widgetGridSizes') || '{}');
+      const savedSize = gridSizePrefs[widget.id] || '';
+      const gridSizeAttr = savedSize ? `data-grid-size="${savedSize}"` : '';
+
+      // CRITICAL FIX: Apply inline grid-column style with !important to prevent ANY layout shift
+      let gridColumnStyle = '';
+      if (savedSize === 'small') {
+        gridColumnStyle = ' style="grid-column: span 1 !important;"';
+      } else if (savedSize === 'medium') {
+        gridColumnStyle = ' style="grid-column: span 2 !important;"';
+      } else if (savedSize === 'large') {
+        gridColumnStyle = ' style="grid-column: span 3 !important;"';
+      }
+
+      // Debug logging
+      console.log(`[RENDER] Widget ${widget.id} (${widget.title}): savedSize=${savedSize}, gridSizeAttr=${gridSizeAttr}, gridColumnStyle=${gridColumnStyle}`);
+
+      // Determine which size button should be active
+      const smallActive = savedSize === 'small' ? ' active' : '';
+      const mediumActive = savedSize === 'medium' ? ' active' : '';
+      const largeActive = savedSize === 'large' ? ' active' : '';
+
+      return `
+        <div class="widget" data-widget-id="${widget.id}" data-widget-type="${widgetType}" ${gridSizeAttr}${gridColumnStyle} draggable="true">
+          <div class="widget-header">
+            <div style="display: flex; align-items: center;">
+              <span class="widget-drag-handle" title="Drag to reorder"><span class="icon icon-drag"></span></span>
+              <div class="widget-title">${widget.title || 'Untitled Widget'}</div>
+              <span class="widget-timestamp" id="timestamp-${widget.id}"></span>
+            </div>
+            <div class="widget-actions">
+              <div class="widget-size-controls">
+                <button class="widget-size-btn${smallActive}" onclick="setWidgetGridSize('${widget.id}', 'small')" title="Small (1 column)" data-size="small">S</button>
+                <button class="widget-size-btn${mediumActive}" onclick="setWidgetGridSize('${widget.id}', 'medium')" title="Medium (2 columns)" data-size="medium">M</button>
+                <button class="widget-size-btn${largeActive}" onclick="setWidgetGridSize('${widget.id}', 'large')" title="Large (3 columns)" data-size="large">L</button>
+              </div>
+              <button class="widget-action-btn" onclick="openWidgetZoom('${widget.id}')" title="Expand"><span class="icon icon-expand"></span></button>
+              <button class="widget-action-btn" onclick="analyzeWidgetWithAI('${widget.id}')" title="AI Analysis"><span class="icon icon-ai"></span></button>
+              <button class="widget-refresh-btn" onclick="refreshSingleWidget('${widget.id}')" title="Refresh"><span class="icon icon-refresh"></span></button>
+              <span class="widget-action" onclick="editWidget('${widget.id}')" title="Edit"><span class="icon icon-edit"></span></span>
+              <span class="widget-action delete" onclick="deleteWidget('${widget.id}')" title="Delete"><span class="icon icon-delete"></span></span>
+            </div>
+          </div>
+          ${contentHTML}
+        </div>
+      `;
+    }
+
+    function formatDateRange(range) {
+      const ranges = {
+        'last_7_days': 'Last 7 Days',
+        'last_30_days': 'Last 30 Days',
+        'last_90_days': 'Last 90 Days',
+        'this_month': 'This Month',
+        'last_month': 'Last Month'
+      };
+      return ranges[range] || range;
+    }
+
+    // Store chart instances for cleanup
+    const chartInstances = {};
+
+    async function loadWidgetMetrics() {
+      if (!dashboard.widgets || dashboard.widgets.length === 0) return;
+
+      for (const widget of dashboard.widgets) {
+        try {
+          const response = await fetch(`/api/metrics/widget/${widget.id}`, {
+            credentials: 'include'
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const result = await response.json();
+          const widgetType = widget.widget_type || 'kpi_card';
+          const value = result.data?.value || 0;
+          const metric = widget.data_source?.metric || 'spend';
+          const currency = result.data?.currency || 'USD';
+
+          // Store data for export
+          exportDataStore.set(widget.id, result.data);
+
+          // Update widget timestamp
+          const timestampElement = document.getElementById(`timestamp-${widget.id}`);
+          if (timestampElement) {
+            timestampElement.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          }
+
+          // Extract real data from API response
+          const timeSeries = result.data?.timeSeries || [];
+          const previousValue = result.data?.previousValue || 0;
+          const changePercent = result.data?.changePercent || 0;
+
+          if (widgetType === 'kpi_card') {
+            // Update KPI card widgets
+            const metricElement = document.getElementById(`metric-${widget.id}`);
+            if (metricElement && result.data) {
+              // Check for ROAS setup requirement
+              if (currency === 'SETUP_REQUIRED' && metric === 'roas') {
+                metricElement.innerHTML = `
+                  <div style="font-size: 1.5rem; color: #F5A623; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <div class="icon icon-warning" style="width: 1.5rem; height: 1.5rem; font-size: 1rem;"></div>
+                    <span>No Conversion Data</span>
+                  </div>
+                  <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5); line-height: 1.5;">
+                    We can't calculate ROAS properly without purchase conversion data.<br>
+                    <span style="font-size: 0.65rem; display: block; margin-top: 0.3rem; color: rgba(255,255,255,0.4);">
+                      This might be due to: Pixel not tracking purchases, missing value parameter, or no purchases in this period.
+                    </span>
+                    <a href="https://business.facebook.com/events_manager" target="_blank" style="color: #b7fa31; text-decoration: underline; font-size: 0.7rem; display: inline-block; margin-top: 0.3rem;">
+                      Verify setup in Events Manager →
+                    </a>
+                  </div>
+                `;
+              } else {
+                let formattedValue = formatMetricValue(value, metric, currency);
+                metricElement.textContent = formattedValue;
+              }
+            }
+            renderSparkline(widget.id, timeSeries, metric);
+            updateTrendIndicator(widget.id, changePercent, metric);
+          } else if (widgetType === 'table') {
+            // Check if this is a table-type response (Search Console tables)
+            if (result.data?.type === 'table') {
+              renderDynamicTableWidget(widget.id, result.data);
+            } else {
+              // Render table widget with time-series data (weekly comparison)
+              renderTableWidget(widget.id, timeSeries, metric, currency);
+            }
+          } else if (widgetType === 'comparison') {
+            // Render comparison widget with real data
+            renderComparisonWidget(widget.id, value, previousValue, changePercent, metric, currency);
+          } else if (widgetType === 'line_chart' || widgetType === 'bar_chart' || widgetType === 'pie_chart') {
+            // Check if this is table-type data (for pie charts showing breakdown by device, country, etc.)
+            if (widgetType === 'pie_chart' && result.data?.type === 'table') {
+              renderPieChartFromTable(widget, result.data, metric, currency);
+            } else {
+              // Render chart widgets with real time-series data
+              renderChart(widget, timeSeries, value, metric, currency, result.data);
+            }
+          } else if (widgetType === 'kpi_tracker') {
+            // Render KPI tracker widget
+            renderKpiTracker(widget, value, changePercent, metric, currency);
+          } else if (widgetType === 'gauge') {
+            // Render gauge widget
+            renderGaugeWidget(widget, value, metric, currency);
+          } else if (widgetType === 'budget_pacing') {
+            // Render budget pacing widget
+            renderBudgetPacing(widget, currency);
+          }
+        } catch (error) {
+          console.error(`Error loading metrics for widget ${widget.id}:`, error);
+          // Show error state with retry button
+          const widgetElement = document.querySelector(`[data-widget-id="${widget.id}"]`);
+          if (widgetElement) {
+            const contentArea = widgetElement.querySelector('.metric-card, .table-widget, .comparison-widget, canvas');
+            if (contentArea) {
+              contentArea.parentElement.innerHTML = `
+                <div class="widget-error">
+                  <div class="widget-error-icon"><div class="icon icon-warning"></div></div>
+                  <div class="widget-error-message">Failed to load data</div>
+                  <button class="retry-btn" onclick="refreshSingleWidget('${widget.id}')">Retry</button>
+                </div>
+              `;
+            }
+          }
+        }
+      }
+
+      // Update global last updated time
+      updateLastUpdatedTime();
+    }
+
+    function renderChart(widget, timeSeries, value, metric, currency, fullData) {
+      const canvas = document.getElementById(`chart-${widget.id}`);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      const widgetType = widget.widget_type;
+
+      // Destroy existing chart if any
+      if (chartInstances[widget.id]) {
+        chartInstances[widget.id].destroy();
+      }
+
+      // Use real time-series data or show empty chart
+      let labels, data;
+      if (timeSeries && timeSeries.length > 0) {
+        labels = timeSeries.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        data = timeSeries.map(d => d.value);
+      } else {
+        // If no real data available, show message instead of fake data
+        if (!value || value === 0) {
+          canvas.parentElement.innerHTML = `
+            <div class="no-data-state" style="padding: 2rem; text-align: center;">
+              <div class="no-data-icon">📊</div>
+              <div class="no-data-message">No data available for this period</div>
+              <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 0.5rem;">
+                Connect your ad accounts and ensure tracking is properly set up
+              </div>
+            </div>
+          `;
+          return;
+        }
+        // If we have a value but no time-series, show it as a flat line
+        labels = generateDateLabels(widget.data_source?.dateRange || 'last_30_days');
+        data = new Array(labels.length).fill(value / labels.length);
+      }
+
+      const formattedMetric = formatMetricLabel(metric);
+      const chartColor = '#b7fa31';
+      const chartColorTransparent = 'rgba(183, 250, 49, 0.2)';
+
+      let chartConfig;
+
+      if (widgetType === 'line_chart') {
+        chartConfig = {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: formattedMetric,
+              data: data,
+              borderColor: chartColor,
+              backgroundColor: chartColorTransparent,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 2,
+              pointHoverRadius: 5
+            }]
+          },
+          options: getChartOptions(metric, currency)
+        };
+      } else if (widgetType === 'bar_chart') {
+        chartConfig = {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: formattedMetric,
+              data: data,
+              backgroundColor: chartColor,
+              borderRadius: 4
+            }]
+          },
+          options: getChartOptions(metric, currency)
+        };
+      } else if (widgetType === 'pie_chart') {
+        // Pie charts should use table-type data (handled in renderPieChartFromTable)
+        // If we reach here, it means no breakdown data is available
+        canvas.parentElement.innerHTML = `
+          <div class="no-data-state" style="padding: 2rem; text-align: center;">
+            <div class="no-data-icon">📊</div>
+            <div class="no-data-message">No breakdown data available</div>
+            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 0.5rem;">
+              This widget requires breakdown by device, country, or campaign.<br>
+              Please configure the data source in widget settings.
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      chartInstances[widget.id] = new Chart(ctx, chartConfig);
+
+      // Add summary panel for bar/line charts
+      if ((widgetType === 'bar_chart' || widgetType === 'line_chart') && timeSeries && timeSeries.length > 0) {
+        const summaryDiv = document.getElementById(`chart-summary-${widget.id}`);
+        if (summaryDiv) {
+          const values = timeSeries.map(d => d.value);
+          const total = values.reduce((a, b) => a + b, 0);
+          const average = total / values.length;
+          const max = Math.max(...values);
+          const min = Math.min(...values);
+
+          // Find peak day
+          const peakIndex = values.indexOf(max);
+          const peakDate = new Date(timeSeries[peakIndex].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+          // Calculate trend (first half vs second half)
+          const midPoint = Math.floor(values.length / 2);
+          const firstHalf = values.slice(0, midPoint).reduce((a, b) => a + b, 0) / midPoint;
+          const secondHalf = values.slice(midPoint).reduce((a, b) => a + b, 0) / (values.length - midPoint);
+          const trend = ((secondHalf - firstHalf) / firstHalf * 100).toFixed(1);
+          const trendDirection = trend > 0 ? '↑' : '↓';
+          const trendClass = trend > 0 ? 'change-positive' : 'change-negative';
+
+          // Generate insight based on metric type and trend
+          let insight = '';
+          const absChange = Math.abs(parseFloat(trend));
+
+          if (absChange > 20) {
+            if (trend > 0) {
+              insight = `<span style="color: #b7fa31;">Strong growth</span> in the second half of the period`;
+            } else {
+              insight = `<span style="color: #FF6B6B;">Significant decline</span> in the second half - investigate cause`;
+            }
+          } else if (absChange > 10) {
+            if (trend > 0) {
+              insight = `<span style="color: #50C878;">Improving</span> performance over time`;
+            } else {
+              insight = `<span style="color: #F5A623;">Declining</span> trend - monitor closely`;
+            }
+          } else {
+            insight = `<span style="color: rgba(255,255,255,0.5);">Stable</span> performance across the period`;
+          }
+
+          summaryDiv.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.5rem;">
+              <div style="text-align: center;">
+                <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Total</div>
+                <div style="font-size: 1rem; font-weight: 700; color: #fff;">${formatMetricValue(total, metric, currency)}</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Daily Avg</div>
+                <div style="font-size: 1rem; font-weight: 700; color: #fff;">${formatMetricValue(average, metric, currency)}</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Peak</div>
+                <div style="font-size: 1rem; font-weight: 700; color: #b7fa31;">${formatMetricValue(max, metric, currency)}</div>
+                <div style="font-size: 0.6rem; color: rgba(255,255,255,0.3);">${peakDate}</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Trend</div>
+                <div class="${trendClass}" style="font-size: 1rem; font-weight: 700;">${trendDirection} ${Math.abs(parseFloat(trend)).toFixed(1)}%</div>
+              </div>
+            </div>
+            <div style="padding: 0.5rem 0.75rem; background: rgba(183, 250, 49, 0.05); border-left: 2px solid rgba(183, 250, 49, 0.3); border-radius: 4px; font-size: 0.75rem;">
+              <span style="opacity: 0.6; display: inline-flex; align-items: center; gap: 0.3rem;"><span class="icon icon-lightbulb" style="font-size: 1em;"></span> Insight:</span> ${insight}
+            </div>
+          `;
+        }
+      }
+    }
+
+    function renderPieChartFromTable(widget, tableData, metric, currency) {
+      const canvas = document.getElementById(`chart-${widget.id}`);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+
+      // Destroy existing chart if any
+      if (chartInstances[widget.id]) {
+        chartInstances[widget.id].destroy();
+      }
+
+      const columns = tableData.columns || [];
+      const data = tableData.data || [];
+
+      if (data.length === 0) {
+        // Show no data message
+        canvas.parentElement.innerHTML = `
+          <div class="no-data-state" style="padding: 2rem; text-align: center;">
+            <div class="no-data-icon">📊</div>
+            <div class="no-data-message">No breakdown data available for this period</div>
+          </div>
+        `;
+        return;
+      }
+
+      // Extract labels and values from table data
+      // First column is typically the label (Device, Country, Query, etc.)
+      // Find the most relevant numeric column for the pie chart
+      const labelColumn = columns[0]; // e.g., "Device", "Country", "Query"
+
+      // Determine which numeric column to use (prefer Clicks, then Impressions, then first numeric column)
+      let valueColumn = 'clicks';
+      if (columns.includes('Clicks')) {
+        valueColumn = 'Clicks';
+      } else if (columns.includes('Impressions')) {
+        valueColumn = 'Impressions';
+      } else {
+        // Find first numeric-looking column
+        valueColumn = columns.find(col =>
+          !col.toLowerCase().includes('ctr') &&
+          !col.toLowerCase().includes('position') &&
+          !col.toLowerCase().includes('%')
+        ) || columns[1];
+      }
+
+      // Extract labels and values
+      const pieLabels = data.map(row => {
+        const labelKey = labelColumn.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '');
+        return row[labelKey] || row[labelColumn] || 'Unknown';
+      });
+
+      const pieData = data.map(row => {
+        const valueKey = valueColumn.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '');
+        const value = row[valueKey] || row[valueColumn] || 0;
+        return typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : parseFloat(value);
+      });
+
+      // Use distinct, professional colors for pie segments
+      const pieColors = [
+        '#b7fa31', // Bright lime (primary brand color)
+        '#4A90E2', // Professional blue
+        '#F5A623', // Warm orange
+        '#7B68EE', // Medium purple
+        '#50C878', // Emerald green
+        '#FF6B6B', // Coral red
+        '#FFD93D', // Golden yellow
+        '#95E1D3'  // Mint green
+      ];
+
+      const formattedMetric = formatMetricLabel(valueColumn);
+
+      const chartConfig = {
+        type: 'doughnut',
+        data: {
+          labels: pieLabels,
+          datasets: [{
+            data: pieData,
+            backgroundColor: pieColors.slice(0, pieLabels.length),
+            borderColor: '#1a1a1a',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: 'rgba(255, 255, 255, 0.85)',
+                font: { size: 12, weight: '500' },
+                padding: 15,
+                usePointStyle: true,
+                pointStyle: 'circle',
+                generateLabels: function(chart) {
+                  const data = chart.data;
+                  if (data.labels.length && data.datasets.length) {
+                    return data.labels.map((label, i) => {
+                      const value = data.datasets[0].data[i];
+                      const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                      const percentage = ((value / total) * 100).toFixed(1);
+                      const formattedValue = value >= 1000
+                        ? (value / 1000).toFixed(1) + 'K'
+                        : value.toLocaleString();
+                      return {
+                        text: `${label}: ${formattedValue} (${percentage}%)`,
+                        fillStyle: data.datasets[0].backgroundColor[i],
+                        fontColor: 'rgba(255, 255, 255, 0.85)',
+                        hidden: false,
+                        index: i
+                      };
+                    });
+                  }
+                  return [];
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: '#1a1a1a',
+              titleColor: '#ffffff',
+              bodyColor: '#ffffff',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderWidth: 1,
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  const formattedValue = value >= 1000
+                    ? (value / 1000).toFixed(1) + 'K'
+                    : value.toLocaleString();
+                  return `${label}: ${formattedValue} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      };
+
+      chartInstances[widget.id] = new Chart(ctx, chartConfig);
+    }
+
+    function getChartOptions(metric, currency) {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)'
+            },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.5)',
+              font: { size: 9 },
+              maxRotation: 45
+            }
+          },
+          y: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)'
+            },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.5)',
+              font: { size: 10 },
+              callback: function(value) {
+                return formatMetricValue(value, metric, currency);
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: '#1a1a1a',
+            titleColor: '#ffffff',
+            bodyColor: '#ffffff',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1,
+            callbacks: {
+              label: function(context) {
+                return formatMetricValue(context.raw, metric, currency);
+              }
+            }
+          }
+        }
+      };
+    }
+
+    function generateDateLabels(dateRange) {
+      const labels = [];
+      const now = new Date();
+      let days;
+
+      switch (dateRange) {
+        case 'last_7_days':
+          days = 7;
+          break;
+        case 'last_30_days':
+          days = 30;
+          break;
+        case 'last_90_days':
+          days = 90;
+          break;
+        default:
+          days = 30;
+      }
+
+      // Generate fewer labels for readability
+      const step = Math.ceil(days / 10);
+      for (let i = days - 1; i >= 0; i -= step) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      }
+
+      return labels;
+    }
+
+    function generateSampleData(totalValue, count) {
+      // Generate sample data that roughly sums to the total value
+      const data = [];
+      let remaining = totalValue;
+
+      for (let i = 0; i < count - 1; i++) {
+        // Add some variance to make it look realistic
+        const avg = remaining / (count - i);
+        const variance = avg * 0.3;
+        const value = Math.max(0, avg + (Math.random() - 0.5) * variance * 2);
+        data.push(value);
+        remaining -= value;
+      }
+      data.push(Math.max(0, remaining));
+
+      return data;
+    }
+
+    // Store sparkline chart instances
+    const sparklineInstances = {};
+
+    function renderSparkline(widgetId, timeSeries, metric) {
+      const canvas = document.getElementById(`sparkline-${widgetId}`);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+
+      // Destroy existing sparkline if any
+      if (sparklineInstances[widgetId]) {
+        sparklineInstances[widgetId].destroy();
+      }
+
+      // Use real time-series data or show empty sparkline
+      let data;
+      if (timeSeries && timeSeries.length > 0) {
+        // Take last 7 days or all available data
+        const recentData = timeSeries.slice(-7);
+        data = recentData.map(d => d.value);
+      } else {
+        // If no real data, show zeros instead of random data
+        data = [0, 0, 0, 0, 0, 0, 0];
+      }
+
+      sparklineInstances[widgetId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['', '', '', '', '', '', ''],
+          datasets: [{
+            data: data,
+            borderColor: '#b7fa31',
+            backgroundColor: 'rgba(183, 250, 49, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+          },
+          scales: {
+            x: { display: false },
+            y: { display: false }
+          }
+        }
+      });
+    }
+
+    function updateTrendIndicator(widgetId, changePercent, metric) {
+      const changeElement = document.getElementById(`change-${widgetId}`);
+      if (!changeElement) return;
+
+      const isPositive = changePercent >= 0;
+      const isNeutral = Math.abs(changePercent) < 1;
+
+      // For cost metrics, negative is good
+      const isCostMetric = ['spend', 'cpc', 'cpm', 'cost_per_conversion'].includes(metric);
+      const isGood = isCostMetric ? !isPositive : isPositive;
+
+      if (isNeutral) {
+        changeElement.className = 'metric-change neutral';
+        changeElement.innerHTML = `<span>—</span> No change`;
+      } else {
+        changeElement.className = `metric-change ${isGood ? 'positive' : 'negative'}`;
+        const arrow = isPositive ? '↑' : '↓';
+        changeElement.innerHTML = `<span>${arrow} ${Math.abs(changePercent).toFixed(1)}%</span> vs previous period`;
+      }
+    }
+
+    function renderTableWidget(widgetId, timeSeries, metric, currency) {
+      const tableBody = document.getElementById(`table-body-${widgetId}`);
+      if (!tableBody) return;
+
+      // Group time-series data into weekly periods
+      let periods = [];
+
+      if (timeSeries && timeSeries.length > 0) {
+        // Group by week
+        const weeks = {};
+        timeSeries.forEach(day => {
+          const date = new Date(day.date);
+          const weekStart = new Date(date);
+          weekStart.setDate(date.getDate() - date.getDay());
+          const weekKey = weekStart.toISOString().split('T')[0];
+
+          if (!weeks[weekKey]) {
+            weeks[weekKey] = { total: 0, count: 0 };
+          }
+          weeks[weekKey].total += day.value;
+          weeks[weekKey].count++;
+        });
+
+        // Convert to array and calculate changes
+        const weekKeys = Object.keys(weeks).sort().reverse();
+        for (let i = 0; i < Math.min(4, weekKeys.length); i++) {
+          const weekValue = weeks[weekKeys[i]].total;
+          const prevWeekValue = i < weekKeys.length - 1 ? weeks[weekKeys[i + 1]]?.total || 0 : 0;
+          const change = prevWeekValue > 0 ? ((weekValue - prevWeekValue) / prevWeekValue * 100).toFixed(1) : 0;
+
+          // Calculate week end date (6 days after start)
+          const weekStart = new Date(weekKeys[i]);
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekStart.getDate() + 6);
+
+          // Format date range
+          const startStr = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const endStr = weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          const weekName = `${startStr} - ${endStr}`;
+
+          periods.push({ name: weekName, value: weekValue, change: parseFloat(change) });
+        }
+      } else {
+        // Fallback to sample data
+        periods = [
+          { name: 'This Week', value: 0, change: 0 },
+          { name: 'Last Week', value: 0, change: 0 },
+          { name: 'Week -2', value: 0, change: 0 },
+          { name: 'Week -3', value: 0, change: 0 }
+        ];
+      }
+
+      const isCostMetric = ['spend', 'cpc', 'cpm', 'cost_per_conversion'].includes(metric);
+
+      const rowsHTML = periods.map((period, index) => {
+        const formattedValue = formatMetricValue(period.value, metric, currency);
+        const changeNum = period.change;
+        const isPositive = changeNum >= 0;
+        const isGood = isCostMetric ? !isPositive : isPositive;
+        const changeClass = Math.abs(changeNum) < 1 ? '' : (isGood ? 'change-positive' : 'change-negative');
+        const arrow = isPositive ? '↑' : '↓';
+
+        // First row doesn't have a "vs previous week" because it's the current week
+        const changeDisplay = index === 0
+          ? '<span style="color: rgba(255,255,255,0.4);">Current</span>'
+          : `${arrow} ${Math.abs(changeNum).toFixed(1)}%`;
+
+        return `
+          <tr>
+            <td style="text-align: left; font-weight: 500;">${period.name}</td>
+            <td style="text-align: right; font-weight: 600;">${formattedValue}</td>
+            <td class="change-cell ${changeClass}" style="text-align: right;">${changeDisplay}</td>
+          </tr>
+        `;
+      }).join('');
+
+      tableBody.innerHTML = rowsHTML;
+    }
+
+    function renderDynamicTableWidget(widgetId, tableData) {
+      const tableContainer = document.getElementById(`table-container-${widgetId}`);
+      if (!tableContainer) return;
+
+      const columns = tableData.columns || [];
+      const data = tableData.data || [];
+
+      // Store data for sorting
+      tableDataStore.set(widgetId, { columns, data });
+
+      // Build header row with sortable columns
+      const headerHTML = columns.map((col, idx) =>
+        `<th class="sortable" onclick="sortTableData('${widgetId}', ${idx}, '${col}')">${col}</th>`
+      ).join('');
+
+      // Build data rows
+      let rowsHTML = '';
+      if (data.length === 0) {
+        rowsHTML = `
+          <tr>
+            <td colspan="${columns.length}">
+              <div class="no-data-state">
+                <div class="no-data-icon">📊</div>
+                <div class="no-data-message">No data available for this period</div>
+              </div>
+            </td>
+          </tr>
+        `;
+      } else {
+        rowsHTML = data.map(row => {
+          const cells = columns.map(col => {
+            // Map column names to data keys (lowercase, replace spaces with underscores)
+            const key = col.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '');
+            const value = row[key] !== undefined ? row[key] : (row[col] !== undefined ? row[col] : '');
+
+            // Truncate long text with tooltip
+            const displayValue = String(value);
+            const needsTruncate = displayValue.length > 30;
+
+            if (needsTruncate) {
+              return `<td class="truncate-cell" data-full-text="${displayValue}">${displayValue.substring(0, 30)}...</td>`;
+            }
+            return `<td>${value}</td>`;
+          }).join('');
+          return `<tr>${cells}</tr>`;
+        }).join('');
+      }
+
+      // Replace entire table content
+      tableContainer.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>${headerHTML}</tr>
+          </thead>
+          <tbody>${rowsHTML}</tbody>
+        </table>
+      `;
+    }
+
+    function renderComparisonWidget(widgetId, value, previousValue, changePercent, metric, currency) {
+      const currentElement = document.getElementById(`current-${widgetId}`);
+      const previousElement = document.getElementById(`previous-${widgetId}`);
+      const changeValueElement = document.getElementById(`change-value-${widgetId}`);
+
+      if (!currentElement || !previousElement || !changeValueElement) return;
+
+      const isPositive = changePercent >= 0;
+
+      const isCostMetric = ['spend', 'cpc', 'cpm', 'cost_per_conversion'].includes(metric);
+      const isGood = isCostMetric ? !isPositive : isPositive;
+
+      // Format and display values
+      currentElement.textContent = formatMetricValue(value, metric, currency);
+      previousElement.textContent = formatMetricValue(previousValue, metric, currency);
+
+      // Display change
+      const arrow = isPositive ? '↑' : '↓';
+      changeValueElement.textContent = `${arrow} ${Math.abs(changePercent).toFixed(1)}%`;
+      changeValueElement.className = `comparison-change-value ${isGood ? 'positive' : 'negative'}`;
+    }
+
+    function renderKpiTracker(widget, value, changePercent, metric, currency) {
+      const dataSource = widget.data_source || {};
+      const target = dataSource.target || 0;
+      const widgetId = widget.id;
+
+      const kpiValue = document.getElementById(`kpi-value-${widgetId}`);
+      const kpiProgress = document.getElementById(`kpi-progress-${widgetId}`);
+      const kpiPercent = document.getElementById(`kpi-percent-${widgetId}`);
+      const kpiStatus = document.getElementById(`kpi-status-${widgetId}`);
+      const kpiRemaining = document.getElementById(`kpi-remaining-${widgetId}`);
+      const kpiTrend = document.getElementById(`kpi-trend-${widgetId}`);
+
+      if (!kpiValue || !kpiProgress) return;
+
+      // Calculate progress percentage
+      const progress = target > 0 ? Math.min((value / target) * 100, 150) : 0;
+      const displayProgress = Math.min(progress, 100);
+
+      // Determine status and color
+      let status, colorClass;
+      if (progress >= 100) {
+        status = 'On Track';
+        colorClass = 'excellent';
+      } else if (progress >= 75) {
+        status = 'On Track';
+        colorClass = 'good';
+      } else if (progress >= 50) {
+        status = 'At Risk';
+        colorClass = 'warning';
+      } else {
+        status = 'Behind';
+        colorClass = 'danger';
+      }
+
+      // Update elements
+      kpiValue.textContent = formatMetricValue(value, metric, currency);
+      kpiProgress.style.width = `${displayProgress}%`;
+      kpiProgress.className = `kpi-progress-fill ${colorClass}`;
+      kpiPercent.textContent = `${progress.toFixed(1)}%`;
+
+      if (kpiStatus) {
+        kpiStatus.textContent = status;
+        kpiStatus.className = `kpi-tracker-status ${status.toLowerCase().replace(' ', '-')}`;
+      }
+
+      if (kpiRemaining && target > 0) {
+        const remaining = Math.max(target - value, 0);
+        kpiRemaining.textContent = remaining > 0
+          ? `${formatMetricValue(remaining, metric, currency)} remaining`
+          : 'Target achieved!';
+      }
+
+      if (kpiTrend) {
+        const isPositive = changePercent >= 0;
+        const isCostMetric = ['spend', 'cpc', 'cpm', 'cost_per_conversion'].includes(metric);
+        const isGood = isCostMetric ? !isPositive : isPositive;
+        const arrow = isPositive ? '↑' : '↓';
+        kpiTrend.innerHTML = `<span>${arrow} ${Math.abs(changePercent).toFixed(1)}%</span>`;
+        kpiTrend.className = `kpi-trend ${isGood ? 'positive' : 'negative'}`;
+      }
+    }
+
+    function renderGaugeWidget(widget, value, metric, currency) {
+      const dataSource = widget.data_source || {};
+      const target = dataSource.target || 100;
+      const widgetId = widget.id;
+
+      const gaugeFill = document.getElementById(`gauge-fill-${widgetId}`);
+      const gaugeValue = document.getElementById(`gauge-value-${widgetId}`);
+      const actualValue = document.getElementById(`gauge-actual-value-${widgetId}`);
+      const statusIcon = document.getElementById(`gauge-status-icon-${widgetId}`);
+      const statusText = document.getElementById(`gauge-status-text-${widgetId}`);
+
+      if (!gaugeFill || !gaugeValue) return;
+
+      // Check if conversion tracking is not set up for ROAS
+      if (currency === 'SETUP_REQUIRED' && metric === 'roas') {
+        if (actualValue) {
+          actualValue.innerHTML = '<span style="color: #F5A623;">Setup Required</span>';
+        }
+        if (statusIcon) statusIcon.innerHTML = '<span style="display: inline-flex; align-items: center; justify-content: center; width: 1.2em; height: 1.2em; border-radius: 50%; background: rgba(251, 191, 36, 0.2); color: #fbbf24; font-weight: 700;">!</span>';
+        if (statusText) {
+          statusText.innerHTML = `
+            <span style="color: #F5A623; font-weight: 600;">No conversion data detected</span><br>
+            <span style="font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 0.25rem; display: block; line-height: 1.5;">
+              We can't calculate ROAS properly without purchase conversion data. This might be due to:<br>
+              <span style="font-size: 0.65rem; color: rgba(255,255,255,0.4); display: block; margin-top: 0.3rem; margin-left: 0.5rem;">
+                • Facebook Pixel not tracking Purchase events<br>
+                • Purchase events missing the "value" parameter<br>
+                • No purchases during this time period
+              </span>
+              <a href="https://business.facebook.com/events_manager" target="_blank" style="color: #b7fa31; text-decoration: underline; display: inline-block; margin-top: 0.4rem;">Verify setup in Events Manager →</a>
+            </span>
+          `;
+        }
+
+        // Show disabled gauge
+        gaugeValue.textContent = '--';
+        gaugeFill.className = 'gauge-fill warning';
+        gaugeFill.style.clipPath = 'polygon(50% 100%, 50% 100%, 50% 100%)';
+        return;
+      }
+
+      // Calculate progress (0-180 degrees for semi-circle)
+      const progress = Math.min((value / target) * 100, 100);
+      const rotation = (progress / 100) * 180;
+
+      // Determine color class and status
+      let colorClass, iconHTML, status;
+      if (progress >= 100) {
+        colorClass = 'excellent';
+        iconHTML = '<span style="display: inline-flex; align-items: center; justify-content: center; width: 1.2em; height: 1.2em; border-radius: 50%; background: rgba(183, 250, 49, 0.2); color: #b7fa31; font-weight: 700;">✓</span>';
+        status = `<span style="color: #b7fa31; font-weight: 600;">${progress.toFixed(0)}% of goal</span> - Exceeding target!`;
+      } else if (progress >= 75) {
+        colorClass = 'good';
+        iconHTML = '<span style="display: inline-flex; align-items: center; justify-content: center; width: 1.2em; height: 1.2em; border-radius: 50%; background: rgba(34, 197, 94, 0.2); color: #22c55e; font-weight: 700;">✓</span>';
+        status = `<span style="color: #50C878; font-weight: 600;">${progress.toFixed(0)}% of goal</span> - On track to meet target`;
+      } else if (progress >= 50) {
+        colorClass = 'warning';
+        iconHTML = '<span style="display: inline-flex; align-items: center; justify-content: center; width: 1.2em; height: 1.2em; border-radius: 50%; background: rgba(251, 191, 36, 0.2); color: #fbbf24; font-weight: 700;">!</span>';
+        status = `<span style="color: #F5A623; font-weight: 600;">${progress.toFixed(0)}% of goal</span> - Below target, needs improvement`;
+      } else {
+        colorClass = 'danger';
+        iconHTML = '<span style="display: inline-flex; align-items: center; justify-content: center; width: 1.2em; height: 1.2em; border-radius: 50%; background: rgba(239, 68, 68, 0.2); color: #ef4444; font-weight: 700;">!</span>';
+        status = `<span style="color: #FF6B6B; font-weight: 600;">${progress.toFixed(0)}% of goal</span> - Critical: Far below target`;
+      }
+
+      // Update actual value display
+      if (actualValue) {
+        actualValue.textContent = formatMetricValue(value, metric, currency);
+      }
+
+      // Update status
+      if (statusIcon) statusIcon.innerHTML = iconHTML;
+      if (statusText) statusText.innerHTML = status;
+
+      // Update gauge percentage display
+      gaugeValue.textContent = `${progress.toFixed(0)}%`;
+      gaugeFill.className = `gauge-fill ${colorClass}`;
+
+      // Use clip-path for gauge fill effect
+      const clipProgress = progress / 100;
+      if (clipProgress <= 0.5) {
+        // Left side only
+        const angle = clipProgress * 180;
+        gaugeFill.style.clipPath = `polygon(50% 100%, 50% 0%, ${50 - Math.sin(angle * Math.PI / 180) * 50}% ${100 - Math.cos(angle * Math.PI / 180) * 100}%)`;
+      } else {
+        // Full left side + part of right
+        const angle = (clipProgress - 0.5) * 180;
+        gaugeFill.style.clipPath = `polygon(50% 100%, 50% 0%, 0% 0%, 0% 100%, ${50 + Math.sin(angle * Math.PI / 180) * 50}% ${100 - Math.cos(angle * Math.PI / 180) * 100}%)`;
+      }
+    }
+
+    async function renderBudgetPacing(widget, currency) {
+      const dataSource = widget.data_source || {};
+      const adAccountId = dataSource.adAccountId;
+      const widgetId = widget.id;
+
+      if (!adAccountId) {
+        console.error('No ad account ID provided for budget pacing widget');
+        return;
+      }
+
+      try {
+        // Fetch budget pacing data from API
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/budget/accounts/${adAccountId}/pacing`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch budget pacing data');
+        }
+
+        const result = await response.json();
+        const data = result.data;
+
+        // Format currency symbol
+        const currencySymbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : currency;
+
+        // Update current spend
+        const currentSpend = data.spending.current || 0;
+        const monthlyBudget = data.budget.monthly || 0;
+        const spendPercentage = data.spending.percentage || 0;
+        const projectedSpend = data.spending.projected || 0;
+        const avgDaily = data.spending.avgDaily || 0;
+
+        document.getElementById(`budget-current-${widgetId}`).textContent =
+          `${currencySymbol}${currentSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        document.getElementById(`budget-total-${widgetId}`).textContent =
+          `of ${currencySymbol}${monthlyBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} budget`;
+
+        // Update alert status
+        const alertStatus = data.alert.status || 'on_track';
+        const alertElement = document.getElementById(`budget-alert-${widgetId}`);
+        const alertText = {
+          'on_track': 'On Track',
+          'ahead_of_pace': 'Ahead of Pace',
+          'warning': 'Warning',
+          'critical': 'Critical',
+          'exceeded': 'Exceeded'
+        }[alertStatus] || 'On Track';
+
+        alertElement.textContent = alertText;
+        alertElement.className = `budget-alert ${alertStatus.replace('_', '-')}`;
+
+        // Update progress bar
+        const progressFill = document.getElementById(`budget-progress-${widgetId}`);
+        progressFill.style.width = `${Math.min(spendPercentage, 100)}%`;
+        progressFill.className = `budget-progress-fill ${alertStatus.replace('_', '-')}`;
+
+        document.getElementById(`budget-percent-${widgetId}`).textContent =
+          `${spendPercentage.toFixed(1)}% spent`;
+
+        document.getElementById(`budget-month-progress-${widgetId}`).textContent =
+          `${(data.period.monthProgress || 0).toFixed(0)}% of month elapsed`;
+
+        // Update stats
+        document.getElementById(`budget-avg-daily-${widgetId}`).textContent =
+          `${currencySymbol}${avgDaily.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        document.getElementById(`budget-days-passed-${widgetId}`).textContent = data.period.daysPassed || 0;
+        document.getElementById(`budget-days-remaining-${widgetId}`).textContent = data.period.daysRemaining || 0;
+
+        // Update projection
+        document.getElementById(`budget-projected-${widgetId}`).textContent =
+          `${currencySymbol}${projectedSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        const projectionDiff = projectedSpend - monthlyBudget;
+        const projectionDiffPercent = monthlyBudget > 0 ? (projectionDiff / monthlyBudget * 100) : 0;
+        const projectionDiffElement = document.getElementById(`budget-projection-diff-${widgetId}`);
+
+        if (projectionDiff > 0) {
+          projectionDiffElement.textContent = `+${currencySymbol}${Math.abs(projectionDiff).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${projectionDiffPercent.toFixed(1)}%) over budget`;
+          projectionDiffElement.className = 'budget-projection-diff negative';
+        } else if (projectionDiff < 0) {
+          projectionDiffElement.textContent = `${currencySymbol}${Math.abs(projectionDiff).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${Math.abs(projectionDiffPercent).toFixed(1)}%) under budget`;
+          projectionDiffElement.className = 'budget-projection-diff positive';
+        } else {
+          projectionDiffElement.textContent = 'On target';
+          projectionDiffElement.className = 'budget-projection-diff';
+        }
+
+      } catch (error) {
+        console.error('Error rendering budget pacing:', error);
+        // Show error state
+        document.getElementById(`budget-current-${widgetId}`).textContent = 'Error loading data';
+      }
+    }
+
+    function onGlobalDateRangeChange() {
+      const newRange = document.getElementById('globalDateRange').value;
+      const customInputs = document.getElementById('customDateInputs');
+
+      if (newRange === 'custom') {
+        customInputs.classList.add('show');
+        // Set default dates to last 30 days
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+
+        document.getElementById('customEndDate').value = today.toISOString().split('T')[0];
+        document.getElementById('customStartDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+      } else {
+        customInputs.classList.remove('show');
+        showAlert(`Date range changed to ${formatDateRange(newRange)}. Refresh to apply.`, 'success');
+      }
+    }
+
+    async function applyCustomDates() {
+      const startDate = document.getElementById('customStartDate').value;
+      const endDate = document.getElementById('customEndDate').value;
+
+      if (!startDate || !endDate) {
+        showAlert('Please select both start and end dates', 'error');
+        return;
+      }
+
+      if (new Date(startDate) > new Date(endDate)) {
+        showAlert('Start date must be before end date', 'error');
+        return;
+      }
+
+      // Store custom dates globally
+      window.customDateRange = { since: startDate, until: endDate };
+
+      showAlert(`Custom date range applied: ${startDate} to ${endDate}`, 'success');
+
+      // Refresh widgets with new date range
+      await refreshAllWidgets();
+    }
+
+    async function refreshAllWidgets() {
+      const indicator = document.getElementById('refreshIndicator');
+      indicator.classList.add('show');
+      await loadWidgetMetrics();
+      updateLastUpdatedTime();
+      setTimeout(() => indicator.classList.remove('show'), 2000);
+      showAlert('Dashboard refreshed', 'success');
+    }
+
+    function updateLastUpdatedTime() {
+      const timeElement = document.getElementById('lastUpdatedTime');
+      if (timeElement) {
+        const now = new Date();
+        timeElement.textContent = `Last updated: ${now.toLocaleTimeString()}`;
+      }
+    }
+
+    // Auto-refresh control
+    function setAutoRefresh() {
+      const interval = parseInt(document.getElementById('autoRefreshInterval').value);
+
+      // Clear existing interval
+      if (autoRefreshIntervalId) {
+        clearInterval(autoRefreshIntervalId);
+        autoRefreshIntervalId = null;
+      }
+
+      // Set new interval if not disabled
+      if (interval > 0) {
+        autoRefreshIntervalId = setInterval(async () => {
+          await refreshAllWidgets();
+        }, interval);
+        showAlert(`Auto-refresh set to ${interval / 1000}s`, 'success');
+      } else {
+        showAlert('Auto-refresh disabled', 'info');
+      }
+    }
+
+    // CSV Export
+    function exportDashboardCSV() {
+      if (!dashboard || !dashboard.widgets || dashboard.widgets.length === 0) {
+        showAlert('No data to export', 'error');
+        return;
+      }
+
+      let csvContent = 'Widget Name,Type,Metric,Value,Date Range\n';
+
+      dashboard.widgets.forEach(widget => {
+        const exportData = exportDataStore.get(widget.id);
+        const dataSource = widget.data_source || {};
+        const metric = dataSource.metric || 'N/A';
+        const dateRange = dataSource.dateRange || 'last_30_days';
+
+        let value = '--';
+        if (exportData) {
+          if (exportData.type === 'table' && exportData.data) {
+            // For table data, export as separate rows
+            exportData.data.forEach((row, i) => {
+              const rowValues = Object.values(row).join(' | ');
+              csvContent += `"${widget.title} - Row ${i + 1}","${widget.widget_type}","${metric}","${rowValues}","${dateRange}"\n`;
+            });
+            return;
+          } else {
+            value = exportData.value || exportData;
+          }
+        }
+
+        csvContent += `"${widget.title}","${widget.widget_type}","${metric}","${value}","${dateRange}"\n`;
+      });
+
+      // Download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `dashboard_${dashboard.name}_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+
+      showAlert('Dashboard exported to CSV', 'success');
+    }
+
+    // Client-side caching
+    function getCachedData(key) {
+      const cached = widgetCache.get(key);
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        return cached.data;
+      }
+      return null;
+    }
+
+    function setCachedData(key, data) {
+      widgetCache.set(key, {
+        data,
+        timestamp: Date.now()
+      });
+    }
+
+    function clearCache() {
+      widgetCache.clear();
+    }
+
+    // Table sorting
+    function sortTableData(widgetId, columnIndex, columnName) {
+      const tableData = tableDataStore.get(widgetId);
+      if (!tableData || !tableData.data) return;
+
+      const th = document.querySelector(`#table-container-${widgetId} th:nth-child(${columnIndex + 1})`);
+      const allThs = document.querySelectorAll(`#table-container-${widgetId} th`);
+
+      // Determine sort direction
+      let sortDir = 'asc';
+      if (th.classList.contains('asc')) {
+        sortDir = 'desc';
+      } else if (th.classList.contains('desc')) {
+        sortDir = 'asc';
+      }
+
+      // Remove sort classes from all headers
+      allThs.forEach(header => {
+        header.classList.remove('asc', 'desc');
+      });
+
+      // Add sort class to current header
+      th.classList.add(sortDir);
+
+      // Get the key for this column
+      const key = columnName.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '');
+
+      // Sort the data
+      const sortedData = [...tableData.data].sort((a, b) => {
+        let aVal = a[key];
+        let bVal = b[key];
+
+        // Handle numeric values (remove %, commas, etc.)
+        if (typeof aVal === 'string') {
+          aVal = aVal.replace(/[%,]/g, '');
+          if (!isNaN(aVal)) aVal = parseFloat(aVal);
+        }
+        if (typeof bVal === 'string') {
+          bVal = bVal.replace(/[%,]/g, '');
+          if (!isNaN(bVal)) bVal = parseFloat(bVal);
+        }
+
+        // Compare
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
+        }
+
+        const aStr = String(aVal).toLowerCase();
+        const bStr = String(bVal).toLowerCase();
+        return sortDir === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
+      });
+
+      // Re-render the table body
+      renderSortedTableBody(widgetId, tableData.columns, sortedData);
+    }
+
+    function renderSortedTableBody(widgetId, columns, data) {
+      const tbody = document.querySelector(`#table-container-${widgetId} tbody`);
+      if (!tbody) return;
+
+      const rowsHTML = data.map(row => {
+        const cells = columns.map(col => {
+          const key = col.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '');
+          const value = row[key] !== undefined ? row[key] : (row[col] !== undefined ? row[col] : '');
+
+          // Truncate long text
+          const displayValue = String(value);
+          const needsTruncate = displayValue.length > 30;
+
+          if (needsTruncate) {
+            return `<td class="truncate-cell" data-full-text="${displayValue}">${displayValue.substring(0, 30)}...</td>`;
+          }
+          return `<td>${value}</td>`;
+        }).join('');
+        return `<tr>${cells}</tr>`;
+      }).join('');
+
+      tbody.innerHTML = rowsHTML;
+    }
+
+    // Refresh single widget
+    async function refreshSingleWidget(widgetId) {
+      const btn = document.querySelector(`[data-widget-id="${widgetId}"] .widget-refresh-btn`);
+      if (btn) btn.classList.add('loading');
+
+      const widget = dashboard.widgets.find(w => w.id === widgetId);
+      if (widget) {
+        // Clear cache for this widget
+        const cacheKey = `${widget.id}_${JSON.stringify(widget.data_source)}`;
+        widgetCache.delete(cacheKey);
+
+        // Reload the widget
+        await loadSingleWidgetMetrics(widget);
+      }
+
+      if (btn) {
+        setTimeout(() => btn.classList.remove('loading'), 500);
+      }
+    }
+
+    async function loadSingleWidgetMetrics(widget) {
+      const dataSource = widget.data_source || {};
+      const adAccountId = dataSource.adAccountId;
+      const metric = dataSource.metric || 'spend';
+      const widgetType = widget.widget_type;
+
+      if (!adAccountId) return;
+
+      const account = adAccounts.find(acc => acc.id === parseInt(adAccountId));
+      if (!account) return;
+
+      const dateRange = getActiveDateRange(dataSource.dateRange);
+      const { since, until } = calculateDateRange(dateRange);
+
+      try {
+        const token = localStorage.getItem('token');
+        const result = await fetch(`/api/metrics/widget/${widget.id}?since=${since}&until=${until}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).then(r => r.json());
+
+        if (result.success) {
+          // Store for export
+          exportDataStore.set(widget.id, result.data);
+
+          // Process and render based on widget type
+          // ... (similar to loadWidgetMetrics but for single widget)
+        }
+      } catch (error) {
+        console.error(`Error refreshing widget ${widget.id}:`, error);
+      }
+    }
+
+    // Dashboard Templates
+    const dashboardTemplates = {
+      seo: {
+        name: 'SEO Dashboard',
+        icon: '🔍',
+        description: 'Track organic search performance with clicks, impressions, keywords, and rankings.',
+        platform: 'search_console',
+        widgets: [
+          { title: 'Total Clicks', type: 'kpi_card', metric: 'clicks' },
+          { title: 'Total Impressions', type: 'kpi_card', metric: 'impressions' },
+          { title: 'Average CTR', type: 'kpi_card', metric: 'ctr' },
+          { title: 'Average Position', type: 'kpi_card', metric: 'position' },
+          { title: 'Top Keywords', type: 'table', metric: 'top_queries' },
+          { title: 'Top Pages', type: 'table', metric: 'top_pages' },
+          { title: 'Device Breakdown', type: 'table', metric: 'device_breakdown' },
+          { title: 'Country Breakdown', type: 'table', metric: 'country_breakdown' },
+        ]
+      },
+      ppc: {
+        name: 'PPC Dashboard',
+        icon: '💰',
+        description: 'Monitor paid advertising spend, clicks, conversions, and ROI metrics.',
+        platform: 'meta',
+        widgets: [
+          { title: 'Total Spend', type: 'kpi_card', metric: 'spend' },
+          { title: 'Total Clicks', type: 'kpi_card', metric: 'clicks' },
+          { title: 'Impressions', type: 'kpi_card', metric: 'impressions' },
+          { title: 'CTR', type: 'kpi_card', metric: 'ctr' },
+          { title: 'CPC', type: 'kpi_card', metric: 'cpc' },
+          { title: 'Conversions', type: 'kpi_card', metric: 'conversions' },
+          { title: 'Spend Over Time', type: 'line_chart', metric: 'spend' },
+          { title: 'Clicks Over Time', type: 'bar_chart', metric: 'clicks' },
+        ]
+      },
+      social: {
+        name: 'Social Media',
+        icon: '📱',
+        description: 'Track social media reach, engagement, and audience growth.',
+        platform: 'meta',
+        widgets: [
+          { title: 'Reach', type: 'kpi_card', metric: 'reach' },
+          { title: 'Impressions', type: 'kpi_card', metric: 'impressions' },
+          { title: 'Clicks', type: 'kpi_card', metric: 'clicks' },
+          { title: 'CTR', type: 'kpi_card', metric: 'ctr' },
+          { title: 'Frequency', type: 'kpi_card', metric: 'frequency' },
+          { title: 'Reach Trend', type: 'line_chart', metric: 'reach' },
+        ]
+      },
+      executive: {
+        name: 'Executive Summary',
+        icon: '📊',
+        description: 'High-level overview with key performance indicators and trends.',
+        platform: 'meta',
+        widgets: [
+          { title: 'Total Spend', type: 'kpi_card', metric: 'spend' },
+          { title: 'Total Conversions', type: 'kpi_card', metric: 'conversions' },
+          { title: 'Total Clicks', type: 'kpi_card', metric: 'clicks' },
+          { title: 'Spend vs Conversions', type: 'comparison', metric: 'spend' },
+        ]
+      }
+    };
+
+    function openTemplateModal() {
+      const modal = document.getElementById('templateModal');
+      const grid = document.getElementById('templateGrid');
+
+      // Build template cards
+      let cardsHTML = '';
+      for (const [key, template] of Object.entries(dashboardTemplates)) {
+        // Filter accounts by platform
+        const platformAccounts = adAccounts.filter(acc => acc.platform === template.platform);
+
+        cardsHTML += `
+          <div class="template-card" data-template="${key}">
+            <div class="template-icon">${template.icon}</div>
+            <div class="template-name">${template.name}</div>
+            <div class="template-description">${template.description}</div>
+            <div class="template-widgets">${template.widgets.length} widgets</div>
+            <div class="template-account-select">
+              <label>Select Account:</label>
+              <select id="template-account-${key}" onclick="event.stopPropagation()">
+                ${platformAccounts.length === 0
+                  ? `<option value="">No ${template.platform} accounts</option>`
+                  : platformAccounts.map(acc => `<option value="${acc.id}">${acc.account_name}</option>`).join('')
+                }
+              </select>
+            </div>
+            <button class="primary-btn" style="width: 100%; margin-top: 0.75rem;"
+              onclick="event.stopPropagation(); applyTemplate('${key}')"
+              ${platformAccounts.length === 0 ? 'disabled' : ''}>
+              Apply Template
+            </button>
+          </div>
+        `;
+      }
+
+      grid.innerHTML = cardsHTML;
+      modal.classList.add('show');
+    }
+
+    function closeTemplateModal() {
+      document.getElementById('templateModal').classList.remove('show');
+    }
+
+    async function applyTemplate(templateKey) {
+      const template = dashboardTemplates[templateKey];
+      if (!template) return;
+
+      const accountSelect = document.getElementById(`template-account-${templateKey}`);
+      const accountId = accountSelect?.value;
+
+      if (!accountId) {
+        showAlert('Please select an account', 'error');
+        return;
+      }
+
+      const confirmMsg = dashboard.widgets?.length > 0
+        ? 'This will add widgets to your existing dashboard. Continue?'
+        : `Apply ${template.name} template?`;
+
+      if (!confirm(confirmMsg)) return;
+
+      try {
+        const token = localStorage.getItem('token');
+
+        // Create widgets for this template
+        let positionCounter = dashboard.widgets?.length || 0;
+        for (const widgetDef of template.widgets) {
+          const widgetData = {
+            title: widgetDef.title,
+            widgetType: widgetDef.type,
+            dataSource: {
+              adAccountId: accountId,
+              metric: widgetDef.metric,
+              dateRange: 'last_30_days'
+            },
+            position: positionCounter++
+          };
+
+          const response = await fetch(`/api/dashboards/${dashboardId}/widgets`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(widgetData)
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to create widget: ${widgetDef.title}`);
+          }
+        }
+
+        closeTemplateModal();
+        showAlert(`${template.name} applied successfully!`, 'success');
+
+        // Reload dashboard
+        await loadDashboard();
+
+      } catch (error) {
+        console.error('Error applying template:', error);
+        showAlert('Failed to apply template: ' + error.message, 'error');
+      }
+    }
+
+    function formatMetricValue(value, metric, currency = 'USD') {
+      if (value === null || value === undefined) return '--';
+
+      // Convert to number to handle any string inputs
+      const numValue = typeof value === 'string' ? parseFloat(value) : value;
+
+      switch (metric) {
+        case 'spend':
+        case 'revenue':
+        case 'sales':
+        case 'profit':
+        case 'cpc':
+        case 'cpm':
+        case 'cost_per_conversion':
+          return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+          }).format(numValue);
+
+        case 'impressions':
+        case 'clicks':
+        case 'reach':
+        case 'conversions':
+          return new Intl.NumberFormat('en-US').format(Math.round(numValue));
+
+        case 'ctr':
+        case 'frequency':
+          return numValue.toFixed(2) + (metric === 'ctr' ? '%' : '');
+
+        case 'roas':
+          return numValue.toFixed(2) + 'x';
+
+        default:
+          // For unknown metrics, check if it looks like currency based on widget title or value size
+          // Default to currency formatting for values that look like money
+          if (numValue > 100 || metric.toLowerCase().includes('revenue') || metric.toLowerCase().includes('sales')) {
+            return new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: currency,
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2
+            }).format(numValue);
+          }
+          // Otherwise format as a clean number with up to 2 decimal places
+          return new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+          }).format(numValue);
+      }
+    }
+
+    // Widget Modal Functions
+    function openWidgetModal() {
+      editingWidgetId = null;
+      document.getElementById('modalTitle').textContent = 'Add Widget';
+      document.getElementById('modalSubmitBtn').textContent = 'Add Widget';
+      document.getElementById('widgetModal').classList.add('show');
+      // Reset form
+      document.getElementById('widgetForm').reset();
+      // Reset widget type selection to default (kpi_card)
+      setSelectedWidgetType('kpi_card');
+    }
+
+    function setSelectedWidgetType(type) {
+      selectedWidgetType = type;
+      const grid = document.getElementById('widgetTypeGrid');
+      grid.querySelectorAll('.widget-type-option').forEach(el => {
+        el.classList.remove('selected');
+        if (el.dataset.type === type) {
+          el.classList.add('selected');
+        }
+      });
+    }
+
+    function editWidget(widgetId) {
+      // Find the widget data
+      const widget = dashboard.widgets.find(w => w.id === widgetId);
+      if (!widget) {
+        showAlert('Widget not found', 'error');
+        return;
+      }
+
+      editingWidgetId = widgetId;
+      document.getElementById('modalTitle').textContent = 'Edit Widget';
+      document.getElementById('modalSubmitBtn').textContent = 'Save Changes';
+      document.getElementById('widgetModal').classList.add('show');
+
+      // Populate form with widget data
+      document.getElementById('widgetTitle').value = widget.title || '';
+      document.getElementById('widgetDescription').value = widget.description || '';
+
+      const dataSource = widget.data_source || {};
+      document.getElementById('adAccount').value = dataSource.adAccountId || '';
+      document.getElementById('metric').value = dataSource.metric || '';
+      document.getElementById('dateRange').value = dataSource.dateRange || 'last_30_days';
+
+      // Set widget type using the new helper function
+      setSelectedWidgetType(widget.widget_type || 'kpi_card');
+    }
+
+    function closeWidgetModal() {
+      document.getElementById('widgetModal').classList.remove('show');
+    }
+
+    async function saveWidget(event) {
+      event.preventDefault();
+
+      const title = document.getElementById('widgetTitle').value;
+      const description = document.getElementById('widgetDescription').value;
+      const adAccountId = document.getElementById('adAccount').value;
+      const metric = document.getElementById('metric').value;
+      const dateRange = document.getElementById('dateRange').value;
+      const targetValue = document.getElementById('targetValue').value;
+
+      const dataSource = {
+        adAccountId,
+        metric,
+        dateRange
+      };
+
+      // Add target for KPI tracker and gauge widgets
+      if ((selectedWidgetType === 'kpi_tracker' || selectedWidgetType === 'gauge') && targetValue) {
+        dataSource.target = parseFloat(targetValue);
+      }
+
+      const widgetData = {
+        widgetType: selectedWidgetType,
+        title,
+        description,
+        dataSource,
+        chartConfig: {},
+        filters: {}
+      };
+
+      try {
+        let response;
+        let successMessage;
+
+        if (editingWidgetId) {
+          // Update existing widget
+          response = await fetch(`/api/dashboards/widgets/${editingWidgetId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(widgetData),
+          });
+          successMessage = 'Widget updated successfully';
+        } else {
+          // Create new widget
+          response = await fetch(`/api/dashboards/${dashboardId}/widgets`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(widgetData),
+          });
+          successMessage = 'Widget added successfully';
+        }
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to save widget');
+        }
+
+        showAlert(successMessage, 'success');
+        closeWidgetModal();
+        await loadDashboard();
+      } catch (error) {
+        console.error('Error saving widget:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    async function deleteWidget(widgetId) {
+      if (!confirm('Are you sure you want to delete this widget?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/dashboards/widgets/${widgetId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete widget');
+        }
+
+        showAlert('Widget deleted successfully', 'success');
+        await loadDashboard();
+      } catch (error) {
+        console.error('Error deleting widget:', error);
+        showAlert('Failed to delete widget', 'error');
+      }
+    }
+
+    // Widget Zoom Functions
+    function openWidgetZoom(widgetId) {
+      const widget = dashboard.widgets.find(w => w.id === widgetId);
+      if (!widget) {
+        console.error('Widget not found:', widgetId);
+        return;
+      }
+
+      const modal = document.getElementById('widgetZoomModal');
+      const titleEl = document.getElementById('widgetZoomTitle');
+      const bodyEl = document.getElementById('widgetZoomBody');
+
+      titleEl.textContent = widget.title || 'Untitled Widget';
+
+      // Render widget in modal
+      const widgetHTML = renderWidget(widget);
+      bodyEl.innerHTML = widgetHTML;
+
+      // Show modal
+      modal.classList.add('show');
+
+      // Re-fetch and render data for the zoomed widget
+      setTimeout(() => {
+        fetchAndRenderWidget(widget);
+      }, 100);
+
+      // Close on Escape key
+      const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+          closeWidgetZoom();
+          document.removeEventListener('keydown', handleEscape);
+        }
+      };
+      document.addEventListener('keydown', handleEscape);
+
+      // Close on backdrop click
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          closeWidgetZoom();
+        }
+      };
+    }
+
+    function closeWidgetZoom() {
+      const modal = document.getElementById('widgetZoomModal');
+      modal.classList.remove('show');
+      modal.onclick = null;
+    }
+
+    // Widget Grid Size Functions
+    function setWidgetGridSize(widgetId, size) {
+      console.log(`[SET_SIZE] Called for widget ${widgetId}, new size: ${size}`);
+      const widgetEl = document.querySelector(`[data-widget-id="${widgetId}"]`);
+      if (!widgetEl) {
+        console.error('Widget element not found:', widgetId);
+        return;
+      }
+
+      console.log(`[SET_SIZE] Current data-grid-size: ${widgetEl.getAttribute('data-grid-size')}`);
+
+      // Update data attribute
+      widgetEl.setAttribute('data-grid-size', size);
+
+      // CRITICAL: Also update inline style to ensure immediate visual change
+      // Note: We use setProperty with 'important' priority for maximum specificity
+      if (size === 'small') {
+        widgetEl.style.setProperty('grid-column', 'span 1', 'important');
+      } else if (size === 'medium') {
+        widgetEl.style.setProperty('grid-column', 'span 2', 'important');
+      } else if (size === 'large') {
+        widgetEl.style.setProperty('grid-column', 'span 3', 'important');
+      }
+
+      console.log(`[SET_SIZE] New data-grid-size: ${widgetEl.getAttribute('data-grid-size')}, inline style: ${widgetEl.style.gridColumn}`);
+
+      // Update active state on buttons
+      const sizeButtons = widgetEl.querySelectorAll('.widget-size-btn');
+      sizeButtons.forEach(btn => {
+        if (btn.getAttribute('data-size') === size) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Save preference to localStorage
+      const gridSizePrefs = JSON.parse(localStorage.getItem('widgetGridSizes') || '{}');
+      gridSizePrefs[widgetId] = size;
+      localStorage.setItem('widgetGridSizes', JSON.stringify(gridSizePrefs));
+    }
+
+    // REMOVED: restoreWidgetGridSizes() function - no longer needed!
+    // Grid sizes are now applied during renderWidget() (see lines 3510-3521)
+    // This prevents layout shift by applying sizes during initial HTML generation
+
+    function showError(message) {
+      const container = document.getElementById('widgetsContainer');
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">⚠️</div>
+          <div class="empty-state-title">Error</div>
+          <div class="empty-state-description">${message}</div>
+          <a href="/dashboard" class="btn btn-primary">Back to Dashboards</a>
+        </div>
+      `;
+    }
+
+    function showAlert(message, type) {
+      const alertContainer = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      alertContainer.appendChild(alert);
+
+      setTimeout(() => {
+        alert.remove();
+      }, 3000);
+    }
+
+    // Share Modal Functions
+    function openShareModal() {
+      document.getElementById('shareModal').classList.add('show');
+      document.getElementById('shareLink').value = '';
+      loadExistingShares();
+      setupShareOptions();
+    }
+
+    function closeShareModal() {
+      document.getElementById('shareModal').classList.remove('show');
+    }
+
+    function setupShareOptions() {
+      // Toggle password field visibility
+      document.getElementById('requirePassword').addEventListener('change', function() {
+        document.getElementById('passwordGroup').style.display = this.checked ? 'block' : 'none';
+      });
+
+      // Toggle expiry field visibility
+      document.getElementById('setExpiry').addEventListener('change', function() {
+        document.getElementById('expiryGroup').style.display = this.checked ? 'block' : 'none';
+        if (this.checked) {
+          // Set default expiry to 7 days from now
+          const defaultExpiry = new Date();
+          defaultExpiry.setDate(defaultExpiry.getDate() + 7);
+          document.getElementById('shareExpiry').value = defaultExpiry.toISOString().slice(0, 16);
+        }
+      });
+    }
+
+    async function generateShareLink() {
+      const allowExport = document.getElementById('allowExport').checked;
+      const requirePassword = document.getElementById('requirePassword').checked;
+      const setExpiry = document.getElementById('setExpiry').checked;
+
+      const payload = {
+        allowExport,
+      };
+
+      if (requirePassword) {
+        const password = document.getElementById('sharePassword').value;
+        if (!password) {
+          showAlert('Please enter a password', 'error');
+          return;
+        }
+        payload.password = password;
+      }
+
+      if (setExpiry) {
+        const expiryDate = document.getElementById('shareExpiry').value;
+        if (!expiryDate) {
+          showAlert('Please select an expiration date', 'error');
+          return;
+        }
+        payload.expiresAt = new Date(expiryDate).toISOString();
+      }
+
+      try {
+        const response = await fetch(`/api/dashboards/${dashboardId}/share`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to create share link');
+        }
+
+        const result = await response.json();
+        const shareUrl = `${window.location.origin}/shared-dashboard.html?token=${result.data.share_token}`;
+        document.getElementById('shareLink').value = shareUrl;
+        showAlert('Share link created successfully', 'success');
+        loadExistingShares();
+      } catch (error) {
+        console.error('Error creating share link:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    function copyShareLink() {
+      const shareLink = document.getElementById('shareLink');
+      if (!shareLink.value) {
+        showAlert('No share link to copy', 'error');
+        return;
+      }
+
+      navigator.clipboard.writeText(shareLink.value).then(() => {
+        const copyBtn = document.getElementById('copyBtn');
+        copyBtn.textContent = 'Copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+        showAlert('Failed to copy link', 'error');
+      });
+    }
+
+    async function loadExistingShares() {
+      try {
+        const response = await fetch(`/api/dashboards/${dashboardId}/shares`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load share links');
+        }
+
+        const result = await response.json();
+        const shareList = document.getElementById('shareList');
+
+        if (result.data.length === 0) {
+          shareList.innerHTML = '<div style="color: rgba(255,255,255,0.5); font-size: 0.875rem;">No existing share links</div>';
+          return;
+        }
+
+        shareList.innerHTML = result.data.map(share => {
+          const createdDate = new Date(share.created_at).toLocaleDateString();
+          const status = share.is_active ? 'Active' : 'Inactive';
+          const expiryInfo = share.expires_at
+            ? `Expires: ${new Date(share.expires_at).toLocaleDateString()}`
+            : 'No expiration';
+
+          return `
+            <div class="share-item">
+              <div class="share-item-info">
+                <div>Created: ${createdDate} | Views: ${share.view_count}</div>
+                <div>${expiryInfo} | ${status}</div>
+              </div>
+              <div class="share-item-actions">
+                <button class="share-item-btn toggle" onclick="toggleShare('${share.id}', ${!share.is_active})">
+                  ${share.is_active ? 'Disable' : 'Enable'}
+                </button>
+                <button class="share-item-btn delete" onclick="deleteShare('${share.id}')">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (error) {
+        console.error('Error loading shares:', error);
+        document.getElementById('shareList').innerHTML =
+          '<div style="color: rgba(239,68,68,0.8); font-size: 0.875rem;">Failed to load share links</div>';
+      }
+    }
+
+    async function toggleShare(shareId, isActive) {
+      try {
+        const response = await fetch(`/api/dashboards/shares/${shareId}/toggle`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ isActive }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to toggle share link');
+        }
+
+        showAlert(`Share link ${isActive ? 'enabled' : 'disabled'}`, 'success');
+        loadExistingShares();
+      } catch (error) {
+        console.error('Error toggling share:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    async function deleteShare(shareId) {
+      if (!confirm('Are you sure you want to delete this share link?')) return;
+
+      try {
+        const response = await fetch(`/api/dashboards/shares/${shareId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete share link');
+        }
+
+        showAlert('Share link deleted', 'success');
+        loadExistingShares();
+      } catch (error) {
+        console.error('Error deleting share:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    // Export Modal Functions
+    function openExportModal() {
+      document.getElementById('exportModal').classList.add('show');
+    }
+
+    function closeExportModal() {
+      document.getElementById('exportModal').classList.remove('show');
+    }
+
+    async function exportToPNG() {
+      showAlert('Preparing PNG export...', 'success');
+      closeExportModal();
+
+      // Use html2canvas if available, otherwise use browser's built-in
+      try {
+        const container = document.getElementById('widgetsContainer');
+
+        // Simple approach using canvas
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Create a temporary element with the dashboard content
+        const clone = container.cloneNode(true);
+        clone.style.position = 'absolute';
+        clone.style.left = '-9999px';
+        clone.style.background = '#000';
+        document.body.appendChild(clone);
+
+        // For now, trigger print dialog which can save as PDF/Image
+        window.print();
+
+        document.body.removeChild(clone);
+        showAlert('Use browser print dialog to save as PDF or image', 'success');
+      } catch (error) {
+        console.error('Export error:', error);
+        showAlert('Export failed: ' + error.message, 'error');
+      }
+    }
+
+    async function exportToPDF() {
+      showAlert('Preparing PDF export...', 'success');
+      closeExportModal();
+
+      // Trigger browser print dialog
+      window.print();
+      showAlert('Use browser print dialog to save as PDF', 'success');
+    }
+
+    async function exportToCSV() {
+      showAlert('Preparing CSV export...', 'success');
+      closeExportModal();
+
+      try {
+        // Gather widget data
+        const widgets = dashboard.widgets || [];
+        let csvContent = 'Widget Title,Widget Type,Metric,Date Range\n';
+
+        widgets.forEach(widget => {
+          const dataSource = widget.data_source || {};
+          csvContent += `"${widget.title}","${widget.widget_type}","${dataSource.metric || 'N/A'}","${dataSource.dateRange || 'N/A'}"\n`;
+        });
+
+        // Download CSV
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${dashboard.name || 'dashboard'}_export.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showAlert('CSV exported successfully', 'success');
+      } catch (error) {
+        console.error('CSV export error:', error);
+        showAlert('CSV export failed', 'error');
+      }
+    }
+
+    function printDashboard() {
+      closeExportModal();
+      window.print();
+    }
+
+    // Notification Functions
+    async function loadNotifications() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/anomalies/notifications?limit=20', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load notifications');
+        }
+
+        const result = await response.json();
+        const notifications = result.data || [];
+        const unreadCount = result.unreadCount || 0;
+
+        // Update badge
+        const badge = document.getElementById('notificationBadge');
+        if (unreadCount > 0) {
+          badge.textContent = unreadCount;
+          badge.style.display = 'block';
+        } else {
+          badge.style.display = 'none';
+        }
+
+        // Render notifications
+        const notificationList = document.getElementById('notificationList');
+        if (notifications.length === 0) {
+          notificationList.innerHTML = '<div class="notification-empty">No notifications</div>';
+          return;
+        }
+
+        notificationList.innerHTML = notifications.map(notification => `
+          <div class="notification-item ${notification.is_read ? '' : 'unread'}" onclick="handleNotificationClick('${notification.id}')">
+            <div class="notification-item-header">
+              <div class="notification-title">${escapeHtml(notification.title)}</div>
+              <span class="notification-severity ${notification.severity}">${notification.severity}</span>
+            </div>
+            <div class="notification-message">${escapeHtml(notification.message)}</div>
+            <div class="notification-time">${formatTimeAgo(notification.created_at)}</div>
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('Load notifications error:', error);
+        document.getElementById('notificationList').innerHTML =
+          '<div class="notification-empty">Failed to load notifications</div>';
+      }
+    }
+
+    async function toggleNotifications() {
+      const panel = document.getElementById('notificationPanel');
+      const isShowing = panel.classList.contains('show');
+
+      if (isShowing) {
+        panel.classList.remove('show');
+      } else {
+        panel.classList.add('show');
+        await loadNotifications();
+      }
+
+      // Close panel when clicking outside
+      if (!isShowing) {
+        setTimeout(() => {
+          document.addEventListener('click', closeNotificationsPanelOutside);
+        }, 0);
+      } else {
+        document.removeEventListener('click', closeNotificationsPanelOutside);
+      }
+    }
+
+    function closeNotificationsPanelOutside(event) {
+      const panel = document.getElementById('notificationPanel');
+      const bellContainer = document.querySelector('.notification-bell-container');
+
+      if (!bellContainer.contains(event.target)) {
+        panel.classList.remove('show');
+        document.removeEventListener('click', closeNotificationsPanelOutside);
+      }
+    }
+
+    async function handleNotificationClick(notificationId) {
+      try {
+        const token = localStorage.getItem('token');
+        await fetch(`/api/anomalies/notifications/${notificationId}/read`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        // Reload notifications to update UI
+        await loadNotifications();
+      } catch (error) {
+        console.error('Mark notification read error:', error);
+      }
+    }
+
+    async function markAllNotificationsRead() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/anomalies/notifications/read-all', {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to mark all as read');
+        }
+
+        // Reload notifications
+        await loadNotifications();
+        showAlert('All notifications marked as read', 'success');
+      } catch (error) {
+        console.error('Mark all read error:', error);
+        showAlert('Failed to mark all as read', 'error');
+      }
+    }
+
+    function formatTimeAgo(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const seconds = Math.floor((now - date) / 1000);
+
+      if (seconds < 60) return 'Just now';
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      if (days < 7) return `${days}d ago`;
+      const weeks = Math.floor(days / 7);
+      if (weeks < 4) return `${weeks}w ago`;
+      return date.toLocaleDateString();
+    }
+
+    function escapeHtml(text) {
+      // Handle non-string inputs
+      if (text === null || text === undefined) return '';
+      if (typeof text !== 'string') text = String(text);
+
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // AI Widget Analysis Functions
+    let currentAnalysisWidgetId = null;
+
+    async function pollForAnalysisResults(jobId) {
+      const maxAttempts = 120; // 120 seconds max (Claude API can be slow)
+      const pollInterval = 1000; // Poll every 1 second
+      let attempts = 0;
+
+      while (attempts < maxAttempts) {
+        try {
+          const response = await fetch(`/api/dashboards/ai-jobs/${jobId}`, {
+            credentials: 'include',
+            cache: 'no-cache', // Prevent 304 Not Modified responses
+            headers: {
+              'Cache-Control': 'no-cache',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to check job status: ${response.statusText}`);
+          }
+
+          const result = await response.json();
+
+          if (result.status === 'completed' && result.data) {
+            // Success! Display results
+            document.getElementById('aiAnalysisLoading').style.display = 'none';
+            displayAIAnalysisResults(result.data);
+            return;
+          }
+
+          if (result.status === 'failed') {
+            throw new Error(result.error || 'AI analysis failed');
+          }
+
+          // Still processing, wait and try again
+          await new Promise(resolve => setTimeout(resolve, pollInterval));
+          attempts++;
+
+        } catch (error) {
+          console.error('Polling error:', error);
+          throw error;
+        }
+      }
+
+      // Timeout
+      throw new Error('AI analysis timed out after 120 seconds. Please try again or contact support.');
+    }
+
+    async function analyzeWidgetWithAI(widgetId) {
+      currentAnalysisWidgetId = widgetId;
+
+      // Find widget
+      const widget = dashboard.widgets.find(w => w.id === widgetId);
+      if (!widget) {
+        showAlert('Widget not found', 'error');
+        return;
+      }
+
+      // Open modal
+      document.getElementById('aiAnalysisModal').classList.add('show');
+      document.getElementById('analysisWidgetTitle').textContent = widget.title;
+      const dataSource = widget.data_source || {};
+      document.getElementById('analysisWidgetMetric').textContent =
+        `Metric: ${dataSource.metric || 'N/A'} | ${dataSource.dateRange || 'N/A'}`;
+
+      // Show loading
+      document.getElementById('aiAnalysisLoading').style.display = 'block';
+      document.getElementById('aiAnalysisResults').style.display = 'none';
+      document.getElementById('aiAnalysisError').style.display = 'none';
+
+      try {
+        // Start AI analysis job
+        const response = await fetch(`/api/dashboards/widgets/${widgetId}/analyze`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            includeHistorical: true
+          })
+        });
+
+        if (!response.ok) {
+          let errorMessage = 'Analysis failed';
+          const responseText = await response.text();
+          try {
+            const errorData = JSON.parse(responseText);
+            errorMessage = errorData.message || errorData.error || 'Analysis failed';
+          } catch (parseError) {
+            console.error('Server returned non-JSON response:', responseText.substring(0, 500));
+            errorMessage = `Server error (${response.status}): ${response.statusText}. Check browser console for details.`;
+          }
+          throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+
+        if (!data.success || !data.jobId) {
+          throw new Error('Failed to start AI analysis job');
+        }
+
+        // Job started, now poll for results
+        console.log(`AI analysis job ${data.jobId} started. Polling for results...`);
+        await pollForAnalysisResults(data.jobId);
+
+      } catch (error) {
+        console.error('AI analysis error:', error);
+        document.getElementById('aiAnalysisLoading').style.display = 'none';
+        document.getElementById('aiAnalysisError').textContent =
+          error.message || 'Failed to analyze widget. Please try again.';
+        document.getElementById('aiAnalysisError').style.display = 'block';
+      }
+    }
+
+    function displayAIAnalysisResults(analysis) {
+      // Show results container
+      document.getElementById('aiAnalysisResults').style.display = 'block';
+
+      // Performance Status
+      const statusBadge = document.getElementById('performanceStatus');
+      statusBadge.textContent = analysis.status.toUpperCase();
+      statusBadge.className = `status-badge status-${analysis.status}`;
+      document.getElementById('performanceStatusText').textContent =
+        analysis.statusDescription;
+
+      // Critical Insights
+      const insightsList = document.getElementById('criticalInsightsList');
+      insightsList.innerHTML = analysis.criticalInsights
+        .map(insight => `<li class="insight-item">${escapeHtml(insight)}</li>`)
+        .join('');
+
+      // Risk Alerts
+      if (analysis.riskAlerts && analysis.riskAlerts.length > 0) {
+        document.getElementById('riskSection').style.display = 'block';
+        const riskList = document.getElementById('riskAlertsList');
+        riskList.innerHTML = analysis.riskAlerts
+          .map(risk => `<li class="risk-item">${escapeHtml(risk)}</li>`)
+          .join('');
+      } else {
+        document.getElementById('riskSection').style.display = 'none';
+      }
+
+      // Recommendations
+      const recommendationsList = document.getElementById('recommendationsList');
+      recommendationsList.innerHTML = analysis.recommendations
+        .map((rec, idx) => {
+          // Build urgency badge if available
+          const urgencyBadge = rec.urgency
+            ? `<span class="rec-urgency" style="margin-left: 0.5rem; padding: 0.2rem 0.5rem; background: rgba(255,152,0,0.15); border: 1px solid rgba(255,152,0,0.3); color: #ff9800; border-radius: 0.25rem; font-size: 0.65rem;">⏰ ${escapeHtml(rec.urgency)}</span>`
+            : '';
+
+          // Build implementation section if available
+          const implementationSection = rec.implementation
+            ? `<div class="rec-implementation" style="margin-top: 0.75rem; padding: 0.75rem; background: rgba(183, 250, 49, 0.05); border-left: 2px solid rgba(183, 250, 49, 0.3); border-radius: 0.25rem;">
+                <div style="font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;">Implementation Steps:</div>
+                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.9); line-height: 1.5; white-space: pre-wrap;">${escapeHtml(rec.implementation)}</div>
+              </div>`
+            : '';
+
+          return `
+            <div class="recommendation-card priority-${rec.priority}">
+              <div class="rec-header">
+                <span class="rec-number">${idx + 1}</span>
+                <span class="rec-priority">${rec.priority.toUpperCase()} PRIORITY</span>
+                ${urgencyBadge}
+              </div>
+              <h5>${escapeHtml(rec.title)}</h5>
+              <p>${escapeHtml(rec.description)}</p>
+              <div class="rec-impact">💰 Expected Impact: ${escapeHtml(rec.expectedImpact)}</div>
+              ${implementationSection}
+            </div>
+          `;
+        })
+        .join('');
+
+      // Trend Analysis
+      document.getElementById('trendAnalysisText').textContent =
+        analysis.trendAssessment;
+    }
+
+    function closeAIAnalysisModal() {
+      document.getElementById('aiAnalysisModal').classList.remove('show');
+      currentAnalysisWidgetId = null;
+    }
+
+    // Load notifications periodically
+    setInterval(() => {
+      loadNotifications();
+    }, 60000); // Check every minute
+
+    // Initial notification load
+    setTimeout(() => {
+      loadNotifications();
+    }, 2000); // Load after 2 seconds
+  </script>
+</body>
+</html>

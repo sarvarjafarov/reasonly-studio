@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Audit - AdsData</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #000000;
+      color: #ffffff;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    .header {
+      background-color: #1a1a1a;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 2rem;
+      height: 2rem;
+      background-color: #b7fa31;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #000000;
+      font-size: 0.875rem;
+    }
+
+    .logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+    }
+
+    .nav-link:hover {
+      color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.1);
+    }
+
+    .nav-link.active {
+      color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.15);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .card {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+      background-color: #b7fa31;
+      color: #000000;
+    }
+
+    .btn-primary:hover {
+      background-color: #a8eb22;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      background-color: rgba(183, 250, 49, 0.3);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    input[type="url"] {
+      width: 100%;
+      padding: 0.875rem;
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      color: #ffffff;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+    }
+
+    input[type="url"]:focus {
+      outline: none;
+      border-color: #b7fa31;
+      background-color: rgba(26, 26, 26, 0.8);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      background-color: #1a1a1a;
+      border-radius: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid #b7fa31;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      padding: 1rem;
+      border-radius: 0.75rem;
+      color: #fca5a5;
+    }
+
+    .score-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .score-number {
+      font-size: 4rem;
+      font-weight: bold;
+    }
+
+    .score-green { color: #10b981; }
+    .score-blue { color: #3b82f6; }
+    .score-yellow { color: #eab308; }
+    .score-red { color: #ef4444; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid;
+    }
+
+    .status-excellent { background: rgba(16, 185, 129, 0.2); color: #10b981; border-color: #10b981; }
+    .status-good { background: rgba(59, 130, 246, 0.2); color: #3b82f6; border-color: #3b82f6; }
+    .status-concerning { background: rgba(234, 179, 8, 0.2); color: #eab308; border-color: #eab308; }
+    .status-critical { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: #ef4444; }
+
+    .platform-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .platform-card {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+
+    .platform-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+
+    .checklist-item {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .checklist-item:hover {
+      background-color: rgba(183, 250, 49, 0.05);
+      border-color: rgba(183, 250, 49, 0.2);
+    }
+
+    .checklist-item.completed {
+      background: rgba(16, 185, 129, 0.05);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .priority-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid;
+    }
+
+    .priority-critical { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: #ef4444; }
+    .priority-high { background: rgba(249, 115, 22, 0.2); color: #fb923c; border-color: #fb923c; }
+    .priority-medium { background: rgba(234, 179, 8, 0.2); color: #eab308; border-color: #eab308; }
+    .priority-low { background: rgba(59, 130, 246, 0.2); color: #3b82f6; border-color: #3b82f6; }
+
+    .technical-details {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      font-family: 'Inter', monospace;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    details {
+      margin-top: 0.75rem;
+    }
+
+    summary {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0.5rem 0;
+      user-select: none;
+      transition: color 0.2s ease;
+    }
+
+    summary:hover {
+      color: #b7fa31;
+    }
+
+    summary::marker {
+      color: #b7fa31;
+    }
+
+    details[open] summary {
+      color: #b7fa31;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #b7fa31 0%, #8bc34a 100%);
+      transition: width 0.3s;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 900;
+      margin: 1rem 0 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .page-subtitle {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1rem;
+    }
+
+    .back-link {
+      display: inline-block;
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .back-link:hover {
+      color: #b7fa31;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .form-group {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .form-hint {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+
+    .loading-message {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .loading-submessage {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">AD</div>
+      <div class="logo-text">AdsData</div>
+    </div>
+    <nav class="nav-menu">
+      <a href="/dashboard" class="nav-link">Dashboard</a>
+      <a href="/campaigns" class="nav-link">Campaign Explorer</a>
+      <a href="/custom-data.html" class="nav-link">📊 Custom Data</a>
+      <a href="/website-audit.html" class="nav-link active">🔍 Website Audit</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <div class="page-header">
+      <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+      <h1 class="page-title">Website Tracking Audit</h1>
+      <p class="page-subtitle">Analyze tracking pixel installations and get expert recommendations to optimize your advertising performance.</p>
+    </div>
+
+    <!-- URL Input Form -->
+    <div class="card">
+      <form id="auditForm">
+        <label>Website URL</label>
+        <div class="form-group">
+          <input type="url" id="websiteUrl" placeholder="https://example.com" required style="flex: 1;">
+          <button type="submit" class="btn btn-primary" id="submitBtn">Audit Website</button>
+        </div>
+        <p class="form-hint">
+          We'll analyze tracking pixels from Meta, Google, TikTok, LinkedIn, Twitter, and Pinterest
+        </p>
+      </form>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading hidden">
+      <div class="spinner"></div>
+      <p class="loading-message">Analyzing your website...</p>
+      <p class="loading-submessage">This may take up to 3 minutes. We're checking all tracking pixels, events, and configurations.</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="error hidden"></div>
+
+    <!-- Results Container -->
+    <div id="resultsContainer" class="hidden"></div>
+  </div>
+
+  <script>
+    const workspaceId = localStorage.getItem('selectedWorkspaceId');
+    const token = localStorage.getItem('token');
+
+    if (!workspaceId || !token) {
+      alert('Please login and select a workspace first');
+      window.location.href = '/dashboard';
+    }
+
+    let auditResult = null;
+    let checklist = [];
+
+    document.getElementById('auditForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const url = document.getElementById('websiteUrl').value;
+      const submitBtn = document.getElementById('submitBtn');
+
+      // Show loading, hide others
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('errorState').classList.add('hidden');
+      document.getElementById('resultsContainer').classList.add('hidden');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Analyzing...';
+
+      try {
+        const response = await fetch(`/api/website-audit/workspaces/${workspaceId}/audit`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ url })
+        });
+
+        // Check content type before parsing
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error(`Server returned ${response.status}: Expected JSON but got ${contentType || 'HTML'}. Please check if the server is running correctly.`);
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Audit failed');
+        }
+
+        if (data.success) {
+          // Check if this is cached data (immediate result)
+          if (data.cached && data.data) {
+            auditResult = data.data;
+            checklist = data.data.businessAnalysis.actionChecklist || [];
+            renderResults();
+          } else if (data.jobId) {
+            // This is an async job, poll for results
+            await pollJobStatus(data.jobId);
+          } else {
+            throw new Error('Unexpected response format');
+          }
+        } else {
+          throw new Error(data.error || 'Audit failed');
+        }
+      } catch (error) {
+        document.getElementById('loadingState').classList.add('hidden');
+        const errorEl = document.getElementById('errorState');
+        errorEl.textContent = `Error: ${error.message}`;
+        errorEl.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Audit Website';
+      }
+    });
+
+    async function pollJobStatus(jobId) {
+      const maxAttempts = 60; // Poll for up to 5 minutes (60 * 5s = 300s)
+      let attempts = 0;
+
+      const poll = async () => {
+        attempts++;
+
+        try {
+          const response = await fetch(`/api/website-audit/jobs/${jobId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to check job status');
+          }
+
+          if (data.status === 'completed' && data.data) {
+            // Job completed successfully
+            document.getElementById('loadingState').classList.add('hidden');
+            auditResult = data.data;
+            checklist = data.data.businessAnalysis.actionChecklist || [];
+            renderResults();
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Audit Website';
+            return;
+          } else if (data.status === 'failed') {
+            // Job failed
+            throw new Error(data.error || 'Audit failed');
+          } else if (data.status === 'processing' || data.status === 'pending') {
+            // Still processing, update message
+            const loadingEl = document.querySelector('#loadingState p:last-child');
+            const elapsed = Math.round(attempts * 5);
+            loadingEl.textContent = `Analysis in progress (${elapsed}s elapsed). This may take up to 3 minutes for complex websites.`;
+
+            // Continue polling
+            if (attempts < maxAttempts) {
+              setTimeout(poll, 5000); // Poll every 5 seconds
+            } else {
+              throw new Error('Audit timed out. Please try again.');
+            }
+          }
+        } catch (error) {
+          document.getElementById('loadingState').classList.add('hidden');
+          const errorEl = document.getElementById('errorState');
+          errorEl.textContent = `Error: ${error.message}`;
+          errorEl.classList.remove('hidden');
+
+          const submitBtn = document.getElementById('submitBtn');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Audit Website';
+        }
+      };
+
+      // Start polling
+      poll();
+    }
+
+    function renderResults() {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('errorState').classList.add('hidden');
+
+      const container = document.getElementById('resultsContainer');
+      container.classList.remove('hidden');
+
+      const { websiteUrl, businessAnalysis, metadata } = auditResult;
+      const { overallScore, overallStatus, executiveSummary, criticalIssues, platformResults, lostOpportunities, complianceIssues } = businessAnalysis;
+
+      container.innerHTML = `
+        <!-- Overall Score -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border: 2px solid rgba(255,255,255,0.1);">
+          <div class="score-display">
+            <div>
+              <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Audit Results</h2>
+              <p style="color: rgba(255,255,255,0.6);">${websiteUrl}</p>
+              ${metadata.cachedAt ? `<p style="color: rgba(255,255,255,0.4); font-size: 0.875rem; margin-top: 0.5rem;">✓ Cached result from ${new Date(metadata.cachedAt).toLocaleString()}</p>` : ''}
+            </div>
+            <div style="text-align: right;">
+              <div class="score-number score-${getScoreColorClass(overallScore)}">${overallScore}</div>
+              <span class="status-badge status-${overallStatus}">${overallStatus.toUpperCase()}</span>
+            </div>
+          </div>
+          <p style="font-size: 1.125rem; line-height: 1.6; color: rgba(255,255,255,0.9); margin-top: 1.5rem;">${executiveSummary}</p>
+        </div>
+
+        <!-- Critical Issues -->
+        ${criticalIssues.length > 0 ? `
+          <div class="card" style="background: rgba(239, 68, 68, 0.05); border: 2px solid rgba(239, 68, 68, 0.2);">
+            <h3 style="font-size: 1.25rem; margin-bottom: 1rem; color: #ef4444;">
+              <span style="font-size: 1.5rem;">⚠️</span> Critical Issues Requiring Immediate Attention
+            </h3>
+            <ul style="list-style: none;">
+              ${criticalIssues.map(issue => `
+                <li style="margin-bottom: 0.5rem; color: rgba(239, 68, 68, 0.9); display: flex; align-items: start;">
+                  <span style="margin-right: 0.5rem;">•</span>
+                  <span>${issue}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        ` : ''}
+
+        <!-- Lost Opportunities -->
+        ${Object.values(lostOpportunities).some(v => v) ? `
+          <div class="card" style="background: rgba(234, 179, 8, 0.05); border: 1px solid rgba(234, 179, 8, 0.2);">
+            <h3 style="font-size: 1.25rem; margin-bottom: 1rem; color: #eab308;">Lost Opportunities</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.75rem;">
+              ${lostOpportunities.cantMeasureROAS ? '<div style="color: rgba(234, 179, 8, 0.8);">❌ Cannot measure ROAS</div>' : ''}
+              ${lostOpportunities.cantTrackConversions ? '<div style="color: rgba(234, 179, 8, 0.8);">❌ Cannot track conversions</div>' : ''}
+              ${lostOpportunities.losingIOSAttribution ? '<div style="color: rgba(234, 179, 8, 0.8);">❌ Losing 40-60% iOS attribution</div>' : ''}
+              ${lostOpportunities.limitedOptimization ? '<div style="color: rgba(234, 179, 8, 0.8);">❌ Limited campaign optimization</div>' : ''}
+              ${lostOpportunities.poorAudienceTargeting ? '<div style="color: rgba(234, 179, 8, 0.8);">❌ Poor audience targeting capability</div>' : ''}
+              ${lostOpportunities.missingFunnelData ? '<div style="color: rgba(234, 179, 8, 0.8);">❌ Missing conversion funnel data</div>' : ''}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Platform Analysis -->
+        <div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Platform Analysis</h3>
+          <div class="platform-grid">
+            ${renderPlatformCard('Meta / Facebook Pixel', platformResults.meta)}
+            ${renderPlatformCard('Google Analytics GA4', platformResults.ga4)}
+            ${renderPlatformCard('Google Ads', platformResults.googleAds)}
+            ${renderPlatformCard('TikTok Pixel', platformResults.tiktok)}
+            ${renderPlatformCard('LinkedIn Insight Tag', platformResults.linkedin)}
+            ${renderPlatformCard('Twitter / X Pixel', platformResults.twitter)}
+            ${renderPlatformCard('Pinterest Tag', platformResults.pinterest)}
+          </div>
+        </div>
+
+        <!-- Action Checklist -->
+        ${checklist.length > 0 ? `
+          <div class="card">
+            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Action Checklist</h3>
+            <p style="color: rgba(255,255,255,0.6); margin-bottom: 1.5rem;">Follow these recommendations to optimize your tracking setup. Click items to mark as completed.</p>
+            <div id="checklistContainer"></div>
+            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
+              <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">
+                Progress: <span id="completedCount">0</span> of ${checklist.length} items completed
+              </p>
+              <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Compliance Issues -->
+        ${complianceIssues.length > 0 ? `
+          <div class="card" style="background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.2);">
+            <h3 style="font-size: 1.25rem; margin-bottom: 1rem; color: #a855f7;">Compliance & Privacy Considerations</h3>
+            <ul style="list-style: none;">
+              ${complianceIssues.map(issue => `
+                <li style="margin-bottom: 0.5rem; color: rgba(168, 85, 247, 0.9); display: flex; align-items: start;">
+                  <span style="margin-right: 0.5rem;">•</span>
+                  <span>${issue}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        ` : ''}
+
+        <!-- Metadata -->
+        <div style="text-align: center; color: rgba(255,255,255,0.4); font-size: 0.875rem;">
+          <p>Audit completed in ${metadata.auditDuration}ms • ${businessAnalysis.tokensUsed} AI tokens used</p>
+        </div>
+      `;
+
+      if (checklist.length > 0) {
+        renderChecklist();
+      }
+    }
+
+    function renderPlatformCard(name, result) {
+      return `
+        <div class="platform-card">
+          <div class="platform-header">
+            <h4 style="font-size: 1.125rem; font-weight: 600;">${name}</h4>
+            <span class="status-badge status-${result.status}">${result.status.toUpperCase()}</span>
+          </div>
+          <p style="color: rgba(255,255,255,0.8); margin-bottom: 1rem;">${result.summary}</p>
+          ${result.issues.length > 0 ? `
+            <div style="margin-bottom: 1rem;">
+              <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Issues:</p>
+              <ul style="list-style: none;">
+                ${result.issues.map(issue => `
+                  <li style="color: rgba(239, 68, 68, 0.8); font-size: 0.875rem; margin-bottom: 0.25rem; display: flex; align-items: start;">
+                    <span style="margin-right: 0.5rem;">•</span>
+                    <span>${issue}</span>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          ` : ''}
+          ${result.businessImpact ? `
+            <div style="padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
+              <p style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem;">Business Impact:</p>
+              <p style="color: rgba(255,255,255,0.9); font-size: 0.875rem;">${result.businessImpact}</p>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    function renderChecklist() {
+      const container = document.getElementById('checklistContainer');
+      container.innerHTML = checklist.map((item, index) => `
+        <div class="checklist-item ${item.completed ? 'completed' : ''}" onclick="toggleChecklistItem(${index})">
+          <div style="display: flex; align-items: start; gap: 1rem;">
+            <input type="checkbox" ${item.completed ? 'checked' : ''} style="margin-top: 0.25rem; width: 20px; height: 20px;" onclick="event.stopPropagation();">
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: start; justify-content: space-between; margin-bottom: 0.5rem;">
+                <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                    <span class="priority-badge priority-${item.priority}">${item.priority.toUpperCase()}</span>
+                    <span style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">${item.platform}</span>
+                  </div>
+                  <h4 style="font-size: 1.125rem; font-weight: 600; ${item.completed ? 'text-decoration: line-through; color: rgba(255,255,255,0.5);' : ''}">${item.task}</h4>
+                </div>
+                <div style="text-align: right; margin-left: 1rem;">
+                  <p style="color: rgba(255,255,255,0.6); font-size: 0.75rem;">Est. Time</p>
+                  <p style="font-weight: 600; font-size: 0.875rem;">${item.estimatedTime}</p>
+                </div>
+              </div>
+              <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem; margin-bottom: 0.75rem;">
+                <span style="font-weight: 600; color: rgba(255,255,255,0.9);">Business Impact:</span> ${item.businessImpact}
+              </p>
+              ${item.estimatedImpact ? `
+                <div style="padding: 0.75rem; background: rgba(102, 126, 234, 0.1); border-radius: 8px; margin-bottom: 0.75rem;">
+                  <p style="color: #667eea; font-size: 0.875rem; font-weight: 600;">Expected Impact: ${item.estimatedImpact}</p>
+                </div>
+              ` : ''}
+              <details>
+                <summary>▶ View Technical Details</summary>
+                <div class="technical-details">${item.technicalDetails}</div>
+              </details>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      updateProgress();
+    }
+
+    function toggleChecklistItem(index) {
+      checklist[index].completed = !checklist[index].completed;
+      renderChecklist();
+    }
+
+    function updateProgress() {
+      const completed = checklist.filter(i => i.completed).length;
+      const percentage = (completed / checklist.length) * 100;
+      document.getElementById('completedCount').textContent = completed;
+      document.getElementById('progressFill').style.width = `${percentage}%`;
+    }
+
+    function getScoreColorClass(score) {
+      if (score >= 80) return 'green';
+      if (score >= 60) return 'blue';
+      if (score >= 40) return 'yellow';
+      return 'red';
+    }
+  </script>
+</body>
+</html>
