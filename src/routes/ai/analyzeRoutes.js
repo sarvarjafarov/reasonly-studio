@@ -5,13 +5,9 @@ const { runAgent, runGeminiAgent } = require('../../agents/marketingAnalyst.agen
 const router = express.Router();
 
 function validateRequest(body) {
-  const { workspaceId, question, dateRange } = body;
-  if (!workspaceId || !question) {
-    return 'workspaceId and question are required';
-  }
-  if (!dateRange || !dateRange.start || !dateRange.end) {
-    return 'dateRange.start and dateRange.end are required';
-  }
+  if (!body.workspaceId || typeof body.workspaceId !== 'string') return 'workspaceId is required';
+  if (!body.question || typeof body.question !== 'string') return 'question is required';
+  if (!body.dateRange || !body.dateRange.start || !body.dateRange.end) return 'dateRange.start and end are required';
   return null;
 }
 
@@ -33,22 +29,30 @@ router.post('/analyze', async (req, res) => {
     if (config.useGemini) {
       console.log('AI analyze mode: gemini');
       try {
-        const response = await runGeminiAgent(agentInput);
-        return res.json(response);
+        return res.json(await runGeminiAgent(agentInput, { debug: req.body.debug }));
       } catch (err) {
-        console.warn('Gemini failed, falling back to deterministic agent:', err.message);
+        console.warn('Gemini agent failed, falling back:', err.message);
+        const fallback = await runAgent(agentInput);
+        if (req.body.debug) {
+          return res.json({
+            result: fallback,
+            trace: { validation: ['deterministic_fallback'], plan_steps: [], tool_calls: [] },
+          });
+        }
+        return res.json(fallback);
       }
     }
 
     console.log('AI analyze mode: deterministic');
-    const response = await runAgent(agentInput);
-    return res.json(response);
+    const result = await runAgent(agentInput);
+    if (req.body.debug) {
+      return res.json({ result, trace: { validation: ['deterministic_mode'], plan_steps: [], tool_calls: [] } });
+    }
+
+    return res.json(result);
   } catch (error) {
     console.error('AI analyze error:', error.message);
-    return res.status(500).json({
-      success: false,
-      message: 'Unable to process analyst request at the moment.',
-    });
+    return res.status(500).json({ success: false, message: 'Unable to run analyst right now' });
   }
 });
 

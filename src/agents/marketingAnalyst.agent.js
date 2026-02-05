@@ -4,190 +4,82 @@ const {
   get_timeseries,
   detect_anomalies,
 } = require('../tools/analyticsTools');
-const finalResponseSchema = require('./schemas/finalResponse.schema.json');
-const config = require('../config/config');
 const { generate } = require('../ai/geminiClient');
 const { tools, callTool } = require('../ai/geminiTools');
+const { validateFinalResponse, enforceEvidenceBinding } = require('./finalResponse.validator');
 
-const defaultMetrics = ['spend', 'revenue', 'conversions', 'roas'];
+const MAX_PLAN_STEPS = 7;
+const MAX_TOOL_CALLS = 8;
 
-function buildPlan(question, primaryKpi, dateRange) {
-  return [
-    `Clarify objective: ${question}`,
-    `Fetch KPIs for ${primaryKpi} between ${dateRange.start} and ${dateRange.end}`,
-    'Compare latest range to the previous window',
-    'Capture trend data and anomalies',
-    'Compose findings, actions, dashboard tiles, and executive summary',
-  ];
-}
-
-function buildDashboardSpec(kpis, series, comparisons) {
-  return {
-    title: 'Autonomous Marketing Analyst',
-    tiles: [
-      { type: 'kpi', title: 'Total Spend', value: `$${kpis.metrics.spend.toFixed(0)}`, unit: 'USD' },
-      { type: 'kpi', title: 'Revenue', value: `$${kpis.metrics.revenue.toFixed(0)}`, unit: 'USD' },
-      { type: 'kpi', title: 'Conversions', value: `${kpis.metrics.conversions}`, unit: 'events' },
-      { type: 'kpi', title: 'ROAS', value: `${(kpis.metrics.roas || 0).toFixed(2)}x`, unit: 'ratio' },
-      {
-        type: 'trend',
-        title: 'Spend & Revenue Trend',
-        series: [
-          { name: 'Spend', data: series.data.map(item => ({ x: item.date, y: Number(item.spend.toFixed(2)) })) },
-          { name: 'Revenue', data: series.data.map(item => ({ x: item.date, y: Number(item.revenue.toFixed(2)) })) },
-        ],
-      },
-      {
-        type: 'contribution',
-        title: 'Top Campaigns (by spend)',
-        data: comparisons.contributions.map(entry => ({
-          label: `${entry.campaign} / ${entry.platform}`,
-          value: entry.spendContribution,
-        })),
-      },
-      {
-        type: 'table',
-        title: 'Top Concurrent Campaigns',
-        columns: ['Campaign', 'Spend', 'Revenue', 'Conversions'],
-        rows: comparisons.contributions.map(entry => [
-          `${entry.campaign} (${entry.platform})`,
-          `$${entry.spendContribution.toFixed(2)}`,
-          `$${entry.revenueContribution.toFixed(2)}`,
-          `${entry.conversions || 0}`,
-        ]),
-      },
-    ],
-  };
-}
-
-function synthesizeFindings(kpis, comparisons, anomalies, primaryKpi) {
+function deterministicSummary(kpis, comparisons, series, anomalies, question) {
   const findings = [];
-
   findings.push({
-    title: 'Core KPIs',
-    detail: `During ${kpis.dateRange.start} to ${kpis.dateRange.end}, spend was $${kpis.metrics.spend.toFixed(0)} and revenue totaled $${kpis.metrics.revenue.toFixed(0)}, delivering ${kpis.metrics.roas.toFixed(2)}x ROAS.`,
-    impact: 'Validates budget efficiency for the current sprint',
-    supporting_metrics: [
-      `Spend: $${kpis.metrics.spend.toFixed(0)}`,
-      `Revenue: $${kpis.metrics.revenue.toFixed(0)}`,
-      `ROAS: ${kpis.metrics.roas.toFixed(2)}x`,
-    ],
+    title: 'Core KPI snapshot',
+    detail: `Spend $${kpis.metrics.spend.toFixed(0)}, revenue $${kpis.metrics.revenue.toFixed(
+      0
+    )}, ROAS ${(kpis.metrics.roas || 0).toFixed(2)}x over the selected range.`,
+    impact: 'Baseline performance',
+    supporting_metrics: ['spend', 'revenue', 'roas'],
   });
 
   findings.push({
-    title: 'Comparative Performance',
-    detail: `Compared to the prior window, spend changed by $${(comparisons.metrics.current.spend - comparisons.metrics.previous.spend).toFixed(0)} and revenue changed by $${(comparisons.metrics.current.revenue - comparisons.metrics.previous.revenue).toFixed(0)}.`,
-    impact: 'Shows whether performance is accelerating or cooling',
-    supporting_metrics: [
-      `Current spend: $${comparisons.metrics.current.spend.toFixed(0)}`,
-      `Prior spend: $${comparisons.metrics.previous.spend.toFixed(0)}`,
-      `Current revenue: $${comparisons.metrics.current.revenue.toFixed(0)}`,
-    ],
+    title: 'Comparative view',
+    detail: `Compared to the prior window, spend changed by $${(
+      comparisons.metrics.current.spend - comparisons.metrics.previous.spend
+    ).toFixed(0)} and revenue by $${(comparisons.metrics.current.revenue - comparisons.metrics.previous.revenue).toFixed(0)}.`,
+    impact: 'Trend insight',
+    supporting_metrics: ['spend', 'revenue'],
   });
 
-  if (anomalies.anomalies.length) {
-    findings.push({
-      title: 'Potential Anomalies',
-      detail: `Detected ${anomalies.anomalies.length} spikes in ${primaryKpi}, the largest on ${anomalies.anomalies[0].date} (${anomalies.anomalies[0].value}).`,
-      impact: 'Signals irregular performance worth validating',
-      supporting_metrics: anomalies.anomalies.map(anomaly => `${anomaly.metric} ${anomaly.value} on ${anomaly.date}`),
-    });
-  }
-
-  return findings;
-}
-
-function craftActions(primaryKpi, comparisons) {
   const actions = [
     {
       priority: 'high',
-      action: `Shift more budget to the highest contributing campaign (${comparisons.contributions[0]?.campaign || 'N/A'})`,
-      rationale: 'It already drives the largest spend and revenue lift',
-      expected_impact: 'Lift revenue while keeping ROAS steady',
-      risk: 'Recent big spends may have diminishing returns',
-      how_to_validate: 'Track ROAS and conversion volume over the next 7 days',
-    },
-    {
-      priority: 'medium',
-      action: `Run a quality check on the ${primaryKpi} spike dates to confirm data integrity`,
-      rationale: 'Anomalies could skew conclusions if they are data issues',
-      expected_impact: 'Confidence in KPI storytelling',
-      risk: 'Adds a short delay to reporting cadence',
-      how_to_validate: 'Verify that spend and conversions line up in ad platform reports for those dates',
+      action: 'Increase focus on top contributing campaign',
+      rationale: 'It drives the majority of spend/revenue',
+      expected_impact: 'Maintain ROAS while scaling conversions',
+      risk: 'Overexposure on single channel',
+      how_to_validate: 'Track ROAS/conversion change next week',
+      supporting_metrics: ['spend', 'revenue'],
     },
   ];
 
-  return actions;
-}
-
-function summarizeExec(changes, why, next) {
-  return {
-    headline: 'Automated analyst assistant completed the review',
-    what_changed: changes,
-    why,
-    what_to_do_next: next,
+  const dashboard_spec = {
+    title: 'Auto-generated summary',
+    tiles: [
+      { type: 'kpi', title: 'Spend', value: `$${kpis.metrics.spend.toFixed(0)}`, unit: 'USD' },
+      { type: 'kpi', title: 'Revenue', value: `$${kpis.metrics.revenue.toFixed(0)}`, unit: 'USD' },
+      { type: 'kpi', title: 'ROAS', value: `${(kpis.metrics.roas || 0).toFixed(2)}x`, unit: 'ratio' },
+      {
+        type: 'trend',
+        title: 'Spend vs Revenue',
+        series: [
+          { name: 'Spend', data: series.data.map((point) => ({ x: point.date, y: point.spend })) },
+          { name: 'Revenue', data: series.data.map((point) => ({ x: point.date, y: point.revenue })) },
+        ],
+      },
+    ],
   };
-}
 
-async function runAgent(input) {
-  const {
-    workspaceId,
-    question,
-    dateRange,
-    compareMode = 'previous_period',
-    primaryKpi = 'roas',
-  } = input;
-
-  const plan = buildPlan(question, primaryKpi, dateRange);
-
-  const kpis = await get_kpis(workspaceId, dateRange, {}, null, [...defaultMetrics]);
-  const previousRange = {
-    start: new Date(new Date(dateRange.start).setDate(new Date(dateRange.start).getDate() - 7)).toISOString().split('T')[0],
-    end: new Date(new Date(dateRange.end).setDate(new Date(dateRange.end).getDate() - 7)).toISOString().split('T')[0],
+  const exec_summary = {
+    headline: 'Deterministic summary generated',
+    what_changed: ['KPI snapshot created', 'Comparative spend vs revenue'],
+    why: ['Need to understand performance trends'],
+    what_to_do_next: ['Review top campaigns', 'Monitor ROAS metrics'],
   };
-  const comparisons = await compare_periods(workspaceId, dateRange, previousRange, ['spend', 'revenue', 'conversions']);
-  const series = await get_timeseries(workspaceId, dateRange, 'daily', ['spend', 'revenue'], null, {});
-  const anomalies = await detect_anomalies(workspaceId, dateRange, primaryKpi, 'daily', null, 1.2);
 
   const evidence = [
     {
-      id: 'kpi-1',
+      id: 'deterministic-kpi',
       tool: 'get_kpis',
-      params_summary: `workspace=${workspaceId}, question=${question}`,
-      key_results: [`${kpis.metrics.revenue.toFixed(0)} revenue this period`, `${kpis.metrics.spend.toFixed(0)} spend`],
-    },
-    {
-      id: 'comparison-1',
-      tool: 'compare_periods',
-      params_summary: 'default previous week comparison',
-      key_results: [`spend delta ${(comparisons.metrics.current.spend - comparisons.metrics.previous.spend).toFixed(0)}`],
-    },
-    {
-      id: 'timeseries-1',
-      tool: 'get_timeseries',
-      params_summary: 'daily trend for spend & revenue',
-      key_results: [`${series.data.length} data points`],
-    },
-    {
-      id: 'anomaly-1',
-      tool: 'detect_anomalies',
-      params_summary: `${primaryKpi} sensitivity 1.2`,
-      key_results: anomalies.anomalies.map(a => `${a.metric} ${a.value} on ${a.date}`),
+      params_summary: 'sample data',
+      key_results: [
+        `metric=spend value=${kpis.metrics.spend.toFixed(0)}`,
+        `metric=revenue value=${kpis.metrics.revenue.toFixed(0)}`,
+      ],
     },
   ];
 
-  const findings = synthesizeFindings(kpis, comparisons, anomalies, primaryKpi);
-  const actions = craftActions(primaryKpi, comparisons);
-  const dashboard_spec = buildDashboardSpec(kpis, series, comparisons);
-  const exec_summary = summarizeExec(
-    ['Computed current KPIs and trends', 'Identified top campaign contributors'],
-    ['Need to confirm anomaly dates for data quality', 'Budget allocation should follow strongest contributors'],
-    ['Approve high-impact campaigns', 'Monitor ROAS daily for the next week']
-  );
-
-  // TODO: Replace deterministic logic with Gemini plan/response step.
-
-  return {
+  const finalResponse = {
     status: 'ok',
     objective: question,
     findings,
@@ -196,106 +88,142 @@ async function runAgent(input) {
     dashboard_spec,
     exec_summary,
   };
+
+  enforceEvidenceBinding(finalResponse);
+  return finalResponse;
 }
 
-function validateFinalResponse(response) {
-  const requiredKeys = ['status', 'objective', 'findings', 'actions', 'evidence', 'dashboard_spec', 'exec_summary'];
-  for (const key of requiredKeys) {
-    if (!(key in response)) {
-      return false;
-    }
-  }
-  if (!Array.isArray(response.findings) || !Array.isArray(response.actions)) {
-    return false;
-  }
-  if (response.status === 'ok' && (!Array.isArray(response.evidence) || response.evidence.length === 0)) {
-    return false;
-  }
-  return true;
+async function runAgent(input) {
+  const { workspaceId, question, dateRange, primaryKpi = 'roas' } = input;
+  const kpis = await get_kpis(workspaceId, dateRange, {}, null, ['spend', 'revenue', 'conversions', 'roas']);
+  const previousRange = {
+    start: new Date(new Date(dateRange.start).setDate(new Date(dateRange.start).getDate() - 7)).toISOString().split('T')[0],
+    end: new Date(new Date(dateRange.end).setDate(new Date(dateRange.end).getDate() - 7)).toISOString().split('T')[0],
+  };
+  const comparisons = await compare_periods(workspaceId, dateRange, previousRange, ['spend', 'revenue', 'conversions']);
+  const series = await get_timeseries(workspaceId, dateRange, 'daily', ['spend', 'revenue']);
+  const anomalies = await detect_anomalies(workspaceId, dateRange, primaryKpi);
+  return deterministicSummary(kpis, comparisons, series, anomalies, question);
 }
 
-async function runGeminiAgent(input) {
-  if (!config.useGemini) {
-    throw new Error('Gemini not enabled');
-  }
+async function runGeminiAgent(input, options = {}) {
+  if (!config.useGemini) throw new Error('Gemini disabled');
+  const debugMode = options.debug === true;
 
   const planPrompt = `
-You are an autonomous marketing analyst. Plan how you will answer the question by providing a JSON object:
-{
-  "plan": [
-    {"id": "step1", "title": "...", "summary": "...", "tool_required": true},
-    ...
-  ],
-  "tool_call": {"name": "<tool_name>", "arguments": {...}}
-}
-Never invent numbers. Always plan, then use a tool to fetch data.
-`.trim();
-
-  const planText = await generate(`${planPrompt}\n\nQuestion: ${input.question}\nWorkspace: ${input.workspaceId}\nDate range: ${input.dateRange.start} to ${input.dateRange.end}\nPrimary KPI: ${input.primaryKpi || 'roas'}`);
-  let planJson;
-  try {
-    planJson = JSON.parse(planText);
-  } catch (err) {
-    console.error('Gemini plan output invalid JSON', err);
-    throw new Error('Gemini plan output invalid');
-  }
-
-  const planSteps = Array.isArray(planJson.plan) ? planJson.plan : [];
-  const toolCall = planJson.tool_call;
-
-  if (!toolCall || !toolCall.name) {
-    throw new Error('Gemini did not provide a tool call');
-  }
-
-  console.log('Gemini plan:', planSteps.map(step => `${step.id}: ${step.title}`).join(' | '));
-  console.log('Gemini tool call:', toolCall.name, toolCall.arguments);
-
-  const toolResult = await callTool(toolCall.name, toolCall.arguments || {});
-  console.log('Tool result received from', toolCall.name);
-
-  const finalPrompt = `
-Plan: ${JSON.stringify(planSteps)}
-
-Tool result (${toolCall.name}): ${JSON.stringify(toolResult)}
-
-Now respond with the FinalResponse JSON (status, objective, findings, actions, evidence, dashboard_spec, exec_summary).
-Ensure every finding/action references the tool result above. Include evidence entries that cite the tool.
+You are an autonomous marketing analyst. Respond with JSON ONLY: {"plan":["step1","step2",...]}.
+Max 7 steps. No markdown, no explanations outside JSON.
 `;
 
-  const finalText = await generate(finalPrompt);
-  let parsed;
-  try {
-    parsed = JSON.parse(finalText);
-  } catch (err) {
-    console.error('Gemini final response invalid JSON', err);
-    throw new Error('Gemini output invalid');
-  }
+  const planText = await generate(`${planPrompt}\nQuestion:${input.question}\nWorkspace:${input.workspaceId}\nDateRange:${input.dateRange.start}-${input.dateRange.end}`);
+  const planJson = safeParseJson(planText, 'plan');
+  const plan = Array.isArray(planJson.plan) ? planJson.plan.slice(0, MAX_PLAN_STEPS) : [];
 
-  if (!validateFinalResponse(parsed)) {
-    throw new Error('Gemini output failed validation');
-  }
-
-  const evidenceEntry = {
-    id: `${toolCall.name}-1`,
-    tool: toolCall.name,
-    params_summary: JSON.stringify(toolCall.arguments || {}),
-    key_results: Object.entries(toolResult.metrics || toolResult || {}).map(
-      ([key, value]) => `${key}: ${value}`
-    ),
-    trace: planSteps.map(step => step.title).join(' > '),
+  const evidence = [];
+  const trace = {
+    plan_steps: plan,
+    tool_calls: [],
+    validation: [],
   };
 
-  if (!Array.isArray(parsed.evidence)) {
-    parsed.evidence = [];
-  }
-  parsed.evidence.push(evidenceEntry);
+  const toolResults = [];
 
-  console.log('Gemini FinalResponse valid with evidence');
-  return parsed;
+  for (let i = 0; i < MAX_TOOL_CALLS; i++) {
+    const toolLoopPrompt = `
+Plan: ${JSON.stringify(plan)}
+Evidence so far: ${JSON.stringify(evidence)}
+Tool summaries: ${JSON.stringify(toolResults.map((r) => ({ name: r.name, summary: summarizeResult(r.result) })))}
+Return JSON: {"next":{"name":"...","arguments":{...}},"done":false,"reason":"..."}.
+`;
+
+    if (i > 0 && toolResults.length >= 2) {
+      toolLoopPrompt.concat('\nYou may return done=true if enough evidence.');
+    }
+
+    const toolText = await generate(toolLoopPrompt);
+    const toolJson = safeParseJson(toolText, 'tool call');
+    const next = toolJson.next;
+    if (!next || toolJson.done) break;
+    if (!tools.some((tool) => tool.name === next.name)) {
+      trace.tool_calls.push({
+        name: next.name,
+        args_summary: JSON.stringify(next.arguments || {}),
+        result_summary: 'unknown tool (skipped)',
+      });
+      continue;
+    }
+
+    const toolResult = await callTool(next.name, next.arguments || {});
+    toolResults.push({ name: next.name, args: next.arguments || {}, result: toolResult });
+    trace.tool_calls.push({
+      name: next.name,
+      args_summary: JSON.stringify(next.arguments || {}),
+      result_summary: summarizeResult(toolResult),
+    });
+
+    evidence.push({
+      id: `ev_${evidence.length + 1}`,
+      tool: next.name,
+      params_summary: JSON.stringify(next.arguments || {}),
+      key_results: extractKeyResults(toolResult),
+    });
+    if (toolResults.length >= 2 && toolJson.done) break;
+  }
+
+  const finalPrompt = `
+Plan: ${JSON.stringify(plan)}
+Evidence: ${JSON.stringify(evidence)}
+Tool summaries: ${JSON.stringify(toolResults.map((r) => ({ name: r.name, summary: summarizeResult(r.result) })))}
+Now return FinalResponse JSON ONLY.
+`;
+
+  let finalResponse = await safeParseJson(await generate(finalPrompt), 'final response');
+  try {
+    validateFinalResponse(finalResponse);
+    trace.validation.push('validation ok');
+  } catch (err) {
+    trace.validation.push(`validation failed: ${err.message}`);
+    const repairPrompt = `
+Validation errors: ${err.message}
+Evidence: ${JSON.stringify(evidence)}
+Return corrected FinalResponse JSON ONLY.
+`;
+
+    finalResponse = await safeParseJson(await generate(repairPrompt), 'repair response');
+    validateFinalResponse(finalResponse);
+    trace.validation.push('repair ok');
+  }
+
+  finalResponse = enforceEvidenceBinding(finalResponse);
+  trace.validation.push('evidence binding enforced');
+
+  return debugMode ? { result: finalResponse, trace } : finalResponse;
+}
+
+function safeParseJson(text, label) {
+  const cleaned = text.replace(/```json|```/gi, '').trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch (err) {
+    throw new Error(`Failed to parse ${label}: ${err.message}`);
+  }
+}
+
+function summarizeResult(result) {
+  if (!result || typeof result !== 'object') return 'empty';
+  const keys = Object.keys(result).slice(0, 3);
+  return keys.map((k) => `${k}:${JSON.stringify(result[k])}`).join(', ') || 'empty';
+}
+
+function extractKeyResults(toolResult) {
+  if (!toolResult || typeof toolResult !== 'object') return [];
+  const metrics = toolResult.metrics || toolResult;
+  return Object.entries(metrics || {})
+    .map(([key, value]) => `metric=${key} value=${value}`)
+    .slice(0, 4);
 }
 
 module.exports = {
-  finalResponseSchema,
-  runAgent,
   runGeminiAgent,
+  runAgent,
 };

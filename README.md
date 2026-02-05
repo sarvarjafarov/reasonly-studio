@@ -135,6 +135,32 @@ The tools under `src/tools/analyticsTools.js` read the sample CSV, aggregate KPI
 
 Set `GEMINI_API_KEY`, `GEMINI_MODEL`, and `USE_GEMINI=true` via your environment (Heroku config vars) to run the Gemini-driven path. The agent enforces function-calling, tool-backed numbers, and the strict `FinalResponse` JSON contract. Monitor the server logs for the `Gemini plan` and `Gemini tool call` entries so you can trace the investigation steps and tool usage that produced the response.
 
+#### Analyst Mode curl examples
+
+1) Deterministic (USE_GEMINI=false):
+
+```bash
+USE_GEMINI=false curl -X POST http://localhost:3000/api/ai/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"}}'
+```
+
+2) Gemini mode:
+
+```bash
+USE_GEMINI=true GEMINI_API_KEY=... GEMINI_MODEL=gemini-3-flash curl -X POST http://localhost:3000/api/ai/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"}}'
+```
+
+3) Gemini debug envelope:
+
+```bash
+USE_GEMINI=true GEMINI_API_KEY=... GEMINI_MODEL=gemini-3-flash curl -X POST http://localhost:3000/api/ai/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"},"debug":true}'
+```
+
 #### How to test locally
 
 ```bash
