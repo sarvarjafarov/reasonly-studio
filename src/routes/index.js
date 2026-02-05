@@ -21,6 +21,7 @@ const tiktokRoutes = require('./tiktokRoutes');
 const linkedinRoutes = require('./linkedinRoutes');
 const unifiedReportingRoutes = require('./unifiedReportingRoutes');
 const customDataRoutes = require('./customDataRoutes');
+const aiRoutes = require('./ai/analyzeRoutes');
 const webhookRoutes = require('./webhookRoutes');
 const websiteAuditRoutes = require('./websiteAuditRoutes');
 const experimentRoutes = require('./experimentRoutes');
@@ -53,5 +54,6 @@ router.use('/unified', unifiedReportingRoutes);
 router.use('/webhooks', webhookRoutes);
 router.use('/website-audit', websiteAuditRoutes);
 router.use('/experiments', experimentRoutes);
+router.use('/ai', aiRoutes);
 
 module.exports = router;

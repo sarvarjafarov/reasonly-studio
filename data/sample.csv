@@ -1,0 +1,11 @@
+workspace_id,date,campaign,platform,spend,revenue,clicks,impressions,conversions
+workspace-main,2026-01-15,Holiday Campaign,meta,1200,4800,5200,320000,210
+workspace-main,2026-01-16,Holiday Campaign,meta,1100,4200,5100,310000,200
+workspace-main,2026-01-17,Holiday Campaign,meta,1300,5200,5300,330000,230
+workspace-main,2026-01-18,Spring Launch,google,900,3600,4200,280000,150
+workspace-main,2026-01-19,Spring Launch,google,950,3800,4300,285000,160
+workspace-main,2026-01-20,Spring Launch,google,980,4000,4400,290000,170
+workspace-main,2026-01-21,Brand Push,tiktok,700,2800,3000,210000,120
+workspace-main,2026-01-22,Brand Push,tiktok,720,3000,3100,215000,130
+workspace-main,2026-01-23,Brand Push,tiktok,750,3200,3200,220000,140
+workspace-main,2026-01-24,Acquisition Sprint,google,1500,6400,6000,360000,260

@@ -1,0 +1,81 @@
+{
+  "$id": "https://reasonly.studio/schemas/finalResponse.json",
+  "title": "FinalResponse",
+  "type": "object",
+  "required": ["status", "objective", "findings", "actions", "evidence", "dashboard_spec", "exec_summary"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["ok", "insufficient_data"]
+    },
+    "objective": {
+      "type": "string"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "detail", "impact", "supporting_metrics"],
+        "properties": {
+          "title": { "type": "string" },
+          "detail": { "type": "string" },
+          "impact": { "type": "string" },
+          "supporting_metrics": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["priority", "action", "rationale", "expected_impact", "risk", "how_to_validate"],
+        "properties": {
+          "priority": { "type": "string", "enum": ["high", "medium", "low"] },
+          "action": { "type": "string" },
+          "rationale": { "type": "string" },
+          "expected_impact": { "type": "string" },
+          "risk": { "type": "string" },
+          "how_to_validate": { "type": "string" }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "tool", "params_summary", "key_results"],
+        "properties": {
+          "id": { "type": "string" },
+          "tool": { "type": "string" },
+          "params_summary": { "type": "string" },
+          "key_results": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "dashboard_spec": {
+      "type": "object"
+    },
+    "exec_summary": {
+      "type": "object",
+      "required": ["headline", "what_changed", "why", "what_to_do_next"],
+      "properties": {
+        "headline": { "type": "string" },
+        "what_changed": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "why": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "what_to_do_next": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -113,6 +113,44 @@ After updating the credentials, restart the server (`npm run dev`) so the backen
 
 For deployments, make sure the production callback URLs (`https://yourdomain.com/api/oauth/<platform>/callback`) are registered with each provider and that the same env vars are set through your hosting provider (Heroku `config:set`, Render secrets, etc.). `PROJECT_B_DEPLOYMENT_GUIDE.md` includes the exact Heroku commands used for each platform.
 
+### Hackathon Analyst Mode (Backend)
+
+The new `POST /api/ai/analyze` endpoint powers the Autonomous Marketing Analyst experience. It relies on deterministic tool outputs (KPIs, comparisons, time series, anomaly detection) derived from `data/sample.csv` and returns the strict `FinalResponse` JSON contract. To try it locally:
+
+```bash
+curl http://localhost:3000/api/ai/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "workspace-main",
+    "question": "How did January spend perform?",
+    "dateRange": { "start": "2026-01-15", "end": "2026-01-24" },
+    "compareMode": "previous_period",
+    "primaryKpi": "roas"
+  }'
+```
+
+The tools under `src/tools/analyticsTools.js` read the sample CSV, aggregate KPIs, compare periods, build timeseries, and flag anomalies. The agent (`src/agents/marketingAnalyst.agent.js`) orchestrates the plan, evidence, findings, actions, dashboard spec, and executive summary. Later we will swap the deterministic logic with Gemini 3 (marked with TODOs). You can update `data/sample.csv` with richer data to prototype new behaviors before wiring a real warehouse.
+
+#### Gemini configuration
+
+Set `GEMINI_API_KEY`, `GEMINI_MODEL`, and `USE_GEMINI=true` via your environment (Heroku config vars) to run the Gemini-driven path. The agent enforces function-calling, tool-backed numbers, and the strict `FinalResponse` JSON contract.
+
+#### How to test locally
+
+```bash
+USE_GEMINI=true GEMINI_API_KEY=your_key GEMINI_MODEL=gemini-3-flash npm start
+
+curl http://localhost:3000/api/ai/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "workspace-main",
+    "question": "How did the latest sprint perform?",
+    "dateRange": { "start": "2026-01-15", "end": "2026-01-24" }
+  }'
+```
+
+If `USE_GEMINI=false`, the endpoint falls back to deterministic reasoning; setting it to `true` triggers the Gemini tool-calling workflow.
+
 ### Email & Notification settings
 
 Verification and admin notification emails default to the SMTP credentials in `.env` (or your staging deploy). Set the following values so `emailService` can send real mail instead of just logging the payload:

@@ -72,4 +72,7 @@ module.exports = {
     password: process.env.EMAIL_PASSWORD,
     from: process.env.EMAIL_FROM || 'AdsData Platform <noreply@adsdata.com>',
   },
+  useGemini: process.env.USE_GEMINI === 'true',
+  geminiApiKey: process.env.GEMINI_API_KEY || '',
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-3-flash',
 };
