@@ -778,6 +778,140 @@
       margin-bottom: 0.25rem;
     }
 
+    .analyst-panel {
+      border: 1px solid rgba(183, 250, 49, 0.2);
+      background-color: rgba(255, 255, 255, 0.02);
+      border-radius: 1.2rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .analyst-panel h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .analyst-panel p {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .analyst-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .analyst-grid label {
+      display: block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 0.4rem;
+    }
+
+    .analyst-grid textarea,
+    .analyst-grid input,
+    .analyst-grid select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background-color: rgba(255, 255, 255, 0.04);
+      color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      resize: vertical;
+    }
+
+    .analyst-status {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-left: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .analyst-status.error {
+      color: #f87171;
+    }
+
+    .analyst-results {
+      margin-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 1.25rem;
+      display: none;
+    }
+
+    .analyst-section {
+      margin-bottom: 1rem;
+    }
+
+    .analyst-section h4 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: #b7fa31;
+    }
+
+    .analyst-section ul {
+      list-style: disc;
+      margin-left: 1.25rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .metric-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.4rem;
+    }
+
+    .metric-tag {
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background-color: rgba(183, 250, 49, 0.15);
+      color: #b7fa31;
+      font-size: 0.75rem;
+    }
+
+    .analyst-evidence-item {
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .analyst-details summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: #b7fa31;
+      margin-bottom: 0.5rem;
+    }
+
+    .analyst-trace {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .trace-list {
+      margin-top: 0.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 0.75rem;
+    }
+
+    .trace-item {
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
     .modal {
       display: none;
       position: fixed;
@@ -1169,11 +1303,94 @@
             <div class="workspace-name" id="currentWorkspaceName">Loading...</div>
           </div>
         </div>
-        <div class="workspace-selector">
-          <label for="workspaceSelect">Switch workspace</label>
-          <select id="workspaceSelect" onchange="handleWorkspaceChange()">
-            <option value="">Loading workspaces...</option>
+    <div class="workspace-selector">
+      <label for="workspaceSelect">Switch workspace</label>
+      <select id="workspaceSelect" onchange="handleWorkspaceChange()">
+        <option value="">Loading workspaces...</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+    <div class="card analyst-panel">
+      <h3>Analyst Mode</h3>
+      <p>Ask a question, let the agent plan the analysis, run tools, and summarize the action plan.</p>
+      <div class="analyst-grid">
+        <div>
+          <label for="analystQuestion">Business question</label>
+          <textarea id="analystQuestion" rows="3" placeholder="e.g., Why did ROAS drop this week compared to last week?"></textarea>
+        </div>
+        <div>
+          <label for="analystStart">Start date</label>
+          <input id="analystStart" type="date">
+        </div>
+        <div>
+          <label for="analystEnd">End date</label>
+          <input id="analystEnd" type="date">
+        </div>
+        <div>
+          <label for="analystKpi">Primary KPI</label>
+          <select id="analystKpi">
+            <option value="roas">ROAS</option>
+            <option value="spend">Spend</option>
+            <option value="cpa">CPA</option>
+            <option value="clicks">Clicks</option>
+            <option value="revenue">Revenue</option>
           </select>
+        </div>
+        <div>
+          <label for="analystCompare">Compare mode</label>
+          <select id="analystCompare">
+            <option value="previous_period">Previous period</option>
+            <option value="yoy">Year-over-year</option>
+            <option value="none">None</option>
+          </select>
+        </div>
+        <div style="display:flex; align-items:flex-end; gap:0.5rem;">
+          <label for="analystDebug" style="display:flex; align-items:center; gap:0.35rem;">
+            <input id="analystDebug" type="checkbox" style="transform:scale(1.05);">
+            <span style="font-size:0.8rem; color:rgba(255,255,255,0.75); text-transform:none;">Debug mode</span>
+          </label>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+        <button id="analystRunBtn" class="btn btn-primary">Analyze with AI</button>
+        <span id="analystStatus" class="analyst-status">Idle</span>
+      </div>
+      <div class="analyst-results" id="analystResults">
+        <div class="analyst-section">
+          <h4>Executive summary</h4>
+          <div id="analystExecHeadline" style="font-size:1.1rem; font-weight:600; margin-bottom:0.4rem;"></div>
+          <div>
+            <strong style="font-size:0.8rem; letter-spacing:0.05em; color:rgba(255,255,255,0.55);">What changed</strong>
+            <ul id="analystExecWhatChanged"></ul>
+          </div>
+          <div>
+            <strong style="font-size:0.8rem; letter-spacing:0.05em; color:rgba(255,255,255,0.55);">Why it happened</strong>
+            <ul id="analystExecWhy"></ul>
+          </div>
+          <div>
+            <strong style="font-size:0.8rem; letter-spacing:0.05em; color:rgba(255,255,255,0.55);">Next steps</strong>
+            <ul id="analystExecNext"></ul>
+          </div>
+        </div>
+        <div class="analyst-section">
+          <h4>Findings</h4>
+          <div id="analystFindingsList"></div>
+        </div>
+        <div class="analyst-section">
+          <h4>Actions</h4>
+          <div id="analystActionsList"></div>
+        </div>
+        <div class="analyst-section">
+          <details class="analyst-details">
+            <summary>Evidence</summary>
+            <div id="analystEvidenceList"></div>
+          </details>
+        </div>
+        <div class="analyst-section" id="analystTraceSection" style="display:none;">
+          <h4>Agent trace</h4>
+          <div class="analyst-trace" id="analystTraceContent"></div>
         </div>
       </div>
     </div>
@@ -1450,24 +1667,25 @@
     let currentComparison = 'previous';
 
     // Check for OAuth callback messages
-    window.addEventListener('load', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const oauthStatus = urlParams.get('oauth');
-      const platform = urlParams.get('platform');
-      const message = urlParams.get('message');
+  window.addEventListener('load', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const oauthStatus = urlParams.get('oauth');
+    const platform = urlParams.get('platform');
+    const message = urlParams.get('message');
 
-      if (oauthStatus === 'success') {
-        showAlert(`Successfully connected ${platform} account!`, 'success');
-        // Clean URL
-        window.history.replaceState({}, document.title, '/dashboard');
-        loadAccounts();
-      } else if (oauthStatus === 'error') {
-        showAlert(`Failed to connect account: ${message || 'Unknown error'}`, 'error');
-        window.history.replaceState({}, document.title, '/dashboard');
-      }
+    if (oauthStatus === 'success') {
+      showAlert(`Successfully connected ${platform} account!`, 'success');
+      // Clean URL
+      window.history.replaceState({}, document.title, '/dashboard');
+      loadAccounts();
+    } else if (oauthStatus === 'error') {
+      showAlert(`Failed to connect account: ${message || 'Unknown error'}`, 'error');
+      window.history.replaceState({}, document.title, '/dashboard');
+    }
 
-      loadUser();
-    });
+    initAnalystMode();
+    loadUser();
+  });
 
     async function loadUser() {
       try {
@@ -2412,6 +2630,179 @@
         tryAgainButton.disabled = false;
         createButton.innerHTML = originalText;
       }
+    }
+
+    async function initAnalystMode() {
+      const endInput = document.getElementById('analystEnd');
+      const startInput = document.getElementById('analystStart');
+      const today = new Date();
+      endInput.value = today.toISOString().split('T')[0];
+      const weekAgo = new Date(today);
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      startInput.value = weekAgo.toISOString().split('T')[0];
+      document.getElementById('analystRunBtn').addEventListener('click', runAnalystMode);
+    }
+
+    async function runAnalystMode() {
+      const btn = document.getElementById('analystRunBtn');
+      const question = document.getElementById('analystQuestion').value.trim();
+      const start = document.getElementById('analystStart').value;
+      const end = document.getElementById('analystEnd').value;
+      const primaryKpi = document.getElementById('analystKpi').value;
+      const compareMode = document.getElementById('analystCompare').value;
+      const debug = document.getElementById('analystDebug').checked;
+      if (!question || !start || !end) {
+        setAnalystStatus('Please enter a question and both dates.', 'error');
+        return;
+      }
+      const workspaceId = selectedWorkspaceId || 'workspace-main';
+      btn.disabled = true;
+      setAnalystStatus('Analyzing...', 'info');
+      try {
+        const payload = {
+          workspaceId,
+          question,
+          dateRange: { start, end },
+          compareMode,
+          primaryKpi,
+          debug,
+        };
+        const response = await postJSON('/api/ai/analyze', payload);
+        const finalResponse = response.result || response;
+        const trace = response.trace || null;
+        renderAnalystResults(finalResponse, trace);
+        setAnalystStatus('Analysis complete.', 'success');
+      } catch (error) {
+        setAnalystStatus(error.message || 'Analysis failed.', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function renderAnalystResults(finalResponse, trace) {
+      if (!finalResponse) return;
+      const resultsEl = document.getElementById('analystResults');
+      document.getElementById('analystExecHeadline').textContent = finalResponse.exec_summary?.headline || 'No headline available';
+      document.getElementById('analystExecWhatChanged').innerHTML = renderList(finalResponse.exec_summary?.what_changed || []);
+      document.getElementById('analystExecWhy').innerHTML = renderList(finalResponse.exec_summary?.why || []);
+      document.getElementById('analystExecNext').innerHTML = renderList(finalResponse.exec_summary?.what_to_do_next || []);
+      document.getElementById('analystFindingsList').innerHTML = renderFindings(finalResponse.findings || []);
+      document.getElementById('analystActionsList').innerHTML = renderActions(finalResponse.actions || []);
+      document.getElementById('analystEvidenceList').innerHTML = renderEvidence(finalResponse.evidence || []);
+      const traceSection = document.getElementById('analystTraceSection');
+      if (trace && (Array.isArray(trace.plan_steps) || Array.isArray(trace.tool_calls))) {
+        traceSection.style.display = 'block';
+        document.getElementById('analystTraceContent').innerHTML = renderTrace(trace);
+      } else {
+        traceSection.style.display = 'none';
+      }
+      resultsEl.style.display = 'block';
+    }
+
+    function renderFindings(items) {
+      if (!items.length) {
+        return '<p style="color:rgba(255,255,255,0.6); font-size:0.85rem;">No findings returned.</p>';
+      }
+      return items.map(item => `
+        <div class="analyst-evidence-item">
+          <strong>${escapeHTML(item.title || 'Finding')}</strong>
+          <p>${escapeHTML(item.detail || '')}</p>
+          <p style="font-size:0.8rem; color:rgba(255,255,255,0.6);">${escapeHTML(item.impact || '')}</p>
+          <div class="metric-tags">${renderTags(item.supporting_metrics || [])}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderActions(items) {
+      if (!items.length) {
+        return '<p style="color:rgba(255,255,255,0.6); font-size:0.85rem;">No actions returned.</p>';
+      }
+      const priorityOrder = { high: 1, medium: 2, low: 3 };
+      items.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
+      return items.map(item => `
+        <div class="analyst-evidence-item">
+          <strong>${escapeHTML(item.action || 'Action')}</strong>
+          <p>${escapeHTML(item.rationale || '')}</p>
+          <p style="font-size:0.8rem; color:rgba(255,255,255,0.6);">Impact: ${escapeHTML(item.expected_impact || 'N/A')}</p>
+          <p style="font-size:0.8rem; color:rgba(255,255,255,0.6);">How to validate: ${escapeHTML(item.how_to_validate || 'N/A')}</p>
+          <div class="metric-tags">${renderTags(item.supporting_metrics || [])}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderEvidence(items) {
+      if (!items.length) {
+        return '<p style="color:rgba(255,255,255,0.6); font-size:0.85rem;">No evidence items.</p>';
+      }
+      return items.map(item => `
+        <div class="analyst-evidence-item">
+          <div style="font-size:0.85rem; color:rgba(255,255,255,0.5); margin-bottom:0.4rem;">
+            <strong>${escapeHTML(item.tool || 'tool')}</strong> · ${escapeHTML(item.params_summary || '')}
+          </div>
+          <ul style="margin:0; padding-left:1.25rem;">
+            ${item.key_results?.map(result => `<li style="font-size:0.8rem; color:rgba(255,255,255,0.7);">${escapeHTML(result)}</li>`).join('') || ''}
+          </ul>
+        </div>
+      `).join('');
+    }
+
+    function renderTrace(trace) {
+      const plan = trace.plan_steps || [];
+      const planList = plan.length ? `<div><strong>Plan:</strong><ul>${renderList(plan)}</ul></div>` : '';
+      const toolCalls = trace.tool_calls || [];
+      const toolHtml = toolCalls.map(call => `
+        <div class="trace-item">
+          <strong>${escapeHTML(call.name || 'tool call')}</strong>: ${escapeHTML(call.args_summary || '')}
+          <div style="font-size:0.8rem; color:rgba(255,255,255,0.6);">Result: ${escapeHTML(call.result_summary || '')}</div>
+        </div>
+      `).join('');
+      return `${planList}<div class="trace-list">${toolHtml}</div>`;
+    }
+
+    function setAnalystStatus(message, variant = 'info') {
+      const status = document.getElementById('analystStatus');
+      status.textContent = message;
+      status.classList.toggle('error', variant === 'error');
+    }
+
+    async function postJSON(url, body) {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) {
+        let message = 'Request failed';
+        try {
+          const payload = await response.json();
+          message = payload.message || message;
+        } catch (error) {
+          message = response.statusText || message;
+        }
+        throw new Error(message);
+      }
+      return response.json();
+    }
+
+    function renderList(items) {
+      return items.map(item => `<li>${escapeHTML(item)}</li>`).join('');
+    }
+
+    function renderTags(metrics) {
+      if (!metrics.length) return '';
+      return metrics.map(metric => `<span class="metric-tag">${escapeHTML(metric)}</span>`).join('');
+    }
+
+    function escapeHTML(value) {
+      if (!value) return '';
+      return value.toString().replace(/[&<>"']/g, tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      }[tag]));
     }
 
     async function logout() {
