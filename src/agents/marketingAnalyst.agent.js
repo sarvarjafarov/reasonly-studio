@@ -6,7 +6,7 @@ const {
 } = require('../tools/analyticsTools');
 const finalResponseSchema = require('./schemas/finalResponse.schema.json');
 const config = require('../config/config');
-const { getClient } = require('../ai/geminiClient');
+const { generate } = require('../ai/geminiClient');
 const { tools, callTool } = require('../ai/geminiTools');
 
 const defaultMetrics = ['spend', 'revenue', 'conversions', 'roas'];
@@ -219,64 +219,56 @@ async function runGeminiAgent(input) {
     throw new Error('Gemini not enabled');
   }
 
-  const client = getClient();
   const systemPrompt = `
 You are an autonomous marketing analyst.
-- NEVER invent numbers.
-- Always call one of the provided tools for actual metrics.
-- Return JSON matching the FinalResponse schema.
-- Expose evidence entries referencing tool results.
-`;
-  const userPrompt = `
-Objective: ${input.question}
+
+Rules:
+1. Never invent numbers; always rely on actual tool outputs.
+2. When metrics are needed, respond with a JSON containing a "tool_call" object:
+   {"tool_call": {"name": "<tool_name>", "arguments": {...}}}
+3. Once the tool results are provided, output the final FinalResponse JSON matching the schema.
+4. Include evidence entries referencing every tool result used.
+`.trim();
+
+  const userPrompt = `Objective: ${input.question}
 Workspace: ${input.workspaceId}
 Date range: ${input.dateRange.start} to ${input.dateRange.end}
-Primary KPI: ${input.primaryKpi || 'roas'}
-`;
+Primary KPI: ${input.primaryKpi || 'roas'}`;
 
-  const response = await client.generate({
-    model: config.geminiModel,
-    prompt: [
-      { role: 'system', content: systemPrompt.trim() },
-      { role: 'user', content: userPrompt.trim() },
-    ],
-    functions: tools,
-    function_call: 'auto',
-  });
-
-  const candidate = response?.candidates?.[0];
-  const functionCall = candidate?.metadata?.functionCall || candidate?.function_call;
-  if (!functionCall) {
-    throw new Error('Gemini did not invoke a tool');
+  const firstText = await generate(`${systemPrompt}\n\n${userPrompt}\n\nRespond with a single JSON object.`);
+  let parsedCall;
+  try {
+    parsedCall = JSON.parse(firstText);
+  } catch (err) {
+    console.error('Gemini tool invocation invalid JSON', err);
+    throw new Error('Gemini did not return a valid tool call');
   }
 
-  console.log('Gemini tool call:', functionCall.name, functionCall.arguments);
+  const { tool_call: toolCall } = parsedCall;
+  if (!toolCall || !toolCall.name) {
+    throw new Error('Gemini did not specify a tool call');
+  }
 
-  const args = JSON.parse(functionCall.arguments || '{}');
-  const toolResult = await callTool(functionCall.name, args);
-  console.log('Tool result ready for Gemini');
+  console.log('Gemini tool call:', toolCall.name, toolCall.arguments);
+  const toolResult = await callTool(toolCall.name, toolCall.arguments || {});
 
-  const followUp = await client.generate({
-    model: config.geminiModel,
-    prompt: [
-      { role: 'system', content: systemPrompt.trim() },
-      { role: 'user', content: userPrompt.trim() },
-      {
-        role: 'function',
-        name: functionCall.name,
-        content: JSON.stringify(toolResult),
-      },
-    ],
-    function_call: { name: 'final_response', arguments: '{}' },
-  });
+  const followUpPrompt = `
+${systemPrompt}
 
-  const followCandidate = followUp?.candidates?.[0];
-  const text = followCandidate?.content?.[0]?.text || followCandidate?.content || '';
+${userPrompt}
+
+Tool result (${toolCall.name}):
+${JSON.stringify(toolResult)}
+
+Now respond with the FinalResponse JSON.
+`;
+
+  const finalText = await generate(followUpPrompt);
   let parsed;
   try {
-    parsed = JSON.parse(text);
+    parsed = JSON.parse(finalText);
   } catch (err) {
-    console.error('Gemini output not JSON', err);
+    console.error('Gemini final response invalid JSON', err);
     throw new Error('Gemini output invalid');
   }
 
