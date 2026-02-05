@@ -133,7 +133,7 @@ The tools under `src/tools/analyticsTools.js` read the sample CSV, aggregate KPI
 
 #### Gemini configuration
 
-Set `GEMINI_API_KEY`, `GEMINI_MODEL`, and `USE_GEMINI=true` via your environment (Heroku config vars) to run the Gemini-driven path. The agent enforces function-calling, tool-backed numbers, and the strict `FinalResponse` JSON contract.
+Set `GEMINI_API_KEY`, `GEMINI_MODEL`, and `USE_GEMINI=true` via your environment (Heroku config vars) to run the Gemini-driven path. The agent enforces function-calling, tool-backed numbers, and the strict `FinalResponse` JSON contract. Monitor the server logs for the `Gemini plan` and `Gemini tool call` entries so you can trace the investigation steps and tool usage that produced the response.
 
 #### How to test locally
 

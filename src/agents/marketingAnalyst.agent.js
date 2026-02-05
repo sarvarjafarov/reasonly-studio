@@ -219,51 +219,50 @@ async function runGeminiAgent(input) {
     throw new Error('Gemini not enabled');
   }
 
-  const systemPrompt = `
-You are an autonomous marketing analyst.
-
-Rules:
-1. Never invent numbers; always rely on actual tool outputs.
-2. When metrics are needed, respond with a JSON containing a "tool_call" object:
-   {"tool_call": {"name": "<tool_name>", "arguments": {...}}}
-3. Once the tool results are provided, output the final FinalResponse JSON matching the schema.
-4. Include evidence entries referencing every tool result used.
+  const planPrompt = `
+You are an autonomous marketing analyst. Plan how you will answer the question by providing a JSON object:
+{
+  "plan": [
+    {"id": "step1", "title": "...", "summary": "...", "tool_required": true},
+    ...
+  ],
+  "tool_call": {"name": "<tool_name>", "arguments": {...}}
+}
+Never invent numbers. Always plan, then use a tool to fetch data.
 `.trim();
 
-  const userPrompt = `Objective: ${input.question}
-Workspace: ${input.workspaceId}
-Date range: ${input.dateRange.start} to ${input.dateRange.end}
-Primary KPI: ${input.primaryKpi || 'roas'}`;
-
-  const firstText = await generate(`${systemPrompt}\n\n${userPrompt}\n\nRespond with a single JSON object.`);
-  let parsedCall;
+  const planText = await generate(`${planPrompt}\n\nQuestion: ${input.question}\nWorkspace: ${input.workspaceId}\nDate range: ${input.dateRange.start} to ${input.dateRange.end}\nPrimary KPI: ${input.primaryKpi || 'roas'}`);
+  let planJson;
   try {
-    parsedCall = JSON.parse(firstText);
+    planJson = JSON.parse(planText);
   } catch (err) {
-    console.error('Gemini tool invocation invalid JSON', err);
-    throw new Error('Gemini did not return a valid tool call');
+    console.error('Gemini plan output invalid JSON', err);
+    throw new Error('Gemini plan output invalid');
   }
 
-  const { tool_call: toolCall } = parsedCall;
+  const planSteps = Array.isArray(planJson.plan) ? planJson.plan : [];
+  const toolCall = planJson.tool_call;
+
   if (!toolCall || !toolCall.name) {
-    throw new Error('Gemini did not specify a tool call');
+    throw new Error('Gemini did not provide a tool call');
   }
 
+  console.log('Gemini plan:', planSteps.map(step => `${step.id}: ${step.title}`).join(' | '));
   console.log('Gemini tool call:', toolCall.name, toolCall.arguments);
+
   const toolResult = await callTool(toolCall.name, toolCall.arguments || {});
+  console.log('Tool result received from', toolCall.name);
 
-  const followUpPrompt = `
-${systemPrompt}
+  const finalPrompt = `
+Plan: ${JSON.stringify(planSteps)}
 
-${userPrompt}
+Tool result (${toolCall.name}): ${JSON.stringify(toolResult)}
 
-Tool result (${toolCall.name}):
-${JSON.stringify(toolResult)}
-
-Now respond with the FinalResponse JSON.
+Now respond with the FinalResponse JSON (status, objective, findings, actions, evidence, dashboard_spec, exec_summary).
+Ensure every finding/action references the tool result above. Include evidence entries that cite the tool.
 `;
 
-  const finalText = await generate(followUpPrompt);
+  const finalText = await generate(finalPrompt);
   let parsed;
   try {
     parsed = JSON.parse(finalText);
@@ -276,7 +275,22 @@ Now respond with the FinalResponse JSON.
     throw new Error('Gemini output failed validation');
   }
 
-  console.log('Gemini FinalResponse valid');
+  const evidenceEntry = {
+    id: `${toolCall.name}-1`,
+    tool: toolCall.name,
+    params_summary: JSON.stringify(toolCall.arguments || {}),
+    key_results: Object.entries(toolResult.metrics || toolResult || {}).map(
+      ([key, value]) => `${key}: ${value}`
+    ),
+    trace: planSteps.map(step => step.title).join(' > '),
+  };
+
+  if (!Array.isArray(parsed.evidence)) {
+    parsed.evidence = [];
+  }
+  parsed.evidence.push(evidenceEntry);
+
+  console.log('Gemini FinalResponse valid with evidence');
   return parsed;
 }
 
