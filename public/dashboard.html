@@ -900,6 +900,39 @@
       background: rgba(255, 255, 255, 0.02);
     }
 
+    .account-item {
+      cursor: pointer;
+      transition: background 0.2s ease, border 0.2s ease;
+    }
+
+    .account-item.active {
+      background-color: rgba(183, 250, 49, 0.08);
+      border-color: rgba(183, 250, 49, 0.3);
+    }
+
+    .analyst-scope-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+
+    .analyst-scope-pill {
+      font-size: 0.85rem;
+      padding: 0.25rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid rgba(183, 250, 49, 0.5);
+      color: #b7fa31;
+    }
+
+    .analyst-warning {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: #f87171;
+      display: none;
+    }
+
     .trace-list {
       margin-top: 0.5rem;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -1317,6 +1350,37 @@
       <p>Ask a question, let the agent plan the analysis, run tools, and summarize the action plan.</p>
       <div class="analyst-grid">
         <div>
+          <label for="analystSource">Data source</label>
+          <select id="analystSource">
+            <option value="">Select source</option>
+            <option value="meta_ads">Meta Ads</option>
+            <option value="search_console">Search Console</option>
+            <option value="custom_data">Custom data</option>
+          </select>
+        </div>
+        <div>
+          <label for="analystAccount">Account / Property</label>
+          <select id="analystAccount">
+            <option value="">Select account</option>
+          </select>
+        </div>
+        <div>
+          <label for="analystEntityLevel">Entity level</label>
+          <select id="analystEntityLevel">
+            <option value="account">Account</option>
+            <option value="campaign">Campaign</option>
+            <option value="adset">Ad set</option>
+          </select>
+        </div>
+        <div class="analyst-scope-line" style="grid-column: span 3;">
+          <span id="analystScopePill" class="analyst-scope-pill" style="display:none;">Analyzing scope</span>
+        </div>
+      </div>
+      <div id="analystScopeWarning" class="analyst-warning">
+        No synced analytics data. Select a connected account or upload custom data.
+      </div>
+      <div class="analyst-grid">
+        <div style="flex:1 1 100%;">
           <label for="analystQuestion">Business question</label>
           <textarea id="analystQuestion" rows="3" placeholder="e.g., Why did ROAS drop this week compared to last week?"></textarea>
         </div>
@@ -1665,6 +1729,9 @@
     let aiGeneratedConfig = null;
     let currentDateRange = 'last7days';
     let currentComparison = 'previous';
+    let analystAccountsBySource = { meta_ads: [], search_console: [] };
+    let analystCustomSources = [];
+    let analystNoDataBannerVisible = true;
 
     // Check for OAuth callback messages
   window.addEventListener('load', () => {
@@ -1906,6 +1973,9 @@
         document.getElementById('noDataMessage').style.display = 'block';
         document.getElementById('kpiGrid').style.display = 'none';
         document.getElementById('dateFilterBar').style.display = 'none';
+        analystNoDataBannerVisible = true;
+        updateAnalystWarning();
+        updateAnalystButtonState();
         return;
       }
 
@@ -1913,6 +1983,9 @@
       document.getElementById('noDataMessage').style.display = 'none';
       document.getElementById('kpiGrid').style.display = 'grid';
       document.getElementById('dateFilterBar').style.display = 'flex';
+      analystNoDataBannerVisible = false;
+      updateAnalystWarning();
+      updateAnalystButtonState();
 
       const roas = totalSpend > 0 ? (totalRevenue / totalSpend) : 0;
 
@@ -2054,6 +2127,20 @@
 
         const data = await response.json();
         const accounts = data.data || [];
+        analystAccountsBySource.meta_ads = accounts
+          .filter((account) => account.platform === 'meta')
+          .map((account) => ({
+            value: account.account_id,
+            label: `${account.account_name || 'Meta Ads'} (${account.account_id})`,
+          }));
+        analystAccountsBySource.search_console = accounts
+          .filter((account) => account.platform === 'search_console')
+          .map((account) => ({
+            value: account.account_name || account.account_id,
+            label: `${account.account_name || 'Search Console'} (${account.account_id})`,
+            propertyUrl: account.account_name || '',
+          }));
+        analystCustomSources = [];
 
         const accountsList = document.getElementById('accountsList');
 
@@ -2062,8 +2149,13 @@
           return;
         }
 
-        let htmlContent = accounts.map(account => `
-          <div class="account-item">
+        let htmlContent = accounts.map(account => {
+          const source = account.platform === 'meta' ? 'meta_ads' : account.platform === 'search_console' ? 'search_console' : account.platform;
+          const value = source === 'meta_ads' ? account.account_id : account.account_name || account.account_id;
+          const label = account.account_name || `${source} ${account.account_id}`;
+          const propertyUrl = source === 'search_console' ? account.account_name || '' : '';
+          return `
+          <div class="account-item" data-source="${source}" data-account-value="${value}" data-account-label="${label}" data-property-url="${propertyUrl}">
             <div class="account-info">
               <div class="account-name">${account.platform.toUpperCase()}: ${account.account_name}</div>
               <div class="account-id">Account ID: ${account.account_id}</div>
@@ -2073,7 +2165,8 @@
               <button class="btn btn-danger" onclick="disconnectAccount('${account.id}')">Disconnect</button>
             </div>
           </div>
-        `).join('');
+        `;
+        }).join('');
 
         // Load custom data sources
         try {
@@ -2086,8 +2179,12 @@
             const sources = customData.data || customData.sources || [];
 
             if (sources.length > 0) {
+              analystCustomSources = sources.map((source) => ({
+                value: source.id,
+                label: `Custom: ${source.source_name}`,
+              }));
               htmlContent += sources.map(source => `
-                <div class="account-item" style="background: linear-gradient(135deg, rgba(103, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border-left: 3px solid #667eea;">
+                <div class="account-item" data-source="custom_data" data-account-value="${source.id}" data-account-label="Custom: ${source.source_name}" style="background: linear-gradient(135deg, rgba(103, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border-left: 3px solid #667eea;">
                   <div class="account-info">
                     <div class="account-name">📊 CUSTOM DATA: ${source.source_name}</div>
                     <div class="account-id">Type: ${source.source_type.toUpperCase()} | Rows: ${source.row_count || 0}</div>
@@ -2098,6 +2195,8 @@
                   </div>
                 </div>
               `).join('');
+            } else {
+              analystCustomSources = [];
             }
           }
         } catch (error) {
@@ -2105,6 +2204,9 @@
         }
 
         accountsList.innerHTML = htmlContent;
+        attachAccountClickHandlers();
+        updateAnalystWarning();
+        updateAnalystButtonState();
 
         // Update Meta status
         const metaAccounts = accounts.filter(a => a.platform === 'meta');
@@ -2641,6 +2743,28 @@
       weekAgo.setDate(weekAgo.getDate() - 7);
       startInput.value = weekAgo.toISOString().split('T')[0];
       document.getElementById('analystRunBtn').addEventListener('click', runAnalystMode);
+      document.getElementById('analystSource').addEventListener('change', () => {
+        populateAccountSelect(document.getElementById('analystSource').value);
+        updateScopePill();
+        updateAnalystWarning();
+        updateAnalystButtonState();
+      });
+      document.getElementById('analystAccount').addEventListener('change', () => {
+        updateScopePill();
+        updateAnalystButtonState();
+      });
+      ['analystQuestion', 'analystStart', 'analystEnd'].forEach((id) =>
+        document.getElementById(id).addEventListener('input', updateAnalystButtonState)
+      );
+      ['analystKpi', 'analystCompare'].forEach((id) =>
+        document.getElementById(id).addEventListener('change', updateAnalystButtonState)
+      );
+      document.getElementById('analystDebug').addEventListener('change', () => {
+        setAnalystStatus('Idle');
+      });
+      populateAccountSelect('');
+      updateScopePill();
+      updateAnalystButtonState();
     }
 
     async function runAnalystMode() {
@@ -2655,6 +2779,11 @@
         setAnalystStatus('Please enter a question and both dates.', 'error');
         return;
       }
+      const scope = getSelectedScope();
+      if (!scope) {
+        setAnalystStatus('Select a data source and account before running.', 'error');
+        return;
+      }
       const workspaceId = selectedWorkspaceId || 'workspace-main';
       btn.disabled = true;
       setAnalystStatus('Analyzing...', 'info');
@@ -2666,6 +2795,7 @@
           compareMode,
           primaryKpi,
           debug,
+          scope,
         };
         const response = await postJSON('/api/ai/analyze', payload);
         const finalResponse = response.result || response;
@@ -2697,6 +2827,153 @@
         traceSection.style.display = 'none';
       }
       resultsEl.style.display = 'block';
+    }
+
+    function getSelectedScope() {
+      const source = document.getElementById('analystSource').value;
+      if (!source) return null;
+      const accountSelect = document.getElementById('analystAccount');
+      const option = accountSelect.selectedOptions[0];
+      if (!option || !accountSelect.value) return null;
+      const entityLevel = document.getElementById('analystEntityLevel').value;
+      const scope = { source, entityLevel };
+      if (source === 'meta_ads' || source === 'custom_data') {
+        scope.accountId = accountSelect.value;
+      }
+      if (source === 'search_console') {
+        scope.propertyUrl = option.dataset.propertyUrl || accountSelect.value;
+      }
+      return scope;
+    }
+
+    function populateAccountSelect(source) {
+      const select = document.getElementById('analystAccount');
+      if (!select) return;
+      select.innerHTML = '<option value="">Select account</option>';
+      if (!source) {
+        select.disabled = true;
+        return;
+      }
+      const list =
+        source === 'meta_ads'
+          ? analystAccountsBySource.meta_ads
+          : source === 'search_console'
+            ? analystAccountsBySource.search_console
+            : source === 'custom_data'
+              ? analystCustomSources
+              : [];
+      if (!list.length) {
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.disabled = true;
+        placeholder.textContent = source === 'custom_data' ? 'No custom data sources' : 'No accounts connected';
+        select.appendChild(placeholder);
+        select.disabled = true;
+        return;
+      }
+      list.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.value;
+        option.textContent = item.label;
+        option.dataset.label = item.label;
+        if (item.propertyUrl) {
+          option.dataset.propertyUrl = item.propertyUrl;
+        }
+        select.appendChild(option);
+      });
+      select.disabled = false;
+    }
+
+    function updateScopePill() {
+      const pill = document.getElementById('analystScopePill');
+      const source = document.getElementById('analystSource').value;
+      const accountSelect = document.getElementById('analystAccount');
+      const option = accountSelect.selectedOptions[0];
+      if (!source || !option || !accountSelect.value) {
+        pill.style.display = 'none';
+        return;
+      }
+      const label = option.dataset.label || option.textContent;
+      pill.textContent = `Analyzing: ${sourceLabel(source)} • ${label}`;
+      pill.style.display = 'inline-flex';
+    }
+
+    function sourceLabel(value) {
+      if (value === 'meta_ads') return 'Meta Ads';
+      if (value === 'search_console') return 'Search Console';
+      if (value === 'custom_data') return 'Custom data';
+      return value;
+    }
+
+    function isDateRangeValid(start, end) {
+      if (!start || !end) return false;
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      return startDate <= endDate;
+    }
+
+    function updateAnalystButtonState() {
+      const btn = document.getElementById('analystRunBtn');
+      if (!btn) return;
+      btn.disabled = !isAnalystReady();
+    }
+
+    function isAnalystReady() {
+      const question = document.getElementById('analystQuestion').value.trim();
+      const start = document.getElementById('analystStart').value;
+      const end = document.getElementById('analystEnd').value;
+      const source = document.getElementById('analystSource').value;
+      const accountValue = document.getElementById('analystAccount').value;
+      if (!question || !start || !end || !isDateRangeValid(start, end) || !source) {
+        return false;
+      }
+      if (source === 'custom_data') {
+        return accountValue.length > 0;
+      }
+      return accountValue.length > 0;
+    }
+
+    function updateAnalystWarning() {
+      const warning = document.getElementById('analystScopeWarning');
+      if (!warning) return;
+      const showWarning = (!hasAnalystAccounts() || analystNoDataBannerVisible) && !isAnalystScopeCustomDataSelected();
+      warning.style.display = showWarning ? 'block' : 'none';
+    }
+
+    function hasAnalystAccounts() {
+      return analystAccountsBySource.meta_ads.length > 0 || analystAccountsBySource.search_console.length > 0;
+    }
+
+    function isAnalystScopeCustomDataSelected() {
+      return document.getElementById('analystSource').value === 'custom_data' &&
+        !!document.getElementById('analystAccount').value;
+    }
+
+    function attachAccountClickHandlers() {
+      document.querySelectorAll('.account-item').forEach((item) => {
+        item.addEventListener('click', (event) => {
+          if (event.target.closest('.account-actions')) return;
+          handleAccountSelection(item);
+        });
+      });
+    }
+
+    function handleAccountSelection(accountEl) {
+      if (!accountEl) return;
+      document.querySelectorAll('.account-item.active').forEach((el) => el.classList.remove('active'));
+      accountEl.classList.add('active');
+      const source = accountEl.dataset.source || '';
+      const value = accountEl.dataset.accountValue || '';
+      document.getElementById('analystSource').value = source;
+      populateAccountSelect(source);
+      const accountSelect = document.getElementById('analystAccount');
+      if (accountSelect) {
+        accountSelect.value = value;
+      }
+      updateScopePill();
+      updateAnalystWarning();
+      updateAnalystButtonState();
+      document.querySelector('.analyst-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function renderFindings(items) {

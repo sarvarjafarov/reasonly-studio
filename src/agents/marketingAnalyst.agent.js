@@ -6,12 +6,69 @@ const {
 } = require('../tools/analyticsTools');
 const { generate } = require('../ai/geminiClient');
 const { tools, callTool } = require('../ai/geminiTools');
+const config = require('../config/config');
 const { validateFinalResponse, enforceEvidenceBinding } = require('./finalResponse.validator');
 
 const MAX_PLAN_STEPS = 7;
 const MAX_TOOL_CALLS = 8;
 
-function deterministicSummary(kpis, comparisons, series, anomalies, question) {
+function validateScopeInput(scope) {
+  if (!scope) return 'Scope is required. Select an analytics account or custom data source.';
+  if (!scope.source) return 'Scope source is required.';
+  if (scope.source === 'meta_ads' && !scope.accountId) return 'Select a Meta Ads account.';
+  if (scope.source === 'search_console' && !scope.propertyUrl) return 'Select a Search Console property.';
+  if (scope.source === 'custom_data' && !scope.accountId) return 'Select a custom data source.';
+  return null;
+}
+
+function describeScope(scope) {
+  if (!scope) return '';
+  const segments = [];
+  if (scope.source === 'meta_ads') {
+    segments.push(`Meta Ads account ${scope.accountId || 'unspecified'}`);
+  } else if (scope.source === 'search_console') {
+    segments.push(`Search Console property ${scope.propertyUrl || 'unspecified'}`);
+  } else if (scope.source === 'custom_data') {
+    segments.push(`Custom data ${scope.accountId || 'source'}`);
+  } else {
+    segments.push(`${scope.source}`);
+  }
+  if (scope.entityLevel) {
+    segments.push(`level ${scope.entityLevel}`);
+  }
+  return segments.join(' • ');
+}
+
+function createScopeErrorResponse(question, reason) {
+  return {
+    status: 'insufficient_data',
+    objective: question,
+    findings: [],
+    actions: [],
+    evidence: [],
+    dashboard_spec: {},
+    exec_summary: {
+      headline: 'Insufficient data: scope missing',
+      what_changed: [],
+      why: [reason],
+      what_to_do_next: [
+        'Select a connected analytics account',
+        'Connect the required platform (Meta / Search Console)',
+        'Upload or choose a custom data source if needed',
+      ],
+    },
+  };
+}
+
+function buildScopeFilters(scope) {
+  if (!scope) return {};
+  const filters = { source: scope.source };
+  if (scope.accountId) filters.accountId = scope.accountId;
+  if (scope.propertyUrl) filters.propertyUrl = scope.propertyUrl;
+  return filters;
+}
+
+function deterministicSummary(kpis, comparisons, series, anomalies, question, scopeDescription = '') {
   const findings = [];
   findings.push({
     title: 'Core KPI snapshot',
@@ -79,9 +136,10 @@ function deterministicSummary(kpis, comparisons, series, anomalies, question) {
     },
   ];
 
+  const objective = scopeDescription ? `${scopeDescription} · ${question}` : question;
   const finalResponse = {
     status: 'ok',
-    objective: question,
+    objective,
     findings,
     actions,
     evidence,
@@ -94,28 +152,39 @@ function deterministicSummary(kpis, comparisons, series, anomalies, question) {
 }
 
 async function runAgent(input) {
-  const { workspaceId, question, dateRange, primaryKpi = 'roas' } = input;
-  const kpis = await get_kpis(workspaceId, dateRange, {}, null, ['spend', 'revenue', 'conversions', 'roas']);
+  const { workspaceId, question, dateRange, primaryKpi = 'roas', scope } = input;
+  const scopeError = validateScopeInput(scope);
+  if (scopeError) {
+    return createScopeErrorResponse(question, scopeError);
+  }
+  const filters = buildScopeFilters(scope);
+  const scopeDescription = describeScope(scope);
+  const kpis = await get_kpis(workspaceId, dateRange, filters, null, ['spend', 'revenue', 'conversions', 'roas']);
   const previousRange = {
     start: new Date(new Date(dateRange.start).setDate(new Date(dateRange.start).getDate() - 7)).toISOString().split('T')[0],
     end: new Date(new Date(dateRange.end).setDate(new Date(dateRange.end).getDate() - 7)).toISOString().split('T')[0],
   };
   const comparisons = await compare_periods(workspaceId, dateRange, previousRange, ['spend', 'revenue', 'conversions']);
-  const series = await get_timeseries(workspaceId, dateRange, 'daily', ['spend', 'revenue']);
+  const series = await get_timeseries(workspaceId, dateRange, 'daily', ['spend', 'revenue'], null, filters);
   const anomalies = await detect_anomalies(workspaceId, dateRange, primaryKpi);
-  return deterministicSummary(kpis, comparisons, series, anomalies, question);
+  return deterministicSummary(kpis, comparisons, series, anomalies, question, scopeDescription);
 }
 
 async function runGeminiAgent(input, options = {}) {
   if (!config.useGemini) throw new Error('Gemini disabled');
   const debugMode = options.debug === true;
+  const scopeError = validateScopeInput(input.scope);
+  if (scopeError) {
+    return createScopeErrorResponse(input.question, scopeError);
+  }
+  const scopeDescription = describeScope(input.scope);
 
   const planPrompt = `
 You are an autonomous marketing analyst. Respond with JSON ONLY: {"plan":["step1","step2",...]}.
 Max 7 steps. No markdown, no explanations outside JSON.
 `;
 
-  const planText = await generate(`${planPrompt}\nQuestion:${input.question}\nWorkspace:${input.workspaceId}\nDateRange:${input.dateRange.start}-${input.dateRange.end}`);
+  const planText = await generate(`${planPrompt}\nQuestion:${input.question}\nScope:${scopeDescription}\nWorkspace:${input.workspaceId}\nDateRange:${input.dateRange.start}-${input.dateRange.end}`);
   const planJson = safeParseJson(planText, 'plan');
   const plan = Array.isArray(planJson.plan) ? planJson.plan.slice(0, MAX_PLAN_STEPS) : [];
 
@@ -131,6 +200,7 @@ Max 7 steps. No markdown, no explanations outside JSON.
   for (let i = 0; i < MAX_TOOL_CALLS; i++) {
     const toolLoopPrompt = `
 Plan: ${JSON.stringify(plan)}
+Scope: ${scopeDescription}
 Evidence so far: ${JSON.stringify(evidence)}
 Tool summaries: ${JSON.stringify(toolResults.map((r) => ({ name: r.name, summary: summarizeResult(r.result) })))}
 Return JSON: {"next":{"name":"...","arguments":{...}},"done":false,"reason":"..."}.
@@ -153,18 +223,25 @@ Return JSON: {"next":{"name":"...","arguments":{...}},"done":false,"reason":"...
       continue;
     }
 
-    const toolResult = await callTool(next.name, next.arguments || {});
-    toolResults.push({ name: next.name, args: next.arguments || {}, result: toolResult });
+    const executedArgs = {
+      ...(next.arguments || {}),
+      workspaceId: input.workspaceId,
+      dateRange: input.dateRange,
+      scope: input.scope,
+    };
+    const toolResult = await callTool(next.name, executedArgs);
+    toolResults.push({ name: next.name, args: executedArgs, result: toolResult });
+    const argsSummary = JSON.stringify(executedArgs);
     trace.tool_calls.push({
       name: next.name,
-      args_summary: JSON.stringify(next.arguments || {}),
+      args_summary: argsSummary,
       result_summary: summarizeResult(toolResult),
     });
 
     evidence.push({
       id: `ev_${evidence.length + 1}`,
       tool: next.name,
-      params_summary: JSON.stringify(next.arguments || {}),
+      params_summary: `Scope: ${scopeDescription} · Args: ${argsSummary}`,
       key_results: extractKeyResults(toolResult),
     });
     if (toolResults.length >= 2 && toolJson.done) break;
@@ -172,6 +249,7 @@ Return JSON: {"next":{"name":"...","arguments":{...}},"done":false,"reason":"...
 
   const finalPrompt = `
 Plan: ${JSON.stringify(plan)}
+Scope: ${scopeDescription}
 Evidence: ${JSON.stringify(evidence)}
 Tool summaries: ${JSON.stringify(toolResults.map((r) => ({ name: r.name, summary: summarizeResult(r.result) })))}
 Now return FinalResponse JSON ONLY.
@@ -194,6 +272,7 @@ Return corrected FinalResponse JSON ONLY.
     trace.validation.push('repair ok');
   }
 
+  finalResponse.objective = scopeDescription ? `${scopeDescription} · ${input.question}` : input.question;
   finalResponse = enforceEvidenceBinding(finalResponse);
   trace.validation.push('evidence binding enforced');
 
@@ -226,4 +305,6 @@ function extractKeyResults(toolResult) {
 module.exports = {
   runGeminiAgent,
   runAgent,
+  createScopeErrorResponse,
+  validateScopeInput,
 };

@@ -1,6 +1,11 @@
 const express = require('express');
 const config = require('../../config/config');
-const { runAgent, runGeminiAgent } = require('../../agents/marketingAnalyst.agent');
+const {
+  runAgent,
+  runGeminiAgent,
+  createScopeErrorResponse,
+  validateScopeInput,
+} = require('../../agents/marketingAnalyst.agent');
 
 const router = express.Router();
 
@@ -9,6 +14,17 @@ function validateRequest(body) {
   if (!body.question || typeof body.question !== 'string') return 'question is required';
   if (!body.dateRange || !body.dateRange.start || !body.dateRange.end) return 'dateRange.start and end are required';
   return null;
+}
+
+function sendScopeError(res, question, debug, reason) {
+  const finalResponse = createScopeErrorResponse(question, reason);
+  if (debug) {
+    return res.json({
+      result: finalResponse,
+      trace: { validation: ['scope_missing'], plan_steps: [], tool_calls: [] },
+    });
+  }
+  return res.json(finalResponse);
 }
 
 router.post('/analyze', async (req, res) => {
@@ -23,7 +39,13 @@ router.post('/analyze', async (req, res) => {
     dateRange: req.body.dateRange,
     compareMode: req.body.compareMode,
     primaryKpi: req.body.primaryKpi,
+    scope: req.body.scope,
   };
+
+  const scopeError = validateScopeInput(req.body.scope);
+  if (scopeError) {
+    return sendScopeError(res, req.body.question, req.body.debug, scopeError);
+  }
 
   try {
     if (config.useGemini) {

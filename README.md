@@ -115,7 +115,7 @@ For deployments, make sure the production callback URLs (`https://yourdomain.com
 
 ### Hackathon Analyst Mode (Backend)
 
-The new `POST /api/ai/analyze` endpoint powers the Autonomous Marketing Analyst experience. It relies on deterministic tool outputs (KPIs, comparisons, time series, anomaly detection) derived from `data/sample.csv` and returns the strict `FinalResponse` JSON contract. To try it locally:
+The new `POST /api/ai/analyze` endpoint powers the Autonomous Marketing Analyst experience. It relies on deterministic tool outputs (KPIs, comparisons, time series, anomaly detection) derived from `data/sample.csv` and returns the strict `FinalResponse` JSON contract. Analyst Mode now requires a `scope` object that names the source and account/property (Meta Ads, Search Console, or a custom dataset). Without a valid scope, the response explicitly returns `status="insufficient_data"` and guides you to connect or select the connected account. To try it locally:
 
 ```bash
 curl http://localhost:3000/api/ai/analyze \
@@ -125,7 +125,12 @@ curl http://localhost:3000/api/ai/analyze \
     "question": "How did January spend perform?",
     "dateRange": { "start": "2026-01-15", "end": "2026-01-24" },
     "compareMode": "previous_period",
-    "primaryKpi": "roas"
+    "primaryKpi": "roas",
+    "scope": {
+      "source": "meta_ads",
+      "accountId": "123456789",
+      "entityLevel": "account"
+    }
   }'
 ```
 
@@ -142,7 +147,7 @@ Set `GEMINI_API_KEY`, `GEMINI_MODEL`, and `USE_GEMINI=true` via your environment
 ```bash
 USE_GEMINI=false curl -X POST http://localhost:3000/api/ai/analyze \
   -H "Content-Type: application/json" \
-  -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"}}'
+  -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"},"scope":{"source":"meta_ads","accountId":"1450722765742133","entityLevel":"account"}}'
 ```
 
 2) Gemini mode:
@@ -150,7 +155,7 @@ USE_GEMINI=false curl -X POST http://localhost:3000/api/ai/analyze \
 ```bash
 USE_GEMINI=true GEMINI_API_KEY=... GEMINI_MODEL=gemini-3-flash curl -X POST http://localhost:3000/api/ai/analyze \
   -H "Content-Type: application/json" \
-  -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"}}'
+  -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"},"scope":{"source":"search_console","propertyUrl":"https://example.com","entityLevel":"account"}}'
 ```
 
 3) Gemini debug envelope:
@@ -158,8 +163,10 @@ USE_GEMINI=true GEMINI_API_KEY=... GEMINI_MODEL=gemini-3-flash curl -X POST http
 ```bash
 USE_GEMINI=true GEMINI_API_KEY=... GEMINI_MODEL=gemini-3-flash curl -X POST http://localhost:3000/api/ai/analyze \
   -H "Content-Type: application/json" \
-  -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"},"debug":true}'
+  -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"},"scope":{"source":"meta_ads","accountId":"1450722765742133","entityLevel":"account"},"debug":true}'
 ```
+
+In debug responses, the agent returns `{result, trace}` and `trace.tool_calls` should list at least two tool executions so you can verify the plan → tool → decision pipeline.
 
 #### How to test locally
 
