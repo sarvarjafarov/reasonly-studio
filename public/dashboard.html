@@ -1819,8 +1819,14 @@
         return;
       }
 
+      const workspaceId = selectedWorkspaceId || (workspaces[0] && workspaces[0].id);
+      if (!workspaceId) {
+        select.innerHTML = '<option value="">Select a workspace to load accounts</option>';
+        return;
+      }
+
       try {
-        const response = await fetch(`/api/oauth/accounts/${selectedWorkspaceId}`, {
+        const response = await fetch(`/api/oauth/accounts/${workspaceId}`, {
           credentials: 'include'
         });
 
@@ -2236,8 +2242,15 @@
       const select = document.getElementById('aiAdAccount');
       select.innerHTML = '<option value="">Loading accounts...</option>';
 
+      const workspaceId = selectedWorkspaceId || (workspaces[0] && workspaces[0].id);
+
+      if (!workspaceId) {
+        select.innerHTML = '<option value="">Select a workspace to load accounts</option>';
+        return;
+      }
+
       try {
-        const response = await fetch(`/api/oauth/accounts/${selectedWorkspaceId}`, {
+        const response = await fetch(`/api/oauth/accounts/${workspaceId}`, {
           credentials: 'include'
         });
         const result = await response.json();
