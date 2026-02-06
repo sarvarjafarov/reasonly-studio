@@ -844,6 +844,7 @@
     .analyst-body {
       padding: 0 1.5rem 1.5rem;
       display: none;
+      max-width: 900px;
     }
 
     .analyst-panel.expanded .analyst-body {
@@ -852,15 +853,26 @@
 
     .analyst-body > p {
       color: rgba(255, 255, 255, 0.6);
-      font-size: 0.9rem;
-      margin-bottom: 1.25rem;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
     }
 
     .analyst-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 1rem;
       margin-bottom: 1rem;
+    }
+
+    .analyst-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .analyst-grid-full {
+      grid-column: 1 / -1;
     }
 
     .analyst-grid label {
@@ -874,16 +886,29 @@
 
     .analyst-grid textarea,
     .analyst-grid input,
-    .analyst-grid select {
+    .analyst-grid select,
+    .analyst-grid-2col textarea,
+    .analyst-grid-2col input,
+    .analyst-grid-2col select {
       width: 100%;
-      padding: 0.75rem 1rem;
-      border-radius: 0.75rem;
+      padding: 0.65rem 0.875rem;
+      border-radius: 0.5rem;
       border: 1px solid rgba(255, 255, 255, 0.1);
       background-color: rgba(255, 255, 255, 0.04);
       color: #ffffff;
       font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       resize: vertical;
+    }
+
+    .analyst-grid textarea:focus,
+    .analyst-grid input:focus,
+    .analyst-grid select:focus,
+    .analyst-grid-2col textarea:focus,
+    .analyst-grid-2col input:focus,
+    .analyst-grid-2col select:focus {
+      outline: none;
+      border-color: rgba(183, 250, 49, 0.5);
     }
 
     .analyst-status {
@@ -986,9 +1011,13 @@
     }
 
     .analyst-warning {
-      margin-top: 0.5rem;
-      font-size: 0.85rem;
-      color: #f87171;
+      margin: 0.75rem 0;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      color: #fbbf24;
+      background-color: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 0.5rem;
       display: none;
     }
 
@@ -1240,6 +1269,14 @@
 
       .account-actions button {
         width: 100%;
+      }
+
+      .analyst-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .analyst-header-left h3 {
+        font-size: 1rem;
       }
 
       .dashboard-grid {
@@ -1626,10 +1663,12 @@
         </div>
       </div>
       <div class="analyst-body">
-      <p>Ask a question about your marketing data and get AI-powered insights and recommendations.</p>
+      <p style="margin-bottom: 1rem;">Ask a question about your marketing data and get AI-powered insights.</p>
+
+      <!-- Row 1: Data Source Selection -->
       <div class="analyst-grid">
         <div>
-          <label for="analystSource">Data source</label>
+          <label for="analystSource">Data Source</label>
           <select id="analystSource">
             <option value="">Select source</option>
             <option value="meta_ads">Meta Ads</option>
@@ -1638,37 +1677,41 @@
           </select>
         </div>
         <div>
-          <label for="analystAccount">Account / Property</label>
+          <label for="analystAccount">Account</label>
           <select id="analystAccount">
             <option value="">Select account</option>
           </select>
         </div>
         <div>
-          <label for="analystEntityLevel">Entity level</label>
+          <label for="analystEntityLevel">Entity Level</label>
           <select id="analystEntityLevel">
             <option value="account">Account</option>
             <option value="campaign">Campaign</option>
             <option value="adset">Ad set</option>
           </select>
         </div>
-        <div class="analyst-scope-line" style="grid-column: span 3;">
-          <span id="analystScopePill" class="analyst-scope-pill" style="display:none;">Analyzing scope</span>
-        </div>
       </div>
+
       <div id="analystScopeWarning" class="analyst-warning">
         No synced analytics data. Select a connected account or upload custom data.
       </div>
-      <div class="analyst-grid">
-        <div style="flex:1 1 100%;">
-          <label for="analystQuestion">Business question</label>
-          <textarea id="analystQuestion" rows="3" placeholder="e.g., Why did ROAS drop this week compared to last week?"></textarea>
-        </div>
+
+      <span id="analystScopePill" class="analyst-scope-pill" style="display:none; margin-bottom: 1rem;">Analyzing scope</span>
+
+      <!-- Row 2: Question -->
+      <div style="margin-bottom: 1rem;">
+        <label for="analystQuestion" style="display:block; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:rgba(255,255,255,0.6); margin-bottom:0.4rem;">Business Question</label>
+        <textarea id="analystQuestion" rows="2" placeholder="e.g., Why did ROAS drop this week compared to last week?" style="width:100%; padding:0.65rem 0.875rem; border-radius:0.5rem; border:1px solid rgba(255,255,255,0.1); background-color:rgba(255,255,255,0.04); color:#fff; font-family:'Inter',sans-serif; font-size:0.85rem; resize:vertical;"></textarea>
+      </div>
+
+      <!-- Row 3: Date Range & Options -->
+      <div class="analyst-grid" style="grid-template-columns: repeat(5, 1fr);">
         <div>
-          <label for="analystStart">Start date</label>
+          <label for="analystStart">Start Date</label>
           <input id="analystStart" type="date">
         </div>
         <div>
-          <label for="analystEnd">End date</label>
+          <label for="analystEnd">End Date</label>
           <input id="analystEnd" type="date">
         </div>
         <div>
@@ -1682,21 +1725,23 @@
           </select>
         </div>
         <div>
-          <label for="analystCompare">Compare mode</label>
+          <label for="analystCompare">Compare</label>
           <select id="analystCompare">
             <option value="previous_period">Previous period</option>
             <option value="yoy">Year-over-year</option>
             <option value="none">None</option>
           </select>
         </div>
-        <div id="debugModeContainer" style="display:none; align-items:flex-end; gap:0.5rem;">
-          <label for="analystDebug" style="display:flex; align-items:center; gap:0.35rem;">
+        <div id="debugModeContainer" style="display:none; align-items:flex-end;">
+          <label for="analystDebug" style="display:flex; align-items:center; gap:0.35rem; padding-top: 1.5rem;">
             <input id="analystDebug" type="checkbox" style="transform:scale(1.05);">
-            <span style="font-size:0.8rem; color:rgba(255,255,255,0.75); text-transform:none;">Debug mode</span>
+            <span style="font-size:0.75rem; color:rgba(255,255,255,0.6);">Debug</span>
           </label>
         </div>
       </div>
-      <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+
+      <!-- Action Button -->
+      <div style="display:flex; align-items:center; gap:1rem; margin-top: 0.5rem;">
         <button id="analystRunBtn" class="btn btn-primary" title="Select a data source, account, and enter a question to enable analysis">Analyze with AI</button>
         <span id="analystStatus" class="analyst-status">Idle</span>
       </div>
