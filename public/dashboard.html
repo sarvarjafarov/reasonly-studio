@@ -782,16 +782,75 @@
       border: 1px solid rgba(183, 250, 49, 0.2);
       background-color: rgba(255, 255, 255, 0.02);
       border-radius: 1.2rem;
-      padding: 1.5rem;
       margin-bottom: 2rem;
+      overflow: hidden;
     }
 
-    .analyst-panel h3 {
-      font-size: 1.25rem;
-      margin-bottom: 0.25rem;
+    .analyst-panel.hidden {
+      display: none;
     }
 
-    .analyst-panel p {
+    .analyst-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 1.5rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .analyst-header:hover {
+      background-color: rgba(183, 250, 49, 0.05);
+    }
+
+    .analyst-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .analyst-header-left h3 {
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    .analyst-header-left .badge {
+      background-color: rgba(183, 250, 49, 0.15);
+      color: #b7fa31;
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .analyst-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+    }
+
+    .analyst-toggle svg {
+      transition: transform 0.2s ease;
+    }
+
+    .analyst-panel.expanded .analyst-toggle svg {
+      transform: rotate(180deg);
+    }
+
+    .analyst-body {
+      padding: 0 1.5rem 1.5rem;
+      display: none;
+    }
+
+    .analyst-panel.expanded .analyst-body {
+      display: block;
+    }
+
+    .analyst-body > p {
       color: rgba(255, 255, 255, 0.6);
       font-size: 0.9rem;
       margin-bottom: 1.25rem;
@@ -1378,7 +1437,7 @@
           Connect your advertising accounts to see your performance metrics. Once connected, you'll see KPIs, trends, and can use AI-powered analysis.
         </p>
         <div style="display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap;">
-          <a href="#connectAccounts" class="btn btn-primary" style="text-decoration: none;">Connect Your First Account</a>
+          <a href="#accountsSection" class="btn btn-primary" style="text-decoration: none;">Connect Your First Account</a>
         </div>
       </div>
     </div>
@@ -1482,9 +1541,92 @@
       </div>
     </div>
 
-    <div class="card analyst-panel">
-      <h3>AI Marketing Analyst</h3>
-      <p>Ask a question, let the agent plan the analysis, run tools, and summarize the action plan.</p>
+    <!-- Accounts Section - Connect & Manage -->
+    <div class="card" id="accountsSection">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+          <h2 style="margin-bottom: 0.5rem;">Connect Your Ad Platforms</h2>
+          <p class="card-subtitle" style="margin-bottom: 0;">Link your advertising accounts to see unified performance data.</p>
+        </div>
+        <div id="connectedCount" style="background: rgba(183, 250, 49, 0.1); border: 1px solid rgba(183, 250, 49, 0.3); border-radius: 0.75rem; padding: 0.5rem 1rem; font-size: 0.875rem; color: #b7fa31; display: none;">
+          <span id="connectedCountText">0 connected</span>
+        </div>
+      </div>
+
+      <div class="connection-grid">
+        <!-- Meta Ads -->
+        <div class="connection-card" id="metaCard">
+          <div class="platform-icon">📘</div>
+          <div class="platform-name">Meta Ads</div>
+          <div class="connection-status" id="metaStatus">Not connected</div>
+          <button class="btn btn-primary" onclick="connectMeta()" id="metaConnectBtn">Connect</button>
+        </div>
+
+        <!-- Google Ads -->
+        <div class="connection-card" id="googleCard">
+          <div class="platform-icon">🔍</div>
+          <div class="platform-name">Google Ads</div>
+          <div class="connection-status" id="googleStatus">Not connected</div>
+          <button class="btn btn-primary" onclick="connectGoogle()" id="googleConnectBtn">Connect</button>
+        </div>
+
+        <!-- Search Console -->
+        <div class="connection-card" id="searchConsoleCard">
+          <div class="platform-icon">🔎</div>
+          <div class="platform-name">Search Console</div>
+          <div class="connection-status" id="searchConsoleStatus">Not connected</div>
+          <button class="btn btn-primary" onclick="connectSearchConsole()" id="searchConsoleConnectBtn">Connect</button>
+        </div>
+
+        <!-- TikTok Ads -->
+        <div class="connection-card" id="tiktokCard">
+          <div class="platform-icon">🎵</div>
+          <div class="platform-name">TikTok Ads</div>
+          <div class="connection-status" id="tiktokStatus">Not connected</div>
+          <button class="btn btn-primary" onclick="connectTikTok()" id="tiktokConnectBtn">Connect</button>
+        </div>
+
+        <!-- LinkedIn Ads -->
+        <div class="connection-card" id="linkedinCard">
+          <div class="platform-icon">💼</div>
+          <div class="platform-name">LinkedIn Ads</div>
+          <div class="connection-status" id="linkedinStatus">Not connected</div>
+          <button class="btn btn-primary" onclick="connectLinkedIn()" id="linkedinConnectBtn">Connect</button>
+        </div>
+
+        <!-- Custom Data -->
+        <div class="connection-card" style="background: linear-gradient(135deg, rgba(103, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border: 2px solid rgba(103, 126, 234, 0.3);">
+          <div class="platform-icon">📊</div>
+          <div class="platform-name">Custom Data</div>
+          <div class="connection-status" style="color: #b7fa31;">Import Excel/CSV</div>
+          <button class="btn btn-primary" onclick="window.location.href='/custom-data.html'" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Upload</button>
+        </div>
+      </div>
+
+      <!-- Connected Accounts List (shows when accounts exist) -->
+      <div id="connectedAccountsList" style="margin-top: 2rem; display: none;">
+        <h3 style="font-size: 1rem; margin-bottom: 1rem; color: rgba(255, 255, 255, 0.8);">Connected Accounts</h3>
+        <div id="accountsList">
+          <div class="loading">Loading accounts...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card analyst-panel hidden" id="analystPanel">
+      <div class="analyst-header" onclick="toggleAnalystPanel()">
+        <div class="analyst-header-left">
+          <h3>AI Marketing Analyst</h3>
+          <span class="badge">Beta</span>
+        </div>
+        <div class="analyst-toggle">
+          <span>Expand</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+      <div class="analyst-body">
+      <p>Ask a question about your marketing data and get AI-powered insights and recommendations.</p>
       <div class="analyst-grid">
         <div>
           <label for="analystSource">Data source</label>
@@ -1594,67 +1736,6 @@
           <div class="analyst-trace" id="analystTraceContent"></div>
         </div>
       </div>
-    </div>
-
-    <div class="card" id="connectAccounts">
-      <h2>Connect Your Accounts</h2>
-      <p class="card-subtitle">Link your advertising accounts to view all your data in one place. Choose a platform to get started.</p>
-
-      <div class="connection-grid">
-        <!-- Meta Ads Connection -->
-        <div class="connection-card" id="metaCard">
-          <div class="platform-icon">📘</div>
-          <div class="platform-name">Meta Ads</div>
-          <div class="connection-status" id="metaStatus">Not connected</div>
-          <button class="btn btn-primary" onclick="connectMeta()" id="metaConnectBtn">Connect Meta Ads</button>
-        </div>
-
-        <!-- Google Ads Connection -->
-        <div class="connection-card" id="googleCard">
-          <div class="platform-icon">🔍</div>
-          <div class="platform-name">Google Ads</div>
-          <div class="connection-status" id="googleStatus">Not connected</div>
-          <button class="btn btn-primary" onclick="connectGoogle()" id="googleConnectBtn">Connect Google Ads</button>
-        </div>
-
-        <!-- Google Search Console Connection -->
-        <div class="connection-card" id="searchConsoleCard">
-          <div class="platform-icon">🔎</div>
-          <div class="platform-name">Search Console</div>
-          <div class="connection-status" id="searchConsoleStatus">Not connected</div>
-          <button class="btn btn-primary" onclick="connectSearchConsole()" id="searchConsoleConnectBtn">Connect Search Console</button>
-        </div>
-
-        <!-- TikTok Ads Connection -->
-        <div class="connection-card" id="tiktokCard">
-          <div class="platform-icon">🎵</div>
-          <div class="platform-name">TikTok Ads</div>
-          <div class="connection-status" id="tiktokStatus">Not connected</div>
-          <button class="btn btn-primary" onclick="connectTikTok()" id="tiktokConnectBtn">Connect TikTok</button>
-        </div>
-
-        <!-- LinkedIn Ads Connection -->
-        <div class="connection-card" id="linkedinCard">
-          <div class="platform-icon">💼</div>
-          <div class="platform-name">LinkedIn Ads</div>
-          <div class="connection-status" id="linkedinStatus">Not connected</div>
-          <button class="btn btn-primary" onclick="connectLinkedIn()" id="linkedinConnectBtn">Connect LinkedIn</button>
-        </div>
-
-        <!-- Custom Data Upload -->
-        <div class="connection-card" style="background: linear-gradient(135deg, rgba(103, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border: 2px solid rgba(103, 126, 234, 0.3);">
-          <div class="platform-icon">📊</div>
-          <div class="platform-name">Custom Data</div>
-          <div class="connection-status" style="color: #b7fa31;">Import Excel/CSV</div>
-          <button class="btn btn-primary" onclick="window.location.href='/custom-data.html'" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Upload Data</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Connected Accounts</h2>
-      <div id="accountsList">
-        <div class="loading">Loading accounts...</div>
       </div>
     </div>
 
@@ -2158,11 +2239,29 @@
         analystCustomSources = [];
 
         const accountsList = document.getElementById('accountsList');
+        const connectedCountEl = document.getElementById('connectedCount');
+        const connectedAccountsListEl = document.getElementById('connectedAccountsList');
+        const analystPanel = document.getElementById('analystPanel');
 
         if (accounts.length === 0) {
-          accountsList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔌</div><div>No connected accounts. Connect your first ad account above!</div></div>';
+          accountsList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔌</div><div>No connected accounts yet.</div></div>';
+          // Hide connected count and connected accounts list
+          if (connectedCountEl) connectedCountEl.style.display = 'none';
+          if (connectedAccountsListEl) connectedAccountsListEl.style.display = 'none';
+          // Hide analyst panel when no accounts
+          if (analystPanel) analystPanel.classList.add('hidden');
           return;
         }
+
+        // Show connected count
+        if (connectedCountEl) {
+          connectedCountEl.style.display = 'block';
+          document.getElementById('connectedCountText').textContent = `${accounts.length} connected`;
+        }
+        // Show connected accounts list
+        if (connectedAccountsListEl) connectedAccountsListEl.style.display = 'block';
+        // Show analyst panel when accounts exist
+        if (analystPanel) analystPanel.classList.remove('hidden');
 
         let htmlContent = accounts.map(account => {
           const source = account.platform === 'meta' ? 'meta_ads' : account.platform === 'search_console' ? 'search_console' : account.platform;
@@ -2812,6 +2911,19 @@
         createButton.disabled = false;
         tryAgainButton.disabled = false;
         createButton.innerHTML = originalText;
+      }
+    }
+
+    // Toggle AI Analyst Panel
+    function toggleAnalystPanel() {
+      const panel = document.getElementById('analystPanel');
+      const toggleText = panel.querySelector('.analyst-toggle span');
+      if (panel.classList.contains('expanded')) {
+        panel.classList.remove('expanded');
+        toggleText.textContent = 'Expand';
+      } else {
+        panel.classList.add('expanded');
+        toggleText.textContent = 'Collapse';
       }
     }
 

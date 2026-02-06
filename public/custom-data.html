@@ -254,13 +254,86 @@
             color: #b7fa31;
         }
     </style>
+    .app-header {
+      background-color: #1a1a1a;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 2rem;
+      height: 2rem;
+      background-color: #b7fa31;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #000000;
+      font-size: 0.875rem;
+    }
+
+    .logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+    }
+
+    .nav-link:hover {
+      color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.1);
+    }
+
+    .nav-link.active {
+      color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.15);
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+  <div class="app-header">
+    <a href="/" class="logo">
+      <div class="logo-icon">R</div>
+      <div class="logo-text">Reasonly</div>
+    </a>
+    <nav class="nav-menu">
+      <a href="/dashboard" class="nav-link">Overview</a>
+      <a href="/campaigns.html" class="nav-link">Campaigns</a>
+      <a href="/custom-data.html" class="nav-link active">Custom Data</a>
+      <a href="/website-audit.html" class="nav-link">Site Audit</a>
+    </nav>
+  </div>
 
+    <div class="container">
         <div class="header">
-            <h1>📊 Custom Data Import</h1>
+            <h1>Custom Data Import</h1>
             <p>Upload your Excel or CSV files for AI-powered analysis</p>
         </div>
 
