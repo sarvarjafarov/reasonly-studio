@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email - AdsData</title>
+    <title>Verify Email - Reasonly Studio</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate icon" href="/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
@@ -243,8 +243,8 @@
 <body>
     <div class="auth-container">
         <div class="logo">
-            <div class="logo-icon">A</div>
-            <div class="logo-text">AdsData</div>
+            <div class="logo-icon">R</div>
+            <div class="logo-text">Reasonly</div>
         </div>
 
         <div class="auth-card">
@@ -261,7 +261,7 @@
                 <h1>Check Your Email</h1>
                 <p class="message-text">We've sent a verification link to <strong id="userEmail"></strong>. Please check your inbox and click the link to verify your account.</p>
                 <p class="subtitle" style="margin-top: 1rem;">Didn't receive the email? Check your spam folder or request a new one below.</p>
-                <a href="/admin/login" class="btn btn-secondary" style="margin-top: 1rem;">Back to Login</a>
+                <a href="/login" class="btn btn-secondary" style="margin-top: 1rem;">Back to Login</a>
 
                 <!-- Resend from check email state -->
                 <div id="resendFromCheckEmail" class="resend-section show">
@@ -275,7 +275,7 @@
                 <div class="status-icon success">✓</div>
                 <h1>Email Verified!</h1>
                 <p class="message-text">Your email has been successfully verified. You can now log in and start connecting your ad accounts.</p>
-                <a href="/admin/login" class="btn btn-primary">Go to Login</a>
+                <a href="/login" class="btn btn-primary">Go to Login</a>
             </div>
 
             <!-- Error State -->
@@ -283,7 +283,7 @@
                 <div class="status-icon error">✕</div>
                 <h1>Verification Failed</h1>
                 <p id="errorMessage" class="message-text"></p>
-                <a href="/admin/login" class="btn btn-secondary">Back to Login</a>
+                <a href="/login" class="btn btn-secondary">Back to Login</a>
 
                 <!-- Resend Verification Section -->
                 <div id="resendSection" class="resend-section">

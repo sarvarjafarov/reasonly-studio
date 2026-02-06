@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - AdsData Platform</title>
+  <title>Dashboard - Reasonly Studio</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate icon" href="/favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
@@ -1311,12 +1311,14 @@
 <body>
   <div class="header">
     <div class="logo">
-      <div class="logo-icon">AD</div>
-      <div class="logo-text">AdsData</div>
+      <div class="logo-icon">R</div>
+      <div class="logo-text">Reasonly</div>
     </div>
     <nav class="nav-menu">
-      <a href="/dashboard" class="nav-link active">Dashboard</a>
-      <a href="/custom-data.html" class="nav-link">📊 Custom Data</a>
+      <a href="/dashboard" class="nav-link active">Overview</a>
+      <a href="/campaigns.html" class="nav-link">Campaigns</a>
+      <a href="/custom-data.html" class="nav-link">Custom Data</a>
+      <a href="/website-audit.html" class="nav-link">Site Audit</a>
     </nav>
     <div class="user-info">
       <span class="user-email" id="userEmail">Loading...</span>
@@ -1345,121 +1347,7 @@
   </div>
 </div>
 
-    <div class="card analyst-panel">
-      <h3>Analyst Mode</h3>
-      <p>Ask a question, let the agent plan the analysis, run tools, and summarize the action plan.</p>
-      <div class="analyst-grid">
-        <div>
-          <label for="analystSource">Data source</label>
-          <select id="analystSource">
-            <option value="">Select source</option>
-            <option value="meta_ads">Meta Ads</option>
-            <option value="search_console">Search Console</option>
-            <option value="custom_data">Custom data</option>
-          </select>
-        </div>
-        <div>
-          <label for="analystAccount">Account / Property</label>
-          <select id="analystAccount">
-            <option value="">Select account</option>
-          </select>
-        </div>
-        <div>
-          <label for="analystEntityLevel">Entity level</label>
-          <select id="analystEntityLevel">
-            <option value="account">Account</option>
-            <option value="campaign">Campaign</option>
-            <option value="adset">Ad set</option>
-          </select>
-        </div>
-        <div class="analyst-scope-line" style="grid-column: span 3;">
-          <span id="analystScopePill" class="analyst-scope-pill" style="display:none;">Analyzing scope</span>
-        </div>
-      </div>
-      <div id="analystScopeWarning" class="analyst-warning">
-        No synced analytics data. Select a connected account or upload custom data.
-      </div>
-      <div class="analyst-grid">
-        <div style="flex:1 1 100%;">
-          <label for="analystQuestion">Business question</label>
-          <textarea id="analystQuestion" rows="3" placeholder="e.g., Why did ROAS drop this week compared to last week?"></textarea>
-        </div>
-        <div>
-          <label for="analystStart">Start date</label>
-          <input id="analystStart" type="date">
-        </div>
-        <div>
-          <label for="analystEnd">End date</label>
-          <input id="analystEnd" type="date">
-        </div>
-        <div>
-          <label for="analystKpi">Primary KPI</label>
-          <select id="analystKpi">
-            <option value="roas">ROAS</option>
-            <option value="spend">Spend</option>
-            <option value="cpa">CPA</option>
-            <option value="clicks">Clicks</option>
-            <option value="revenue">Revenue</option>
-          </select>
-        </div>
-        <div>
-          <label for="analystCompare">Compare mode</label>
-          <select id="analystCompare">
-            <option value="previous_period">Previous period</option>
-            <option value="yoy">Year-over-year</option>
-            <option value="none">None</option>
-          </select>
-        </div>
-        <div style="display:flex; align-items:flex-end; gap:0.5rem;">
-          <label for="analystDebug" style="display:flex; align-items:center; gap:0.35rem;">
-            <input id="analystDebug" type="checkbox" style="transform:scale(1.05);">
-            <span style="font-size:0.8rem; color:rgba(255,255,255,0.75); text-transform:none;">Debug mode</span>
-          </label>
-        </div>
-      </div>
-      <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-        <button id="analystRunBtn" class="btn btn-primary">Analyze with AI</button>
-        <span id="analystStatus" class="analyst-status">Idle</span>
-      </div>
-      <div class="analyst-results" id="analystResults">
-        <div class="analyst-section">
-          <h4>Executive summary</h4>
-          <div id="analystExecHeadline" style="font-size:1.1rem; font-weight:600; margin-bottom:0.4rem;"></div>
-          <div>
-            <strong style="font-size:0.8rem; letter-spacing:0.05em; color:rgba(255,255,255,0.55);">What changed</strong>
-            <ul id="analystExecWhatChanged"></ul>
-          </div>
-          <div>
-            <strong style="font-size:0.8rem; letter-spacing:0.05em; color:rgba(255,255,255,0.55);">Why it happened</strong>
-            <ul id="analystExecWhy"></ul>
-          </div>
-          <div>
-            <strong style="font-size:0.8rem; letter-spacing:0.05em; color:rgba(255,255,255,0.55);">Next steps</strong>
-            <ul id="analystExecNext"></ul>
-          </div>
-        </div>
-        <div class="analyst-section">
-          <h4>Findings</h4>
-          <div id="analystFindingsList"></div>
-        </div>
-        <div class="analyst-section">
-          <h4>Actions</h4>
-          <div id="analystActionsList"></div>
-        </div>
-        <div class="analyst-section">
-          <details class="analyst-details">
-            <summary>Evidence</summary>
-            <div id="analystEvidenceList"></div>
-          </details>
-        </div>
-        <div class="analyst-section" id="analystTraceSection" style="display:none;">
-          <h4>Agent trace</h4>
-          <div class="analyst-trace" id="analystTraceContent"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Date Range Filter (hidden until accounts are connected) -->
+    <!-- Date Range Filter (shown when data is available) -->
     <div class="date-filter-bar" id="dateFilterBar" style="display: none;">
       <div class="date-controls">
         <label style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.6); font-weight: 500;">Date Range:</label>
@@ -1485,19 +1373,17 @@
     <div class="card" id="noDataMessage">
       <div style="text-align: center; padding: 3rem 2rem;">
         <div style="font-size: 4rem; margin-bottom: 1rem;">📊</div>
-        <h2 style="margin-bottom: 1rem;">No Analytics Data Available</h2>
+        <h2 style="margin-bottom: 1rem;">Welcome to Reasonly Studio</h2>
         <p style="color: rgba(255, 255, 255, 0.6); font-size: 1rem; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
-          To view your advertising performance metrics, please connect your advertising accounts below and ensure they have proper tracking set up.
+          Connect your advertising accounts to see your performance metrics. Once connected, you'll see KPIs, trends, and can use AI-powered analysis.
         </p>
         <div style="display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap;">
-          <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem;">✓ Connect Meta Ads</span>
-          <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem;">✓ Connect Google Ads</span>
-          <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem;">✓ Set up conversion tracking</span>
+          <a href="#connectAccounts" class="btn btn-primary" style="text-decoration: none;">Connect Your First Account</a>
         </div>
       </div>
     </div>
 
-    <!-- KPI Scorecard Grid (hidden until accounts are connected) -->
+    <!-- KPI Scorecard Grid (shown when data is available) -->
     <div class="dashboard-grid" id="kpiGrid" style="display: none;">
       <!-- Total Spend Scorecard -->
       <div class="widget widget-third">
@@ -1596,10 +1482,123 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card analyst-panel">
+      <h3>AI Marketing Analyst</h3>
+      <p>Ask a question, let the agent plan the analysis, run tools, and summarize the action plan.</p>
+      <div class="analyst-grid">
+        <div>
+          <label for="analystSource">Data source</label>
+          <select id="analystSource">
+            <option value="">Select source</option>
+            <option value="meta_ads">Meta Ads</option>
+            <option value="search_console">Search Console</option>
+            <option value="custom_data">Custom data</option>
+          </select>
+        </div>
+        <div>
+          <label for="analystAccount">Account / Property</label>
+          <select id="analystAccount">
+            <option value="">Select account</option>
+          </select>
+        </div>
+        <div>
+          <label for="analystEntityLevel">Entity level</label>
+          <select id="analystEntityLevel">
+            <option value="account">Account</option>
+            <option value="campaign">Campaign</option>
+            <option value="adset">Ad set</option>
+          </select>
+        </div>
+        <div class="analyst-scope-line" style="grid-column: span 3;">
+          <span id="analystScopePill" class="analyst-scope-pill" style="display:none;">Analyzing scope</span>
+        </div>
+      </div>
+      <div id="analystScopeWarning" class="analyst-warning">
+        No synced analytics data. Select a connected account or upload custom data.
+      </div>
+      <div class="analyst-grid">
+        <div style="flex:1 1 100%;">
+          <label for="analystQuestion">Business question</label>
+          <textarea id="analystQuestion" rows="3" placeholder="e.g., Why did ROAS drop this week compared to last week?"></textarea>
+        </div>
+        <div>
+          <label for="analystStart">Start date</label>
+          <input id="analystStart" type="date">
+        </div>
+        <div>
+          <label for="analystEnd">End date</label>
+          <input id="analystEnd" type="date">
+        </div>
+        <div>
+          <label for="analystKpi">Primary KPI</label>
+          <select id="analystKpi">
+            <option value="roas">ROAS</option>
+            <option value="spend">Spend</option>
+            <option value="cpa">CPA</option>
+            <option value="clicks">Clicks</option>
+            <option value="revenue">Revenue</option>
+          </select>
+        </div>
+        <div>
+          <label for="analystCompare">Compare mode</label>
+          <select id="analystCompare">
+            <option value="previous_period">Previous period</option>
+            <option value="yoy">Year-over-year</option>
+            <option value="none">None</option>
+          </select>
+        </div>
+        <div id="debugModeContainer" style="display:none; align-items:flex-end; gap:0.5rem;">
+          <label for="analystDebug" style="display:flex; align-items:center; gap:0.35rem;">
+            <input id="analystDebug" type="checkbox" style="transform:scale(1.05);">
+            <span style="font-size:0.8rem; color:rgba(255,255,255,0.75); text-transform:none;">Debug mode</span>
+          </label>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+        <button id="analystRunBtn" class="btn btn-primary" title="Select a data source, account, and enter a question to enable analysis">Analyze with AI</button>
+        <span id="analystStatus" class="analyst-status">Idle</span>
+      </div>
+      <div class="analyst-results" id="analystResults">
+        <div class="analyst-section">
+          <h4>Executive summary</h4>
+          <div id="analystExecHeadline" style="font-size:1.1rem; font-weight:600; margin-bottom:0.4rem;"></div>
+          <div>
+            <strong style="font-size:0.8rem; letter-spacing:0.05em; color:rgba(255,255,255,0.55);">What changed</strong>
+            <ul id="analystExecWhatChanged"></ul>
+          </div>
+          <div>
+            <strong style="font-size:0.8rem; letter-spacing:0.05em; color:rgba(255,255,255,0.55);">Why it happened</strong>
+            <ul id="analystExecWhy"></ul>
+          </div>
+          <div>
+            <strong style="font-size:0.8rem; letter-spacing:0.05em; color:rgba(255,255,255,0.55);">Next steps</strong>
+            <ul id="analystExecNext"></ul>
+          </div>
+        </div>
+        <div class="analyst-section">
+          <h4>Findings</h4>
+          <div id="analystFindingsList"></div>
+        </div>
+        <div class="analyst-section">
+          <h4>Actions</h4>
+          <div id="analystActionsList"></div>
+        </div>
+        <div class="analyst-section">
+          <details class="analyst-details">
+            <summary>Evidence</summary>
+            <div id="analystEvidenceList"></div>
+          </details>
+        </div>
+        <div class="analyst-section" id="analystTraceSection" style="display:none;">
+          <h4>Agent trace</h4>
+          <div class="analyst-trace" id="analystTraceContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="connectAccounts">
       <h2>Connect Your Accounts</h2>
       <p class="card-subtitle">Link your advertising accounts to view all your data in one place. Choose a platform to get started.</p>
-      <p class="card-subtitle" style="font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 0.25rem;">If Connect does nothing or shows an error, a workspace may not be selected above, or OAuth may need to be configured in Heroku (META_APP_ID, GOOGLE_CLIENT_ID, etc.) and in the provider’s developer console.</p>
 
       <div class="connection-grid">
         <!-- Meta Ads Connection -->
@@ -1624,6 +1623,22 @@
           <div class="platform-name">Search Console</div>
           <div class="connection-status" id="searchConsoleStatus">Not connected</div>
           <button class="btn btn-primary" onclick="connectSearchConsole()" id="searchConsoleConnectBtn">Connect Search Console</button>
+        </div>
+
+        <!-- TikTok Ads Connection -->
+        <div class="connection-card" id="tiktokCard">
+          <div class="platform-icon">🎵</div>
+          <div class="platform-name">TikTok Ads</div>
+          <div class="connection-status" id="tiktokStatus">Not connected</div>
+          <button class="btn btn-primary" onclick="connectTikTok()" id="tiktokConnectBtn">Connect TikTok</button>
+        </div>
+
+        <!-- LinkedIn Ads Connection -->
+        <div class="connection-card" id="linkedinCard">
+          <div class="platform-icon">💼</div>
+          <div class="platform-name">LinkedIn Ads</div>
+          <div class="connection-status" id="linkedinStatus">Not connected</div>
+          <button class="btn btn-primary" onclick="connectLinkedIn()" id="linkedinConnectBtn">Connect LinkedIn</button>
         </div>
 
         <!-- Custom Data Upload -->
@@ -1761,7 +1776,7 @@
         });
 
         if (!response.ok) {
-          window.location.href = '/admin/login';
+          window.location.href = '/login';
           return;
         }
 
@@ -1773,7 +1788,7 @@
         await loadWorkspaces();
       } catch (error) {
         console.error('Error loading user:', error);
-        window.location.href = '/admin/login';
+        window.location.href = '/login';
       }
     }
 
@@ -2234,6 +2249,24 @@
           document.getElementById('searchConsoleCard').classList.add('connected');
           document.getElementById('searchConsoleConnectBtn').textContent = 'Reconnect';
         }
+
+        // Update TikTok status
+        const tiktokAccounts = accounts.filter(a => a.platform === 'tiktok');
+        if (tiktokAccounts.length > 0) {
+          document.getElementById('tiktokStatus').textContent = `Connected (${tiktokAccounts.length} account${tiktokAccounts.length > 1 ? 's' : ''})`;
+          document.getElementById('tiktokStatus').classList.add('connected');
+          document.getElementById('tiktokCard').classList.add('connected');
+          document.getElementById('tiktokConnectBtn').textContent = 'Reconnect';
+        }
+
+        // Update LinkedIn status
+        const linkedinAccounts = accounts.filter(a => a.platform === 'linkedin');
+        if (linkedinAccounts.length > 0) {
+          document.getElementById('linkedinStatus').textContent = `Connected (${linkedinAccounts.length} account${linkedinAccounts.length > 1 ? 's' : ''})`;
+          document.getElementById('linkedinStatus').classList.add('connected');
+          document.getElementById('linkedinCard').classList.add('connected');
+          document.getElementById('linkedinConnectBtn').textContent = 'Reconnect';
+        }
       } catch (error) {
         console.error('Error loading accounts:', error);
         document.getElementById('accountsList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>Failed to load accounts</div></div>';
@@ -2311,6 +2344,54 @@
         window.location.href = data.authUrl;
       } catch (error) {
         console.error('Error connecting Search Console:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    async function connectTikTok() {
+      if (!selectedWorkspaceId) {
+        showAlert('Please select a workspace first', 'warning');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/oauth/tiktok?workspaceId=${selectedWorkspaceId}`, {
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to initiate OAuth');
+        }
+
+        window.location.href = data.authUrl;
+      } catch (error) {
+        console.error('Error connecting TikTok:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    async function connectLinkedIn() {
+      if (!selectedWorkspaceId) {
+        showAlert('Please select a workspace first', 'warning');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/oauth/linkedin?workspaceId=${selectedWorkspaceId}`, {
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to initiate OAuth');
+        }
+
+        window.location.href = data.authUrl;
+      } catch (error) {
+        console.error('Error connecting LinkedIn:', error);
         showAlert(error.message, 'error');
       }
     }
@@ -2742,6 +2823,16 @@
       const weekAgo = new Date(today);
       weekAgo.setDate(weekAgo.getDate() - 7);
       startInput.value = weekAgo.toISOString().split('T')[0];
+
+      // Show debug mode only for admins or when ?debug=1 is in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const showDebug = urlParams.get('debug') === '1' ||
+                        localStorage.getItem('enableDebugMode') === 'true' ||
+                        (currentUser && currentUser.role === 'admin');
+      if (showDebug) {
+        document.getElementById('debugModeContainer').style.display = 'flex';
+      }
+
       document.getElementById('analystRunBtn').addEventListener('click', runAnalystMode);
       document.getElementById('analystSource').addEventListener('change', () => {
         populateAccountSelect(document.getElementById('analystSource').value);
@@ -3104,7 +3195,7 @@
       }
 
       // Redirect with logout parameter to skip auth check
-      window.location.href = '/admin/login?logout=true';
+      window.location.href = '/login?logout=true';
     }
   </script>
 </body>
