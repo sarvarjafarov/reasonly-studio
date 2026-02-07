@@ -1302,11 +1302,11 @@
         return;
       }
 
-      fetch(`/api/workspaces/${selectedWorkspaceId}/dashboards`, {
+      fetch('/api/dashboards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ name, description })
+        body: JSON.stringify({ name, description, workspaceId: selectedWorkspaceId })
       })
       .then(res => res.json())
       .then(data => {
