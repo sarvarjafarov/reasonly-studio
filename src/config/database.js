@@ -12,9 +12,10 @@ if (process.env.DATABASE_URL) {
     ssl: {
       rejectUnauthorized: false, // Don't verify SSL certificate (required for Heroku)
     },
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000, // Increase timeout for Heroku
+    max: 10, // Reduced to avoid exhausting Heroku's connection limit
+    idleTimeoutMillis: 10000, // Release idle connections faster
+    connectionTimeoutMillis: 5000,
+    allowExitOnIdle: true, // Allow pool to close when idle
   };
 } else {
   // Local development uses individual parameters
