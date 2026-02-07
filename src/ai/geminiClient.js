@@ -27,25 +27,49 @@ async function generate(prompt) {
     },
   };
 
-  const response = await axios.post(url, payload, {
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': config.geminiApiKey,
-    },
-  });
+  try {
+    console.log(`Gemini request: model=${config.geminiModel}`);
+    const response = await axios.post(url, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': config.geminiApiKey,
+      },
+      timeout: 25000, // 25s timeout to avoid Heroku 30s limit
+    });
 
-  const candidate = response.data?.candidates?.[0];
-  if (!candidate) {
-    throw new Error('Gemini response missing candidates');
+    const candidate = response.data?.candidates?.[0];
+    if (!candidate) {
+      console.error('Gemini response:', JSON.stringify(response.data));
+      throw new Error('Gemini response missing candidates');
+    }
+
+    // Extract text from Gemini 3 response format
+    const text = candidate?.content?.parts?.[0]?.text;
+    if (!text) {
+      console.error('Gemini candidate:', JSON.stringify(candidate));
+      throw new Error('Gemini candidate contained no text output');
+    }
+
+    return text;
+  } catch (err) {
+    // Log detailed error info
+    if (err.response) {
+      const status = err.response.status;
+      const data = err.response.data;
+      console.error(`Gemini API error: ${status}`, typeof data === 'string' ? data.slice(0, 500) : JSON.stringify(data));
+
+      if (status === 429) {
+        throw new Error('Gemini rate limit exceeded. Please try again later.');
+      }
+      if (status === 404) {
+        throw new Error(`Gemini model "${config.geminiModel}" not found. Check GEMINI_MODEL setting.`);
+      }
+      if (status === 400) {
+        throw new Error(`Gemini bad request: ${data?.error?.message || 'Invalid request'}`);
+      }
+    }
+    throw err;
   }
-
-  // Extract text from Gemini 3 response format
-  const text = candidate?.content?.parts?.[0]?.text;
-  if (!text) {
-    throw new Error('Gemini candidate contained no text output');
-  }
-
-  return text;
 }
 
 module.exports = {
