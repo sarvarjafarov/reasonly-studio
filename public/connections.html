@@ -577,8 +577,22 @@
         const res = await fetch('/api/workspaces', { credentials: 'include' });
         const data = await res.json();
         workspaces = data.workspaces || [];
+
         if (workspaces.length > 0) {
           selectedWorkspaceId = workspaces[0].id;
+        } else {
+          // Auto-create a default workspace
+          const createRes = await fetch('/api/workspaces', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ name: 'My Workspace' })
+          });
+          const createData = await createRes.json();
+          if (createData.success && createData.workspace) {
+            workspaces = [createData.workspace];
+            selectedWorkspaceId = createData.workspace.id;
+          }
         }
       } catch (err) {
         console.error('Failed to load workspaces:', err);
