@@ -581,6 +581,120 @@
       background-color: rgba(183, 250, 49, 0.12);
     }
 
+    .dashboard-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .dashboard-actions .create-dashboard-btn {
+      margin-top: 0;
+      flex: 1;
+    }
+
+    .create-dashboard-btn.ai-btn {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(183, 250, 49, 0.08) 100%);
+      border: 1px dashed rgba(139, 92, 246, 0.4);
+      color: #a78bfa;
+    }
+
+    .create-dashboard-btn.ai-btn:hover {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(183, 250, 49, 0.12) 100%);
+      border-color: rgba(139, 92, 246, 0.6);
+    }
+
+    .ai-icon {
+      font-size: 1rem;
+      margin-right: 0.25rem;
+    }
+
+    /* AI Generation specific styles */
+    .ai-prompt-input {
+      width: 100%;
+      padding: 1rem;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      background-color: rgba(139, 92, 246, 0.05);
+      color: #fff;
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 100px;
+      transition: all 0.15s ease;
+    }
+
+    .ai-prompt-input:focus {
+      outline: none;
+      border-color: rgba(139, 92, 246, 0.6);
+      background-color: rgba(139, 92, 246, 0.08);
+    }
+
+    .ai-prompt-input::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .ai-examples {
+      margin-top: 0.75rem;
+    }
+
+    .ai-examples-title {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .ai-example-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .ai-example-chip {
+      padding: 0.3rem 0.6rem;
+      background-color: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 999px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .ai-example-chip:hover {
+      background-color: rgba(139, 92, 246, 0.2);
+      border-color: rgba(139, 92, 246, 0.4);
+      color: #a78bfa;
+    }
+
+    .btn-ai {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+      color: #fff;
+    }
+
+    .btn-ai:hover {
+      background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+    }
+
+    .btn-ai:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .ai-generating {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .ai-generating .spinner {
+      width: 16px;
+      height: 16px;
+      border-width: 2px;
+      margin: 0;
+    }
+
     /* Quick Stats */
     .quick-stats {
       display: flex;
@@ -958,7 +1072,12 @@
             <p>No dashboards yet.</p>
           </div>
         </div>
-        <button class="create-dashboard-btn" onclick="openCreateDashboardModal()">+ Create Dashboard</button>
+        <div class="dashboard-actions">
+          <button class="create-dashboard-btn" onclick="openCreateDashboardModal()">+ Create Dashboard</button>
+          <button class="create-dashboard-btn ai-btn" onclick="openAIDashboardModal()">
+            <span class="ai-icon">&#10024;</span> Generate with AI
+          </button>
+        </div>
       </section>
     </div>
   </main>
@@ -993,6 +1112,41 @@
       <div class="modal-footer">
         <button class="btn btn-cancel" onclick="closeCreateDashboardModal()">Cancel</button>
         <button class="btn btn-primary" onclick="createDashboard()">Create Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Dashboard Generation Modal -->
+  <div class="modal-overlay" id="aiDashboardModal">
+    <div class="modal" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><span class="ai-icon">&#10024;</span> Generate Dashboard with AI</h3>
+        <button class="modal-close" onclick="closeAIDashboardModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Describe the dashboard you want</label>
+          <textarea
+            class="ai-prompt-input"
+            id="aiPrompt"
+            placeholder="e.g., Create a comprehensive e-commerce performance dashboard that shows revenue trends, top products, conversion rates, and customer acquisition costs..."
+          ></textarea>
+          <div class="ai-examples">
+            <div class="ai-examples-title">Try these examples:</div>
+            <div class="ai-example-chips">
+              <span class="ai-example-chip" onclick="setAIPrompt('Performance overview with spend, ROAS, and conversion trends')">Performance Overview</span>
+              <span class="ai-example-chip" onclick="setAIPrompt('E-commerce dashboard showing revenue, orders, and top products')">E-commerce Metrics</span>
+              <span class="ai-example-chip" onclick="setAIPrompt('Campaign comparison dashboard to analyze A/B test results')">Campaign Comparison</span>
+              <span class="ai-example-chip" onclick="setAIPrompt('SEO dashboard with organic traffic, top keywords, and search rankings')">SEO Analytics</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" onclick="closeAIDashboardModal()">Cancel</button>
+        <button class="btn btn-ai" id="generateAIBtn" onclick="generateAIDashboard()">
+          <span id="generateAIBtnText">Generate Dashboard</span>
+        </button>
       </div>
     </div>
   </div>
@@ -1323,10 +1477,86 @@
       });
     }
 
+    // AI Dashboard Modal Functions
+    function openAIDashboardModal() {
+      document.getElementById('aiPrompt').value = '';
+      document.getElementById('aiDashboardModal').classList.add('show');
+      document.getElementById('generateAIBtn').disabled = false;
+      document.getElementById('generateAIBtnText').textContent = 'Generate Dashboard';
+      setTimeout(() => document.getElementById('aiPrompt').focus(), 100);
+    }
+
+    function closeAIDashboardModal() {
+      document.getElementById('aiDashboardModal').classList.remove('show');
+    }
+
+    function setAIPrompt(prompt) {
+      document.getElementById('aiPrompt').value = prompt;
+      document.getElementById('aiPrompt').focus();
+    }
+
+    async function generateAIDashboard() {
+      const prompt = document.getElementById('aiPrompt').value.trim();
+
+      if (!prompt) {
+        showAlert('Please describe the dashboard you want to create', 'error');
+        document.getElementById('aiPrompt').focus();
+        return;
+      }
+
+      if (!selectedWorkspaceId) {
+        showAlert('Please wait for workspace to load', 'warning');
+        return;
+      }
+
+      // Show loading state
+      const btn = document.getElementById('generateAIBtn');
+      const btnText = document.getElementById('generateAIBtnText');
+      btn.disabled = true;
+      btnText.innerHTML = '<span class="ai-generating"><span class="spinner"></span> Generating...</span>';
+
+      try {
+        const res = await fetch('/api/dashboards/ai/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            prompt,
+            workspaceId: selectedWorkspaceId,
+            createDashboard: true
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          closeAIDashboardModal();
+          showAlert('AI dashboard created successfully!', 'success');
+          loadDashboards();
+
+          // Show insights if available
+          if (data.data?.insights?.length > 0) {
+            setTimeout(() => {
+              showAlert('AI Insights: ' + data.data.insights[0], 'info');
+            }, 1500);
+          }
+        } else {
+          showAlert(data.message || 'Failed to generate dashboard', 'error');
+        }
+      } catch (err) {
+        console.error('AI generation error:', err);
+        showAlert('Failed to generate dashboard. Please try again.', 'error');
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = 'Generate Dashboard';
+      }
+    }
+
     // Close modal when clicking outside
     document.addEventListener('click', function(e) {
       if (e.target.classList.contains('modal-overlay')) {
         closeCreateDashboardModal();
+        closeAIDashboardModal();
       }
     });
 
@@ -1334,6 +1564,7 @@
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         closeCreateDashboardModal();
+        closeAIDashboardModal();
       }
     });
 

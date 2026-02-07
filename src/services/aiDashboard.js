@@ -1,9 +1,9 @@
 /**
  * AI Dashboard Generation Service
- * Uses Claude API to generate dashboards from natural language prompts
+ * Uses Gemini API to generate dashboards from natural language prompts
  */
 
-const Anthropic = require('@anthropic-ai/sdk');
+const geminiClient = require('../ai/geminiClient');
 const config = require('../config/config');
 const CustomDataSource = require('../models/CustomDataSource');
 
@@ -46,13 +46,13 @@ const AVAILABLE_METRICS = [
 ];
 
 /**
- * Generate dashboard configuration from user prompt
+ * Generate dashboard configuration from user prompt using Gemini
  */
 async function generateDashboardFromPrompt(prompt, options = {}) {
   const { adAccountId, workspaceId, platform = 'meta', customSourceIds = [] } = options;
 
-  if (!config.anthropic?.apiKey) {
-    throw new Error('Anthropic API key not configured. Please set ANTHROPIC_API_KEY in environment variables.');
+  if (!config.geminiApiKey) {
+    throw new Error('Gemini API key not configured. Please set GEMINI_API_KEY in environment variables.');
   }
 
   // Fetch custom data sources if provided
@@ -77,10 +77,6 @@ async function generateDashboardFromPrompt(prompt, options = {}) {
     }
   }
 
-  const anthropic = new Anthropic({
-    apiKey: config.anthropic.apiKey,
-  });
-
   // Build custom metrics list
   const customMetrics = customSources.flatMap(source =>
     source.metrics.map(metric => ({
@@ -96,7 +92,7 @@ async function generateDashboardFromPrompt(prompt, options = {}) {
 
   const allMetrics = [...AVAILABLE_METRICS, ...customMetrics];
 
-  const systemPrompt = `You are an expert advertising analytics dashboard designer. Your task is to create comprehensive, insightful dashboards based on user requirements.
+  const fullPrompt = `You are an expert advertising analytics dashboard designer. Your task is to create comprehensive, insightful dashboards based on user requirements.
 
 Available widget types:
 ${AVAILABLE_WIDGETS.map(w => `- ${w}`).join('\n')}
@@ -104,7 +100,8 @@ ${AVAILABLE_WIDGETS.map(w => `- ${w}`).join('\n')}
 Available metrics:
 ${allMetrics.map(m => `- ${m.id}: ${m.name} - ${m.description}`).join('\n')}
 
-${customSources.length > 0 ? `\nCustom Data Sources Available:
+${customSources.length > 0 ? `
+Custom Data Sources Available:
 ${customSources.map(s => `- ${s.name} (${s.type}): ${s.metrics.join(', ')}`).join('\n')}
 
 When using custom data sources, set the widget's dataSource to:
@@ -126,7 +123,11 @@ When designing dashboards:
 5. Ensure logical flow and grouping of related metrics
 6. Consider visual hierarchy and balance
 
-Respond ONLY with valid JSON in this exact format:
+User Request: "${prompt}"
+
+Create a comprehensive advertising analytics dashboard for this requirement. Generate a well-structured dashboard with appropriate widgets and metrics. Make it detailed and actionable.
+
+Respond ONLY with valid JSON in this exact format (no markdown, no code blocks, just pure JSON):
 {
   "name": "Dashboard name based on the prompt",
   "description": "Brief description of what this dashboard tracks",
@@ -145,29 +146,24 @@ Respond ONLY with valid JSON in this exact format:
 }`;
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 4096,
-      messages: [
-        {
-          role: 'user',
-          content: `Create a comprehensive advertising analytics dashboard for the following requirement:\n\n"${prompt}"\n\nGenerate a well-structured dashboard with appropriate widgets and metrics. Make it detailed and actionable.`,
-        },
-      ],
-      system: systemPrompt,
-    });
-
-    // Extract the JSON from the response
-    const responseText = message.content[0].text;
+    console.log('Generating dashboard with Gemini AI...');
+    const responseText = await geminiClient.generate(fullPrompt);
 
     // Parse JSON from response (handle potential markdown code blocks)
-    let jsonStr = responseText;
+    let jsonStr = responseText.trim();
     const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (jsonMatch) {
-      jsonStr = jsonMatch[1];
+      jsonStr = jsonMatch[1].trim();
     }
 
-    const dashboardConfig = JSON.parse(jsonStr.trim());
+    // Remove any leading/trailing non-JSON characters
+    const jsonStart = jsonStr.indexOf('{');
+    const jsonEnd = jsonStr.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      jsonStr = jsonStr.substring(jsonStart, jsonEnd + 1);
+    }
+
+    const dashboardConfig = JSON.parse(jsonStr);
 
     // Validate and enhance the configuration
     const validatedConfig = validateAndEnhanceConfig(dashboardConfig, options);
@@ -175,7 +171,7 @@ Respond ONLY with valid JSON in this exact format:
     return {
       success: true,
       dashboard: validatedConfig,
-      tokensUsed: message.usage?.input_tokens + message.usage?.output_tokens,
+      tokensUsed: 0, // Gemini doesn't report tokens the same way
     };
   } catch (error) {
     console.error('AI Dashboard generation error:', error);
@@ -289,20 +285,19 @@ function validateAndEnhanceConfig(config, options) {
 }
 
 /**
- * Generate dashboard recommendations based on existing data
+ * Generate dashboard recommendations based on existing data using Gemini
  */
 async function generateRecommendations(dashboardId, metrics) {
-  if (!config.anthropic?.apiKey) {
-    throw new Error('Anthropic API key not configured');
+  if (!config.geminiApiKey) {
+    throw new Error('Gemini API key not configured');
   }
 
-  const anthropic = new Anthropic({
-    apiKey: config.anthropic.apiKey,
-  });
+  const fullPrompt = `You are an expert advertising analyst. Analyze the provided metrics and generate actionable recommendations.
 
-  const systemPrompt = `You are an expert advertising analyst. Analyze the provided metrics and generate actionable recommendations.
+Metrics to analyze:
+${JSON.stringify(metrics, null, 2)}
 
-Provide recommendations in this JSON format:
+Provide recommendations in this exact JSON format (no markdown, no code blocks, just pure JSON):
 {
   "recommendations": [
     {
@@ -318,27 +313,22 @@ Provide recommendations in this JSON format:
 }`;
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 2048,
-      messages: [
-        {
-          role: 'user',
-          content: `Analyze these advertising metrics and provide recommendations:\n\n${JSON.stringify(metrics, null, 2)}`,
-        },
-      ],
-      system: systemPrompt,
-    });
+    const responseText = await geminiClient.generate(fullPrompt);
 
-    const responseText = message.content[0].text;
-
-    let jsonStr = responseText;
+    let jsonStr = responseText.trim();
     const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (jsonMatch) {
-      jsonStr = jsonMatch[1];
+      jsonStr = jsonMatch[1].trim();
     }
 
-    return JSON.parse(jsonStr.trim());
+    // Remove any leading/trailing non-JSON characters
+    const jsonStart = jsonStr.indexOf('{');
+    const jsonEnd = jsonStr.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      jsonStr = jsonStr.substring(jsonStart, jsonEnd + 1);
+    }
+
+    return JSON.parse(jsonStr);
   } catch (error) {
     console.error('Recommendation generation error:', error);
     throw error;
@@ -346,58 +336,56 @@ Provide recommendations in this JSON format:
 }
 
 /**
- * Suggest improvements for an existing dashboard
+ * Suggest improvements for an existing dashboard using Gemini
  */
 async function suggestDashboardImprovements(currentWidgets, userGoals) {
-  if (!config.anthropic?.apiKey) {
-    throw new Error('Anthropic API key not configured');
+  if (!config.geminiApiKey) {
+    throw new Error('Gemini API key not configured');
   }
 
-  const anthropic = new Anthropic({
-    apiKey: config.anthropic.apiKey,
-  });
-
-  const systemPrompt = `You are an expert dashboard designer. Analyze the current dashboard configuration and suggest improvements.
+  const fullPrompt = `You are an expert dashboard designer. Analyze the current dashboard configuration and suggest improvements.
 
 Current available widgets: ${AVAILABLE_WIDGETS.join(', ')}
 Available metrics: ${AVAILABLE_METRICS.map(m => m.id).join(', ')}
 
-Provide suggestions in this JSON format:
+Current dashboard widgets:
+${JSON.stringify(currentWidgets, null, 2)}
+
+User goals: ${userGoals}
+
+Suggest improvements to make this dashboard more effective.
+
+Provide suggestions in this exact JSON format (no markdown, no code blocks, just pure JSON):
 {
   "suggestions": [
     {
       "type": "add|remove|modify|reposition",
-      "widget": { /* widget configuration if adding/modifying */ },
+      "widget": { },
       "reason": "Why this improvement helps",
       "impact": "Expected benefit"
     }
   ],
-  "overallScore": 1-10,
+  "overallScore": 7,
   "summary": "Overall assessment"
 }`;
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 2048,
-      messages: [
-        {
-          role: 'user',
-          content: `Current dashboard widgets:\n${JSON.stringify(currentWidgets, null, 2)}\n\nUser goals: ${userGoals}\n\nSuggest improvements to make this dashboard more effective.`,
-        },
-      ],
-      system: systemPrompt,
-    });
+    const responseText = await geminiClient.generate(fullPrompt);
 
-    const responseText = message.content[0].text;
-
-    let jsonStr = responseText;
+    let jsonStr = responseText.trim();
     const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (jsonMatch) {
-      jsonStr = jsonMatch[1];
+      jsonStr = jsonMatch[1].trim();
     }
 
-    return JSON.parse(jsonStr.trim());
+    // Remove any leading/trailing non-JSON characters
+    const jsonStart = jsonStr.indexOf('{');
+    const jsonEnd = jsonStr.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      jsonStr = jsonStr.substring(jsonStart, jsonEnd + 1);
+    }
+
+    return JSON.parse(jsonStr);
   } catch (error) {
     console.error('Dashboard improvement suggestion error:', error);
     throw error;
