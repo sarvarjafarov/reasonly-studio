@@ -128,11 +128,12 @@ const getWidgetMetrics = async (req, res) => {
     }
 
     // Get ad account with access token
+    // Note: adAccountId can be either the internal UUID or external account_id
     const accountResult = await query(
       `SELECT aa.id, aa.account_id, aa.platform, aa.workspace_id, ot.access_token
        FROM ad_accounts aa
        JOIN oauth_tokens ot ON ot.workspace_id = aa.workspace_id AND ot.platform = aa.platform
-       WHERE aa.id = $1`,
+       WHERE aa.account_id = $1 OR aa.id::text = $1`,
       [dataSource.adAccountId]
     );
 
