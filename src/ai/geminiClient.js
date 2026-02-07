@@ -1,32 +1,24 @@
 const axios = require('axios');
 const config = require('../config/config');
 
-function ensureApiKey() {
-  if (!config.geminiApiKey) {
-    throw new Error('GEMINI_API_KEY is required. Please set it in environment variables.');
-  }
-}
-
 // Sleep helper for retry delays
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function generate(prompt, retries = 2) {
-  ensureApiKey();
+/**
+ * Generate text using Gemini API
+ */
+async function generateWithGemini(prompt, retries = 1) {
+  if (!config.geminiApiKey) {
+    throw new Error('GEMINI_API_KEY not configured');
+  }
 
-  // Use generateContent endpoint with x-goog-api-key header
   const model = config.geminiModel || 'gemini-2.0-flash';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
   const payload = {
-    contents: [
-      {
-        parts: [
-          { text: prompt }
-        ]
-      }
-    ],
+    contents: [{ parts: [{ text: prompt }] }],
     generationConfig: {
       temperature: 0.2,
       maxOutputTokens: 4096,
@@ -41,62 +33,109 @@ async function generate(prompt, retries = 2) {
           'Content-Type': 'application/json',
           'x-goog-api-key': config.geminiApiKey,
         },
-        timeout: 25000, // 25s timeout to avoid Heroku 30s limit
+        timeout: 25000,
       });
 
-      const candidate = response.data?.candidates?.[0];
-      if (!candidate) {
-        console.error('Gemini response:', JSON.stringify(response.data));
-        throw new Error('Gemini response missing candidates');
-      }
-
-      // Extract text from response
-      const text = candidate?.content?.parts?.[0]?.text;
+      const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) {
-        console.error('Gemini candidate:', JSON.stringify(candidate));
-        throw new Error('Gemini candidate contained no text output');
+        throw new Error('Gemini response missing text');
       }
-
-      return text;
+      return { text, provider: 'gemini' };
     } catch (err) {
-      // Log detailed error info
-      if (err.response) {
-        const status = err.response.status;
+      if (err.response?.status === 429) {
         const data = err.response.data;
-        console.error(`Gemini API error: ${status}`, typeof data === 'string' ? data.slice(0, 500) : JSON.stringify(data));
+        console.error('Gemini quota exceeded:', JSON.stringify(data?.error?.message || data).slice(0, 200));
 
-        if (status === 429) {
-          // Rate limit - extract retry delay if available
-          const retryInfo = data?.error?.details?.find(d => d['@type']?.includes('RetryInfo'));
-          const retryDelay = retryInfo?.retryDelay ? parseInt(retryInfo.retryDelay) * 1000 : 5000;
+        // Check if this is a daily quota issue (limit: 0)
+        const isQuotaExhausted = JSON.stringify(data).includes('limit: 0') ||
+                                  JSON.stringify(data).includes('limit":0');
 
-          if (attempt < retries) {
-            console.log(`Rate limited, waiting ${retryDelay}ms before retry...`);
-            await sleep(Math.min(retryDelay, 10000)); // Cap at 10 seconds
-            continue;
-          }
-          throw new Error('AI service is temporarily busy. Please wait a moment and try again.');
+        if (isQuotaExhausted) {
+          // Daily quota exhausted - don't retry, throw special error
+          const quotaError = new Error('GEMINI_QUOTA_EXHAUSTED');
+          quotaError.isQuotaExhausted = true;
+          throw quotaError;
         }
-        if (status === 404) {
-          throw new Error(`Gemini model "${model}" not found. Check GEMINI_MODEL setting.`);
-        }
-        if (status === 400) {
-          throw new Error(`Gemini bad request: ${data?.error?.message || 'Invalid request'}`);
+
+        // Temporary rate limit - retry after delay
+        if (attempt < retries) {
+          console.log('Rate limited, waiting 5s before retry...');
+          await sleep(5000);
+          continue;
         }
       }
-
-      // For other errors, only retry if we have retries left
-      if (attempt < retries) {
-        console.log(`Error occurred, retrying in 2s...`);
-        await sleep(2000);
-        continue;
-      }
-
       throw err;
     }
   }
 }
 
+/**
+ * Generate text using Anthropic API (fallback)
+ */
+async function generateWithAnthropic(prompt) {
+  if (!config.anthropic?.apiKey) {
+    throw new Error('ANTHROPIC_API_KEY not configured');
+  }
+
+  const Anthropic = require('@anthropic-ai/sdk');
+  const anthropic = new Anthropic({ apiKey: config.anthropic.apiKey });
+
+  console.log('Using Anthropic API as fallback...');
+
+  const message = await anthropic.messages.create({
+    model: 'claude-sonnet-4-5-20250929',
+    max_tokens: 4096,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  const text = message.content[0]?.text;
+  if (!text) {
+    throw new Error('Anthropic response missing text');
+  }
+  return { text, provider: 'anthropic' };
+}
+
+/**
+ * Main generate function - tries Gemini first, falls back to Anthropic
+ */
+async function generate(prompt) {
+  // Try Gemini first if enabled
+  if (config.geminiApiKey) {
+    try {
+      const result = await generateWithGemini(prompt);
+      return result.text;
+    } catch (err) {
+      // If quota exhausted and we have Anthropic key, fall back
+      if (err.isQuotaExhausted && config.anthropic?.apiKey) {
+        console.log('Gemini quota exhausted, falling back to Anthropic...');
+      } else if (config.anthropic?.apiKey) {
+        console.log('Gemini failed, falling back to Anthropic:', err.message);
+      } else {
+        // No fallback available
+        if (err.isQuotaExhausted) {
+          throw new Error('AI service daily quota exhausted. Please try again tomorrow or upgrade your plan.');
+        }
+        throw err;
+      }
+    }
+  }
+
+  // Try Anthropic as fallback or primary if Gemini not configured
+  if (config.anthropic?.apiKey) {
+    try {
+      const result = await generateWithAnthropic(prompt);
+      return result.text;
+    } catch (err) {
+      console.error('Anthropic API error:', err.message);
+      throw new Error('AI service unavailable. Please try again later.');
+    }
+  }
+
+  throw new Error('No AI API keys configured. Please set GEMINI_API_KEY or ANTHROPIC_API_KEY.');
+}
+
 module.exports = {
   generate,
+  generateWithGemini,
+  generateWithAnthropic,
 };
