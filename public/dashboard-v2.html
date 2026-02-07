@@ -881,8 +881,9 @@
 
       try {
         const res = await fetch(`/api/workspaces/${selectedWorkspaceId}/accounts`, { credentials: 'include' });
-        const data = await res.json();
-        connectedAccounts = data.accounts || [];
+        const result = await res.json();
+        // API returns { success, count, data: [...accounts] }
+        connectedAccounts = result.data || [];
 
         updateAccountSelector();
         updateUI();
