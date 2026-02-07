@@ -413,6 +413,47 @@
       color: rgba(183, 250, 49, 0.5);
     }
 
+    /* Analysis KPI Tiles */
+    .analysis-kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .analysis-kpi-tile {
+      background-color: rgba(183, 250, 49, 0.05);
+      border: 1px solid rgba(183, 250, 49, 0.15);
+      border-radius: 0.6rem;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .analysis-kpi-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #b7fa31;
+      margin-bottom: 0.2rem;
+    }
+
+    .analysis-kpi-label {
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .analysis-kpi-tile.zero-data {
+      background-color: rgba(245, 158, 11, 0.08);
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+
+    .analysis-kpi-tile.zero-data .analysis-kpi-value {
+      color: #f59e0b;
+    }
+
     /* Content Grid */
     .content-grid {
       display: grid;
@@ -1004,6 +1045,8 @@
             <div style="color: rgba(255, 255, 255, 0.5); font-size: 0.85rem;">AI is analyzing your data...</div>
           </div>
           <div class="analysis-content" id="analysisContent">
+            <!-- KPI Tiles -->
+            <div class="analysis-kpis" id="analysisKpis"></div>
             <div class="analysis-headline" id="analysisHeadline"></div>
             <div class="analysis-group">
               <div class="analysis-group-title">What Changed</div>
@@ -1369,9 +1412,30 @@
       document.getElementById('analysisLoading').style.display = 'none';
 
       const execSummary = data.exec_summary || {};
+      const dashboardSpec = data.dashboard_spec || {};
 
       document.getElementById('analysisMeta').textContent =
         `Analyzed your data • ${new Date().toLocaleString()}`;
+
+      // Render KPI tiles from dashboard_spec
+      const kpisContainer = document.getElementById('analysisKpis');
+      const kpiTiles = (dashboardSpec.tiles || []).filter(t => t.type === 'kpi');
+
+      if (kpiTiles.length > 0) {
+        kpisContainer.innerHTML = kpiTiles.map(tile => {
+          const value = tile.value || '0';
+          const isZero = value === '$0' || value === '0' || value === '0.00x' || parseFloat(value.replace(/[^0-9.-]/g, '')) === 0;
+          return `
+            <div class="analysis-kpi-tile ${isZero ? 'zero-data' : ''}">
+              <div class="analysis-kpi-value">${tile.value}</div>
+              <div class="analysis-kpi-label">${tile.title}</div>
+            </div>
+          `;
+        }).join('');
+        kpisContainer.style.display = 'grid';
+      } else {
+        kpisContainer.style.display = 'none';
+      }
 
       document.getElementById('analysisHeadline').textContent =
         execSummary.headline || 'Analysis complete';

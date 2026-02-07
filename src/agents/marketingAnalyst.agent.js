@@ -4,6 +4,11 @@ const {
   get_timeseries,
   detect_anomalies,
 } = require('../tools/analyticsTools');
+const {
+  getRealKPIs,
+  comparePeriods: compareRealPeriods,
+  getTimeSeries: getRealTimeSeries,
+} = require('../tools/realDataLoader');
 const { generate } = require('../ai/geminiClient');
 const config = require('../config/config');
 const { enforceEvidenceBinding } = require('./finalResponse.validator');
@@ -178,16 +183,40 @@ async function runGeminiAgent(input, options = {}) {
   const scopeDescription = describeScope(scope);
   const filters = buildScopeFilters(scope);
 
-  // Step 1: Gather all data upfront (fast, no AI calls)
-  const [kpis, comparisons, series, anomalies] = await Promise.all([
-    get_kpis(workspaceId, dateRange, filters, null, ['spend', 'revenue', 'conversions', 'roas', 'cpa', 'ctr', 'impressions', 'clicks']),
-    compare_periods(workspaceId, dateRange, {
-      start: new Date(new Date(dateRange.start).setDate(new Date(dateRange.start).getDate() - 7)).toISOString().split('T')[0],
-      end: new Date(new Date(dateRange.end).setDate(new Date(dateRange.end).getDate() - 7)).toISOString().split('T')[0],
-    }, ['spend', 'revenue', 'conversions', 'roas', 'cpa']),
-    get_timeseries(workspaceId, dateRange, 'daily', ['spend', 'revenue', 'roas'], null, filters),
-    detect_anomalies(workspaceId, dateRange, primaryKpi),
-  ]);
+  // Calculate previous period for comparison
+  const daysDiff = Math.ceil((new Date(dateRange.end) - new Date(dateRange.start)) / (1000 * 60 * 60 * 24));
+  const prevEnd = new Date(dateRange.start);
+  prevEnd.setDate(prevEnd.getDate() - 1);
+  const prevStart = new Date(prevEnd);
+  prevStart.setDate(prevStart.getDate() - daysDiff);
+  const previousRange = {
+    start: prevStart.toISOString().split('T')[0],
+    end: prevEnd.toISOString().split('T')[0],
+  };
+
+  // Step 1: Gather REAL data from Meta Ads API (not sample data)
+  let kpis, comparisons, series;
+
+  if (scope.source === 'meta_ads' && scope.accountId) {
+    // Use real Meta Ads API data
+    console.log(`[AI Agent] Fetching real Meta Ads data for account ${scope.accountId}`);
+    [kpis, comparisons, series] = await Promise.all([
+      getRealKPIs(workspaceId, dateRange, filters),
+      compareRealPeriods(workspaceId, dateRange, previousRange, filters),
+      getRealTimeSeries(workspaceId, dateRange, filters),
+    ]);
+  } else {
+    // Fallback to sample data for other sources
+    console.log('[AI Agent] Using sample data (non-Meta source)');
+    [kpis, comparisons, series] = await Promise.all([
+      get_kpis(workspaceId, dateRange, filters, null, ['spend', 'revenue', 'conversions', 'roas', 'cpa', 'ctr', 'impressions', 'clicks']),
+      compare_periods(workspaceId, dateRange, previousRange, ['spend', 'revenue', 'conversions', 'roas', 'cpa']),
+      get_timeseries(workspaceId, dateRange, 'daily', ['spend', 'revenue', 'roas'], null, filters),
+    ]);
+  }
+
+  // Anomaly detection (keep using sample for now)
+  const anomalies = await detect_anomalies(workspaceId, dateRange, primaryKpi);
 
   // Build evidence from gathered data
   const evidence = [
