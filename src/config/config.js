@@ -74,5 +74,5 @@ module.exports = {
   },
   useGemini: process.env.USE_GEMINI === 'true',
   geminiApiKey: process.env.GEMINI_API_KEY || '',
-  geminiModel: process.env.GEMINI_MODEL || 'gemini-3-flash',
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
 };
