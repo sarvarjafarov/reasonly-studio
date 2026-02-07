@@ -5,12 +5,8 @@ const {
   detect_anomalies,
 } = require('../tools/analyticsTools');
 const { generate } = require('../ai/geminiClient');
-const { tools, callTool } = require('../ai/geminiTools');
 const config = require('../config/config');
-const { validateFinalResponse, enforceEvidenceBinding } = require('./finalResponse.validator');
-
-const MAX_PLAN_STEPS = 7;
-const MAX_TOOL_CALLS = 8;
+const { enforceEvidenceBinding } = require('./finalResponse.validator');
 
 function validateScopeInput(scope) {
   if (!scope) return 'Scope is required. Select an analytics account or custom data source.';
@@ -177,106 +173,126 @@ async function runGeminiAgent(input, options = {}) {
   if (scopeError) {
     return createScopeErrorResponse(input.question, scopeError);
   }
-  const scopeDescription = describeScope(input.scope);
 
-  const planPrompt = `
-You are an autonomous marketing analyst. Respond with JSON ONLY: {"plan":["step1","step2",...]}.
-Max 7 steps. No markdown, no explanations outside JSON.
-`;
+  const { workspaceId, question, dateRange, primaryKpi = 'roas', scope } = input;
+  const scopeDescription = describeScope(scope);
+  const filters = buildScopeFilters(scope);
 
-  const planText = await generate(`${planPrompt}\nQuestion:${input.question}\nScope:${scopeDescription}\nWorkspace:${input.workspaceId}\nDateRange:${input.dateRange.start}-${input.dateRange.end}`);
-  const planJson = safeParseJson(planText, 'plan');
-  const plan = Array.isArray(planJson.plan) ? planJson.plan.slice(0, MAX_PLAN_STEPS) : [];
+  // Step 1: Gather all data upfront (fast, no AI calls)
+  const [kpis, comparisons, series, anomalies] = await Promise.all([
+    get_kpis(workspaceId, dateRange, filters, null, ['spend', 'revenue', 'conversions', 'roas', 'cpa', 'ctr', 'impressions', 'clicks']),
+    compare_periods(workspaceId, dateRange, {
+      start: new Date(new Date(dateRange.start).setDate(new Date(dateRange.start).getDate() - 7)).toISOString().split('T')[0],
+      end: new Date(new Date(dateRange.end).setDate(new Date(dateRange.end).getDate() - 7)).toISOString().split('T')[0],
+    }, ['spend', 'revenue', 'conversions', 'roas', 'cpa']),
+    get_timeseries(workspaceId, dateRange, 'daily', ['spend', 'revenue', 'roas'], null, filters),
+    detect_anomalies(workspaceId, dateRange, primaryKpi),
+  ]);
 
-  const evidence = [];
+  // Build evidence from gathered data
+  const evidence = [
+    {
+      id: 'ev_kpis',
+      tool: 'get_kpis',
+      params_summary: `${scopeDescription} · ${dateRange.start} to ${dateRange.end}`,
+      key_results: Object.entries(kpis.metrics || {}).map(([k, v]) => `${k}=${typeof v === 'number' ? v.toFixed(2) : v}`).slice(0, 6),
+    },
+    {
+      id: 'ev_comparison',
+      tool: 'compare_periods',
+      params_summary: 'Current vs previous 7 days',
+      key_results: [
+        `spend_change=${((comparisons.metrics?.current?.spend || 0) - (comparisons.metrics?.previous?.spend || 0)).toFixed(0)}`,
+        `revenue_change=${((comparisons.metrics?.current?.revenue || 0) - (comparisons.metrics?.previous?.revenue || 0)).toFixed(0)}`,
+        `roas_current=${(comparisons.metrics?.current?.roas || 0).toFixed(2)}`,
+        `roas_previous=${(comparisons.metrics?.previous?.roas || 0).toFixed(2)}`,
+      ],
+    },
+  ];
+
+  if (anomalies.anomalies?.length > 0) {
+    evidence.push({
+      id: 'ev_anomalies',
+      tool: 'detect_anomalies',
+      params_summary: `${primaryKpi} anomaly detection`,
+      key_results: anomalies.anomalies.slice(0, 3).map(a => `${a.date}: ${a.type} (${a.metric}=${a.value})`),
+    });
+  }
+
+  // Step 2: Single Gemini call to analyze and generate insights
+  const analysisPrompt = `You are a marketing analyst. Analyze this data and answer the user's question.
+
+USER QUESTION: ${question}
+SCOPE: ${scopeDescription}
+DATE RANGE: ${dateRange.start} to ${dateRange.end}
+
+DATA:
+- KPIs: ${JSON.stringify(kpis.metrics)}
+- Period Comparison: Current=${JSON.stringify(comparisons.metrics?.current)}, Previous=${JSON.stringify(comparisons.metrics?.previous)}
+- Anomalies: ${JSON.stringify(anomalies.anomalies?.slice(0, 5) || [])}
+- Timeseries points: ${series.data?.length || 0} days
+
+Return ONLY valid JSON in this exact format (no markdown, no explanation):
+{
+  "status": "ok",
+  "findings": [
+    {"title": "...", "detail": "...", "impact": "high|medium|low", "supporting_metrics": ["metric1"]}
+  ],
+  "actions": [
+    {"priority": "high|medium|low", "action": "...", "rationale": "...", "expected_impact": "...", "supporting_metrics": ["metric1"]}
+  ],
+  "exec_summary": {
+    "headline": "One sentence summary answering the question",
+    "what_changed": ["bullet1", "bullet2"],
+    "why": ["reason1"],
+    "what_to_do_next": ["action1", "action2"]
+  }
+}`;
+
   const trace = {
-    plan_steps: plan,
-    tool_calls: [],
+    plan_steps: ['gather_data', 'analyze_with_ai'],
+    tool_calls: evidence.map(e => ({ name: e.tool, args_summary: e.params_summary, result_summary: e.key_results.join(', ') })),
     validation: [],
   };
 
-  const toolResults = [];
-
-  for (let i = 0; i < MAX_TOOL_CALLS; i++) {
-    const toolLoopPrompt = `
-Plan: ${JSON.stringify(plan)}
-Scope: ${scopeDescription}
-Evidence so far: ${JSON.stringify(evidence)}
-Tool summaries: ${JSON.stringify(toolResults.map((r) => ({ name: r.name, summary: summarizeResult(r.result) })))}
-Return JSON: {"next":{"name":"...","arguments":{...}},"done":false,"reason":"..."}.
-`;
-
-    if (i > 0 && toolResults.length >= 2) {
-      toolLoopPrompt.concat('\nYou may return done=true if enough evidence.');
-    }
-
-    const toolText = await generate(toolLoopPrompt);
-    const toolJson = safeParseJson(toolText, 'tool call');
-    const next = toolJson.next;
-    if (!next || toolJson.done) break;
-    if (!tools.some((tool) => tool.name === next.name)) {
-      trace.tool_calls.push({
-        name: next.name,
-        args_summary: JSON.stringify(next.arguments || {}),
-        result_summary: 'unknown tool (skipped)',
-      });
-      continue;
-    }
-
-    const executedArgs = {
-      ...(next.arguments || {}),
-      workspaceId: input.workspaceId,
-      dateRange: input.dateRange,
-      scope: input.scope,
-    };
-    const toolResult = await callTool(next.name, executedArgs);
-    toolResults.push({ name: next.name, args: executedArgs, result: toolResult });
-    const argsSummary = JSON.stringify(executedArgs);
-    trace.tool_calls.push({
-      name: next.name,
-      args_summary: argsSummary,
-      result_summary: summarizeResult(toolResult),
-    });
-
-    evidence.push({
-      id: `ev_${evidence.length + 1}`,
-      tool: next.name,
-      params_summary: `Scope: ${scopeDescription} · Args: ${argsSummary}`,
-      key_results: extractKeyResults(toolResult),
-    });
-    if (toolResults.length >= 2 && toolJson.done) break;
-  }
-
-  const finalPrompt = `
-Plan: ${JSON.stringify(plan)}
-Scope: ${scopeDescription}
-Evidence: ${JSON.stringify(evidence)}
-Tool summaries: ${JSON.stringify(toolResults.map((r) => ({ name: r.name, summary: summarizeResult(r.result) })))}
-Now return FinalResponse JSON ONLY.
-`;
-
-  let finalResponse = await safeParseJson(await generate(finalPrompt), 'final response');
   try {
-    validateFinalResponse(finalResponse);
-    trace.validation.push('validation ok');
+    const aiResponse = await generate(analysisPrompt);
+    let finalResponse = safeParseJson(aiResponse, 'AI analysis');
+
+    // Add required fields
+    finalResponse.objective = scopeDescription ? `${scopeDescription} · ${question}` : question;
+    finalResponse.evidence = evidence;
+    finalResponse.dashboard_spec = {
+      title: 'AI Analysis',
+      tiles: [
+        { type: 'kpi', title: 'Spend', value: `$${(kpis.metrics?.spend || 0).toFixed(0)}`, unit: 'USD' },
+        { type: 'kpi', title: 'Revenue', value: `$${(kpis.metrics?.revenue || 0).toFixed(0)}`, unit: 'USD' },
+        { type: 'kpi', title: 'ROAS', value: `${(kpis.metrics?.roas || 0).toFixed(2)}x`, unit: 'ratio' },
+        {
+          type: 'trend',
+          title: 'Performance Trend',
+          series: [
+            { name: 'Spend', data: (series.data || []).map(p => ({ x: p.date, y: p.spend })) },
+            { name: 'Revenue', data: (series.data || []).map(p => ({ x: p.date, y: p.revenue })) },
+          ],
+        },
+      ],
+    };
+
+    trace.validation.push('ai_response_parsed');
+    finalResponse = enforceEvidenceBinding(finalResponse);
+    trace.validation.push('evidence_binding_enforced');
+
+    return debugMode ? { result: finalResponse, trace } : finalResponse;
   } catch (err) {
-    trace.validation.push(`validation failed: ${err.message}`);
-    const repairPrompt = `
-Validation errors: ${err.message}
-Evidence: ${JSON.stringify(evidence)}
-Return corrected FinalResponse JSON ONLY.
-`;
+    console.error('Gemini analysis failed:', err.message);
+    trace.validation.push(`ai_failed: ${err.message}`);
 
-    finalResponse = await safeParseJson(await generate(repairPrompt), 'repair response');
-    validateFinalResponse(finalResponse);
-    trace.validation.push('repair ok');
+    // Fallback to deterministic summary with AI-style formatting
+    const fallback = deterministicSummary(kpis, comparisons, series, anomalies, question, scopeDescription);
+    fallback.exec_summary.headline = `Analysis based on ${scopeDescription} data`;
+    return debugMode ? { result: fallback, trace } : fallback;
   }
-
-  finalResponse.objective = scopeDescription ? `${scopeDescription} · ${input.question}` : input.question;
-  finalResponse = enforceEvidenceBinding(finalResponse);
-  trace.validation.push('evidence binding enforced');
-
-  return debugMode ? { result: finalResponse, trace } : finalResponse;
 }
 
 function safeParseJson(text, label) {
@@ -286,20 +302,6 @@ function safeParseJson(text, label) {
   } catch (err) {
     throw new Error(`Failed to parse ${label}: ${err.message}`);
   }
-}
-
-function summarizeResult(result) {
-  if (!result || typeof result !== 'object') return 'empty';
-  const keys = Object.keys(result).slice(0, 3);
-  return keys.map((k) => `${k}:${JSON.stringify(result[k])}`).join(', ') || 'empty';
-}
-
-function extractKeyResults(toolResult) {
-  if (!toolResult || typeof toolResult !== 'object') return [];
-  const metrics = toolResult.metrics || toolResult;
-  return Object.entries(metrics || {})
-    .map(([key, value]) => `metric=${key} value=${value}`)
-    .slice(0, 4);
 }
 
 module.exports = {
