@@ -8,6 +8,8 @@ const {
   getWorkspaceMembers,
   addWorkspaceMember,
   removeWorkspaceMember,
+  getWorkspaceAccounts,
+  getWorkspaceDashboards,
 } = require('../controllers/workspaceController');
 const authenticate = require('../middleware/auth');
 
@@ -27,5 +29,9 @@ router.delete('/:id', deleteWorkspace);
 router.get('/:id/members', getWorkspaceMembers);
 router.post('/:id/members', addWorkspaceMember);
 router.delete('/:id/members/:userId', removeWorkspaceMember);
+
+// Workspace accounts and dashboards
+router.get('/:id/accounts', getWorkspaceAccounts);
+router.get('/:id/dashboards', getWorkspaceDashboards);
 
 module.exports = router;

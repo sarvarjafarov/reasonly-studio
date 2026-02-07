@@ -1,4 +1,6 @@
 const Workspace = require('../models/Workspace');
+const Dashboard = require('../models/Dashboard');
+const { query } = require('../config/database');
 
 /**
  * Get all workspaces for the current user
@@ -290,6 +292,81 @@ const removeWorkspaceMember = async (req, res) => {
   }
 };
 
+/**
+ * Get connected accounts for a workspace
+ */
+const getWorkspaceAccounts = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user has access to workspace
+    const role = await Workspace.isMember(id, req.user.id);
+
+    if (!role) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have access to this workspace',
+      });
+    }
+
+    // Query ad_accounts table for this workspace
+    const result = await query(
+      `SELECT id, workspace_id, platform, account_id, account_name, currency, timezone, status, created_at, updated_at
+       FROM ad_accounts
+       WHERE workspace_id = $1
+       ORDER BY platform, account_name`,
+      [id]
+    );
+
+    res.json({
+      success: true,
+      count: result.rows.length,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('Error fetching workspace accounts:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch workspace accounts',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Get dashboards for a workspace
+ */
+const getWorkspaceDashboards = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user has access to workspace
+    const role = await Workspace.isMember(id, req.user.id);
+
+    if (!role) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have access to this workspace',
+      });
+    }
+
+    const dashboards = await Dashboard.findByWorkspaceId(id);
+
+    res.json({
+      success: true,
+      count: dashboards.length,
+      data: dashboards,
+    });
+  } catch (error) {
+    console.error('Error fetching workspace dashboards:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch workspace dashboards',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getUserWorkspaces,
   getWorkspaceById,
@@ -299,4 +376,6 @@ module.exports = {
   getWorkspaceMembers,
   addWorkspaceMember,
   removeWorkspaceMember,
+  getWorkspaceAccounts,
+  getWorkspaceDashboards,
 };
