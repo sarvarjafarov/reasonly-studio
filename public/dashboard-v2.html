@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Reasonly</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0a0a0a;
+      color: #ffffff;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background-color: #111;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .logo-icon {
+      width: 2rem;
+      height: 2rem;
+      background-color: #b7fa31;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #000;
+      font-size: 0.875rem;
+    }
+
+    .logo-text {
+      font-size: 1.125rem;
+      font-weight: 700;
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      transition: all 0.15s ease;
+    }
+
+    .nav-link:hover {
+      color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.08);
+    }
+
+    .nav-link.active {
+      color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.12);
+    }
+
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-email {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.8rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .btn-secondary {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-primary {
+      background-color: #b7fa31;
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background-color: #a3e626;
+    }
+
+    /* Main Container */
+    .main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Alert Container */
+    #alertContainer {
+      margin-bottom: 1rem;
+    }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .alert-success {
+      background-color: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10b981;
+    }
+
+    .alert-error {
+      background-color: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .alert-warning {
+      background-color: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+    }
+
+    /* Question Hero */
+    .question-hero {
+      text-align: center;
+      padding: 3rem 0 2rem;
+    }
+
+    .question-hero h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.7) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .question-hero p {
+      color: rgba(255, 255, 255, 0.45);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .question-form {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .question-input-row {
+      position: relative;
+      margin-bottom: 0.75rem;
+    }
+
+    .question-input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      padding-right: 110px;
+      border: 2px solid rgba(183, 250, 49, 0.25);
+      background-color: rgba(255, 255, 255, 0.03);
+      color: #fff;
+      border-radius: 1rem;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+
+    .question-input:focus {
+      outline: none;
+      border-color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.04);
+    }
+
+    .question-input::placeholder {
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .question-submit {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 0.6rem 1.25rem;
+      background-color: #b7fa31;
+      color: #000;
+      border: none;
+      border-radius: 0.65rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .question-submit:hover {
+      background-color: #a3e626;
+    }
+
+    .question-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .account-selector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .account-selector select {
+      padding: 0.4rem 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background-color: rgba(255, 255, 255, 0.05);
+      color: #b7fa31;
+      font-size: 0.8rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .account-selector select:focus {
+      outline: none;
+      border-color: rgba(183, 250, 49, 0.4);
+    }
+
+    .account-selector a {
+      color: rgba(255, 255, 255, 0.4);
+      text-decoration: none;
+      font-size: 0.75rem;
+    }
+
+    .account-selector a:hover {
+      color: #b7fa31;
+    }
+
+    .question-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .suggestion {
+      padding: 0.35rem 0.75rem;
+      background-color: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .suggestion:hover {
+      background-color: rgba(183, 250, 49, 0.08);
+      border-color: rgba(183, 250, 49, 0.25);
+      color: #b7fa31;
+    }
+
+    /* Analysis Results */
+    .analysis-section {
+      display: none;
+      margin-bottom: 2rem;
+    }
+
+    .analysis-section.show {
+      display: block;
+    }
+
+    .analysis-card {
+      background-color: #151515;
+      border: 1px solid rgba(183, 250, 49, 0.2);
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+
+    .analysis-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .analysis-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    .analysis-meta {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .analysis-close {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      font-size: 1.25rem;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .analysis-body {
+      padding: 1.25rem;
+    }
+
+    .analysis-loading {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(183, 250, 49, 0.2);
+      border-top-color: #b7fa31;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .analysis-content {
+      display: none;
+    }
+
+    .analysis-headline {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #b7fa31;
+      margin-bottom: 1.25rem;
+      line-height: 1.4;
+    }
+
+    .analysis-group {
+      margin-bottom: 1rem;
+    }
+
+    .analysis-group-title {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 0.5rem;
+    }
+
+    .analysis-group ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .analysis-group li {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.8);
+      padding: 0.3rem 0;
+      padding-left: 1.25rem;
+      position: relative;
+    }
+
+    .analysis-group li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: rgba(183, 250, 49, 0.5);
+    }
+
+    /* Content Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Insights Section */
+    .insights-card {
+      background-color: #151515;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 1rem;
+      padding: 1.25rem;
+    }
+
+    .insights-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .insights-header h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .refresh-btn {
+      padding: 0.3rem 0.6rem;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.4);
+      border-radius: 0.4rem;
+      font-size: 0.7rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .refresh-btn:hover {
+      border-color: rgba(183, 250, 49, 0.3);
+      color: #b7fa31;
+    }
+
+    .insight-item {
+      padding: 0.75rem;
+      background-color: rgba(255, 255, 255, 0.02);
+      border-radius: 0.6rem;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .insight-item:hover {
+      background-color: rgba(183, 250, 49, 0.04);
+    }
+
+    .insight-item.alert {
+      border-left-color: #f59e0b;
+    }
+
+    .insight-item.opportunity {
+      border-left-color: #10b981;
+    }
+
+    .insight-item.info {
+      border-left-color: #3b82f6;
+    }
+
+    .insight-icon {
+      font-size: 1rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .insight-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .insight-detail {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.5);
+      line-height: 1.4;
+    }
+
+    .no-insights {
+      text-align: center;
+      padding: 1rem;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.8rem;
+    }
+
+    .no-insights a {
+      color: #b7fa31;
+      text-decoration: none;
+    }
+
+    /* Dashboards Section */
+    .dashboards-card {
+      background-color: #151515;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 1rem;
+      padding: 1.25rem;
+    }
+
+    .dashboards-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .dashboards-header h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .dashboard-item {
+      padding: 0.75rem;
+      background-color: rgba(255, 255, 255, 0.02);
+      border-radius: 0.6rem;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .dashboard-item:hover {
+      background-color: rgba(183, 250, 49, 0.04);
+    }
+
+    .dashboard-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    .dashboard-meta {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .create-dashboard-btn {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: rgba(183, 250, 49, 0.08);
+      border: 1px dashed rgba(183, 250, 49, 0.3);
+      border-radius: 0.6rem;
+      color: #b7fa31;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+      margin-top: 0.5rem;
+    }
+
+    .create-dashboard-btn:hover {
+      background-color: rgba(183, 250, 49, 0.12);
+    }
+
+    /* Quick Stats */
+    .quick-stats {
+      display: flex;
+      gap: 0.75rem;
+      padding: 1rem 0;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .quick-stat {
+      flex: 1;
+      min-width: 100px;
+      padding: 0.75rem;
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 0.75rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.15rem;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-change {
+      font-size: 0.65rem;
+      margin-top: 0.2rem;
+    }
+
+    .stat-change.positive { color: #10b981; }
+    .stat-change.negative { color: #ef4444; }
+
+    /* Onboarding Banner */
+    .onboarding-banner {
+      background: linear-gradient(135deg, rgba(183, 250, 49, 0.1) 0%, rgba(103, 126, 234, 0.1) 100%);
+      border: 1px solid rgba(183, 250, 49, 0.2);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .onboarding-banner h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .onboarding-banner p {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 1rem;
+    }
+
+    .onboarding-banner .btn-primary {
+      padding: 0.6rem 1.5rem;
+    }
+
+    /* Hidden elements for functionality */
+    .hidden { display: none !important; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .header {
+        padding: 1rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .nav-menu {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .main {
+        padding: 1rem;
+      }
+
+      .question-hero h1 {
+        font-size: 1.4rem;
+      }
+
+      .question-hero {
+        padding: 2rem 0 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">R</div>
+      <span class="logo-text">Reasonly</span>
+    </div>
+    <nav class="nav-menu">
+      <a href="/dashboard" class="nav-link active">Overview</a>
+      <a href="/campaigns.html" class="nav-link">Campaigns</a>
+      <a href="/custom-data.html" class="nav-link">Data</a>
+      <a href="/connections" class="nav-link">Connections</a>
+    </nav>
+    <div class="user-section">
+      <span class="user-email" id="userEmail">Loading...</span>
+      <button class="btn btn-secondary" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <div id="alertContainer"></div>
+
+    <!-- Onboarding Banner (shown when no accounts connected) -->
+    <div class="onboarding-banner" id="onboardingBanner" style="display: none;">
+      <h3>Welcome to Reasonly!</h3>
+      <p>Connect your ad platforms to start getting AI-powered insights about your marketing performance.</p>
+      <a href="/connections" class="btn btn-primary">Connect Your Accounts</a>
+    </div>
+
+    <!-- Question Hero -->
+    <section class="question-hero" id="questionHero">
+      <h1>What do you want to know?</h1>
+      <p>Ask a question and get AI-powered insights from your marketing data.</p>
+
+      <div class="question-form">
+        <div class="question-input-row">
+          <input
+            type="text"
+            class="question-input"
+            id="questionInput"
+            placeholder="e.g., Why did my ROAS drop last week?"
+            onkeypress="if(event.key === 'Enter') submitQuestion()"
+          >
+          <button class="question-submit" onclick="submitQuestion()" id="submitBtn">
+            Analyze
+          </button>
+        </div>
+
+        <div class="account-selector">
+          <span>Analyzing:</span>
+          <select id="accountSelect">
+            <option value="">Select account...</option>
+          </select>
+          <a href="/connections">Manage connections</a>
+        </div>
+
+        <div class="question-suggestions">
+          <span class="suggestion" onclick="setQuestion('Why did my ROAS change?')">Why did ROAS change?</span>
+          <span class="suggestion" onclick="setQuestion('Which campaigns should I scale?')">Which campaigns to scale?</span>
+          <span class="suggestion" onclick="setQuestion('What is causing CPA to increase?')">Why is CPA increasing?</span>
+          <span class="suggestion" onclick="setQuestion('Give me a performance summary')">Weekly summary</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Analysis Results -->
+    <section class="analysis-section" id="analysisSection">
+      <div class="analysis-card">
+        <div class="analysis-header">
+          <div>
+            <div class="analysis-title" id="analysisTitle">Loading...</div>
+            <div class="analysis-meta" id="analysisMeta">Analyzing your data...</div>
+          </div>
+          <button class="analysis-close" onclick="closeAnalysis()">&times;</button>
+        </div>
+        <div class="analysis-body">
+          <div class="analysis-loading" id="analysisLoading">
+            <div class="spinner"></div>
+            <div style="color: rgba(255, 255, 255, 0.5); font-size: 0.85rem;">AI is analyzing your data...</div>
+          </div>
+          <div class="analysis-content" id="analysisContent">
+            <div class="analysis-headline" id="analysisHeadline"></div>
+            <div class="analysis-group">
+              <div class="analysis-group-title">What Changed</div>
+              <ul id="whatChangedList"></ul>
+            </div>
+            <div class="analysis-group">
+              <div class="analysis-group-title">Why It Happened</div>
+              <ul id="whyList"></ul>
+            </div>
+            <div class="analysis-group">
+              <div class="analysis-group-title">Recommended Actions</div>
+              <ul id="actionsList"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Stats (shown when data available) -->
+    <section class="quick-stats" id="quickStats" style="display: none;">
+      <div class="quick-stat">
+        <div class="stat-value" id="statSpend">$0</div>
+        <div class="stat-label">Spend (7d)</div>
+        <div class="stat-change" id="statSpendChange"></div>
+      </div>
+      <div class="quick-stat">
+        <div class="stat-value" id="statRevenue">$0</div>
+        <div class="stat-label">Revenue</div>
+        <div class="stat-change" id="statRevenueChange"></div>
+      </div>
+      <div class="quick-stat">
+        <div class="stat-value" id="statRoas">0.0x</div>
+        <div class="stat-label">ROAS</div>
+        <div class="stat-change" id="statRoasChange"></div>
+      </div>
+      <div class="quick-stat">
+        <div class="stat-value" id="statConversions">0</div>
+        <div class="stat-label">Conversions</div>
+        <div class="stat-change" id="statConvChange"></div>
+      </div>
+    </section>
+
+    <!-- Content Grid: Insights + Dashboards -->
+    <div class="content-grid">
+      <!-- Today's Insights -->
+      <section class="insights-card">
+        <div class="insights-header">
+          <h2>Today's Insights</h2>
+          <button class="refresh-btn" onclick="refreshInsights()">Refresh</button>
+        </div>
+        <div id="insightsList">
+          <div class="no-insights">
+            <p>Connect your ad accounts to see AI-generated insights.</p>
+            <a href="/connections">Connect accounts</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Your Dashboards -->
+      <section class="dashboards-card">
+        <div class="dashboards-header">
+          <h2>Your Dashboards</h2>
+        </div>
+        <div id="dashboardsList">
+          <div class="no-insights">
+            <p>No dashboards yet.</p>
+          </div>
+        </div>
+        <button class="create-dashboard-btn" onclick="createDashboard()">+ Create Dashboard</button>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // State
+    let currentUser = null;
+    let workspaces = [];
+    let selectedWorkspaceId = null;
+    let connectedAccounts = [];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+      await checkAuth();
+      await loadWorkspaces();
+      await loadAccounts();
+      await loadDashboards();
+      checkOAuthCallback();
+    }
+
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!res.ok) throw new Error('Not authenticated');
+        const data = await res.json();
+        currentUser = data.user;
+        document.getElementById('userEmail').textContent = currentUser.email;
+      } catch (err) {
+        window.location.href = '/login';
+      }
+    }
+
+    async function loadWorkspaces() {
+      try {
+        const res = await fetch('/api/workspaces', { credentials: 'include' });
+        const data = await res.json();
+        workspaces = data.workspaces || [];
+        if (workspaces.length > 0) {
+          selectedWorkspaceId = workspaces[0].id;
+        }
+      } catch (err) {
+        console.error('Failed to load workspaces:', err);
+      }
+    }
+
+    async function loadAccounts() {
+      if (!selectedWorkspaceId) return;
+
+      try {
+        const res = await fetch(`/api/workspaces/${selectedWorkspaceId}/accounts`, { credentials: 'include' });
+        const data = await res.json();
+        connectedAccounts = data.accounts || [];
+
+        updateAccountSelector();
+        updateUI();
+      } catch (err) {
+        console.error('Failed to load accounts:', err);
+      }
+    }
+
+    function updateAccountSelector() {
+      const select = document.getElementById('accountSelect');
+
+      if (connectedAccounts.length === 0) {
+        select.innerHTML = '<option value="">No accounts connected</option>';
+        return;
+      }
+
+      select.innerHTML = connectedAccounts.map(acc => {
+        const name = acc.account_name || acc.account_id;
+        const platform = acc.platform.toUpperCase();
+        return `<option value="${acc.platform}:${acc.account_id}">${platform}: ${name}</option>`;
+      }).join('');
+    }
+
+    function updateUI() {
+      const hasAccounts = connectedAccounts.length > 0;
+
+      // Show/hide onboarding
+      document.getElementById('onboardingBanner').style.display = hasAccounts ? 'none' : 'block';
+
+      // Update insights
+      if (hasAccounts) {
+        refreshInsights();
+      }
+    }
+
+    async function loadDashboards() {
+      if (!selectedWorkspaceId) return;
+
+      try {
+        const res = await fetch(`/api/workspaces/${selectedWorkspaceId}/dashboards`, { credentials: 'include' });
+        const data = await res.json();
+        const dashboards = data.dashboards || [];
+
+        const list = document.getElementById('dashboardsList');
+
+        if (dashboards.length === 0) {
+          list.innerHTML = '<div class="no-insights"><p>No dashboards yet.</p></div>';
+          return;
+        }
+
+        list.innerHTML = dashboards.map(d => `
+          <div class="dashboard-item" onclick="window.location.href='/dashboard-viewer?id=${d.id}'">
+            <div class="dashboard-name">${d.name}</div>
+            <div class="dashboard-meta">${d.widget_count || 0} widgets</div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load dashboards:', err);
+      }
+    }
+
+    // Question & Analysis
+    function setQuestion(q) {
+      document.getElementById('questionInput').value = q;
+      document.getElementById('questionInput').focus();
+    }
+
+    async function submitQuestion() {
+      const input = document.getElementById('questionInput');
+      const question = input.value.trim();
+
+      if (!question) {
+        showAlert('Please enter a question', 'warning');
+        return;
+      }
+
+      if (connectedAccounts.length === 0) {
+        showAlert('Please connect an ad account first', 'warning');
+        return;
+      }
+
+      // Get selected account
+      const accountSelect = document.getElementById('accountSelect');
+      const selectedValue = accountSelect.value;
+
+      if (!selectedValue) {
+        showAlert('Please select an account to analyze', 'warning');
+        return;
+      }
+
+      const [platform, accountId] = selectedValue.split(':');
+
+      // Show analysis section
+      const section = document.getElementById('analysisSection');
+      section.classList.add('show');
+      document.getElementById('analysisTitle').textContent = question;
+      document.getElementById('analysisMeta').textContent = 'Analyzing your data...';
+      document.getElementById('analysisLoading').style.display = 'block';
+      document.getElementById('analysisContent').style.display = 'none';
+
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Build scope
+      const scope = {
+        source: platform === 'meta' ? 'meta_ads' :
+                platform === 'search_console' ? 'search_console' :
+                platform + '_ads',
+        accountId: accountId,
+        entityLevel: 'account'
+      };
+
+      if (platform === 'search_console') {
+        scope.propertyUrl = accountId;
+      }
+
+      // Date range (last 7 days)
+      const today = new Date();
+      const weekAgo = new Date(today);
+      weekAgo.setDate(weekAgo.getDate() - 7);
+
+      try {
+        const res = await fetch('/api/ai/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            workspaceId: selectedWorkspaceId,
+            question: question,
+            dateRange: {
+              start: weekAgo.toISOString().split('T')[0],
+              end: today.toISOString().split('T')[0]
+            },
+            scope: scope,
+            primaryKpi: 'roas',
+            compareMode: 'previous_period'
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || 'Analysis failed');
+        }
+
+        displayResults(data, question);
+      } catch (err) {
+        console.error('Analysis error:', err);
+        showAnalysisError(err.message);
+      }
+    }
+
+    function displayResults(data, question) {
+      document.getElementById('analysisLoading').style.display = 'none';
+
+      const execSummary = data.exec_summary || {};
+
+      document.getElementById('analysisMeta').textContent =
+        `Analyzed your data • ${new Date().toLocaleString()}`;
+
+      document.getElementById('analysisHeadline').textContent =
+        execSummary.headline || 'Analysis complete';
+
+      document.getElementById('whatChangedList').innerHTML =
+        (execSummary.what_changed || ['No significant changes']).map(i => `<li>${i}</li>`).join('');
+
+      document.getElementById('whyList').innerHTML =
+        (execSummary.why || ['Further analysis needed']).map(i => `<li>${i}</li>`).join('');
+
+      const actions = data.actions || [];
+      document.getElementById('actionsList').innerHTML =
+        (execSummary.what_to_do_next || actions.map(a => a.action) || ['Continue monitoring']).map(i => `<li>${i}</li>`).join('');
+
+      document.getElementById('analysisContent').style.display = 'block';
+    }
+
+    function showAnalysisError(message) {
+      document.getElementById('analysisLoading').style.display = 'none';
+      document.getElementById('analysisContent').innerHTML = `
+        <div style="text-align: center; padding: 1.5rem; color: #f87171;">
+          <div style="font-size: 1.5rem; margin-bottom: 0.75rem;">⚠️</div>
+          <div style="font-weight: 600; margin-bottom: 0.5rem;">Analysis Failed</div>
+          <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${message}</div>
+        </div>
+      `;
+      document.getElementById('analysisContent').style.display = 'block';
+    }
+
+    function closeAnalysis() {
+      document.getElementById('analysisSection').classList.remove('show');
+    }
+
+    // Insights
+    function refreshInsights() {
+      const list = document.getElementById('insightsList');
+
+      if (connectedAccounts.length === 0) {
+        list.innerHTML = `
+          <div class="no-insights">
+            <p>Connect your ad accounts to see AI-generated insights.</p>
+            <a href="/connections">Connect accounts</a>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = '<div style="padding: 1rem; text-align: center; color: rgba(255,255,255,0.4); font-size: 0.8rem;">Loading insights...</div>';
+
+      // Simulated insights (replace with real API call)
+      setTimeout(() => {
+        list.innerHTML = `
+          <div class="insight-item alert" onclick="setQuestion('Why is my CPA increasing?'); submitQuestion();">
+            <div class="insight-icon">⚠️</div>
+            <div class="insight-title">CPA trending up</div>
+            <div class="insight-detail">Cost per acquisition increased 12% this week.</div>
+          </div>
+          <div class="insight-item opportunity" onclick="setQuestion('Which campaigns should I scale?'); submitQuestion();">
+            <div class="insight-icon">📈</div>
+            <div class="insight-title">Scale opportunity</div>
+            <div class="insight-detail">2 campaigns performing above target ROAS.</div>
+          </div>
+          <div class="insight-item info" onclick="setQuestion('Give me a weekly performance summary'); submitQuestion();">
+            <div class="insight-icon">📊</div>
+            <div class="insight-title">Weekly summary ready</div>
+            <div class="insight-detail">Click to see your AI-powered analysis.</div>
+          </div>
+        `;
+      }, 800);
+    }
+
+    // Dashboard
+    function createDashboard() {
+      // Simple prompt for now
+      const name = prompt('Dashboard name:');
+      if (!name) return;
+
+      fetch(`/api/workspaces/${selectedWorkspaceId}/dashboards`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name: name, description: '' })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showAlert('Dashboard created!', 'success');
+          loadDashboards();
+        } else {
+          showAlert(data.message || 'Failed to create dashboard', 'error');
+        }
+      })
+      .catch(err => {
+        showAlert('Failed to create dashboard', 'error');
+      });
+    }
+
+    // Utils
+    function showAlert(message, type = 'info') {
+      const container = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      container.appendChild(alert);
+
+      setTimeout(() => alert.remove(), 5000);
+    }
+
+    function checkOAuthCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const oauth = params.get('oauth');
+      const platform = params.get('platform');
+      const message = params.get('message');
+
+      if (oauth === 'success') {
+        showAlert(`Successfully connected ${platform}!`, 'success');
+        window.history.replaceState({}, '', '/dashboard');
+        loadAccounts();
+      } else if (oauth === 'error') {
+        showAlert(`Connection failed: ${message || 'Unknown error'}`, 'error');
+        window.history.replaceState({}, '', '/dashboard');
+      }
+    }
+
+    function logout() {
+      fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+        .then(() => window.location.href = '/login')
+        .catch(() => window.location.href = '/login');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connections - Reasonly</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0a0a0a;
+      color: #ffffff;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background-color: #111;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .logo-icon {
+      width: 2rem;
+      height: 2rem;
+      background-color: #b7fa31;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #000;
+      font-size: 0.875rem;
+    }
+
+    .logo-text {
+      font-size: 1.125rem;
+      font-weight: 700;
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      transition: all 0.15s ease;
+    }
+
+    .nav-link:hover {
+      color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.08);
+    }
+
+    .nav-link.active {
+      color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.12);
+    }
+
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-email {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.8rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn-secondary {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-primary {
+      background-color: #b7fa31;
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background-color: #a3e626;
+    }
+
+    .btn-danger {
+      background-color: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background-color: rgba(239, 68, 68, 0.25);
+    }
+
+    /* Main Container */
+    .main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Page Header */
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+    }
+
+    /* Alert Container */
+    #alertContainer {
+      margin-bottom: 1rem;
+    }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .alert-success {
+      background-color: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10b981;
+    }
+
+    .alert-error {
+      background-color: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .alert-warning {
+      background-color: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+    }
+
+    /* Connected Accounts */
+    .section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 1rem;
+    }
+
+    .accounts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .account-card {
+      background-color: #151515;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .account-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .account-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .account-icon.meta { background-color: rgba(24, 119, 242, 0.15); }
+    .account-icon.google { background-color: rgba(234, 67, 53, 0.15); }
+    .account-icon.tiktok { background-color: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.1); }
+    .account-icon.linkedin { background-color: rgba(0, 119, 181, 0.15); }
+
+    .account-details h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    .account-details p {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .account-status {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.7rem;
+      color: #10b981;
+    }
+
+    .account-status .dot {
+      width: 6px;
+      height: 6px;
+      background-color: #10b981;
+      border-radius: 50%;
+    }
+
+    .account-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .no-accounts {
+      text-align: center;
+      padding: 2rem;
+      background-color: #151515;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+    }
+
+    /* Platform Cards */
+    .platforms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .platform-card {
+      background-color: #151515;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .platform-card:hover {
+      border-color: rgba(183, 250, 49, 0.3);
+      background-color: rgba(183, 250, 49, 0.02);
+    }
+
+    .platform-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .platform-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .platform-icon.meta { background-color: rgba(24, 119, 242, 0.2); }
+    .platform-icon.google { background-color: rgba(234, 67, 53, 0.2); }
+    .platform-icon.search-console { background-color: rgba(66, 133, 244, 0.2); }
+    .platform-icon.tiktok { background-color: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1); }
+    .platform-icon.linkedin { background-color: rgba(0, 119, 181, 0.2); }
+
+    .platform-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .platform-desc {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      line-height: 1.4;
+      margin-bottom: 1rem;
+    }
+
+    .connect-btn {
+      width: 100%;
+      padding: 0.6rem;
+      background-color: rgba(183, 250, 49, 0.1);
+      border: 1px solid rgba(183, 250, 49, 0.3);
+      border-radius: 0.5rem;
+      color: #b7fa31;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .connect-btn:hover {
+      background-color: rgba(183, 250, 49, 0.2);
+    }
+
+    .connect-btn.connected {
+      background-color: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #10b981;
+    }
+
+    /* Custom Data Section */
+    .custom-data-card {
+      background-color: #151515;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+    }
+
+    .custom-data-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .custom-data-header h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .upload-zone:hover {
+      border-color: rgba(183, 250, 49, 0.3);
+      background-color: rgba(183, 250, 49, 0.02);
+    }
+
+    .upload-zone p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-zone span {
+      color: #b7fa31;
+      font-size: 0.75rem;
+    }
+
+    /* Hidden */
+    .hidden { display: none !important; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .header {
+        padding: 1rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .nav-menu {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .main {
+        padding: 1rem;
+      }
+
+      .account-card {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .account-info {
+        flex-direction: column;
+      }
+
+      .platforms-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">R</div>
+      <span class="logo-text">Reasonly</span>
+    </div>
+    <nav class="nav-menu">
+      <a href="/dashboard" class="nav-link">Overview</a>
+      <a href="/campaigns.html" class="nav-link">Campaigns</a>
+      <a href="/custom-data.html" class="nav-link">Data</a>
+      <a href="/connections" class="nav-link active">Connections</a>
+    </nav>
+    <div class="user-section">
+      <span class="user-email" id="userEmail">Loading...</span>
+      <button class="btn btn-secondary" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <div id="alertContainer"></div>
+
+    <div class="page-header">
+      <h1>Connections</h1>
+      <p>Connect your ad platforms to get AI-powered insights and recommendations.</p>
+    </div>
+
+    <!-- Connected Accounts -->
+    <section class="section">
+      <div class="section-title">Connected Accounts</div>
+      <div class="accounts-list" id="accountsList">
+        <div class="no-accounts">
+          <p>No accounts connected yet. Choose a platform below to get started.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Available Platforms -->
+    <section class="section">
+      <div class="section-title">Available Platforms</div>
+      <div class="platforms-grid">
+        <div class="platform-card" onclick="connectPlatform('meta')">
+          <div class="platform-header">
+            <div class="platform-icon meta">M</div>
+            <div class="platform-name">Meta Ads</div>
+          </div>
+          <div class="platform-desc">Connect Facebook and Instagram ad accounts for performance analysis.</div>
+          <button class="connect-btn" id="metaBtn">Connect</button>
+        </div>
+
+        <div class="platform-card" onclick="connectPlatform('google')">
+          <div class="platform-header">
+            <div class="platform-icon google">G</div>
+            <div class="platform-name">Google Ads</div>
+          </div>
+          <div class="platform-desc">Analyze your Google Ads campaigns, keywords, and conversions.</div>
+          <button class="connect-btn" id="googleBtn">Connect</button>
+        </div>
+
+        <div class="platform-card" onclick="connectPlatform('search_console')">
+          <div class="platform-header">
+            <div class="platform-icon search-console">SC</div>
+            <div class="platform-name">Search Console</div>
+          </div>
+          <div class="platform-desc">Get insights from your organic search performance data.</div>
+          <button class="connect-btn" id="searchConsoleBtn">Connect</button>
+        </div>
+
+        <div class="platform-card" onclick="connectPlatform('tiktok')">
+          <div class="platform-header">
+            <div class="platform-icon tiktok">T</div>
+            <div class="platform-name">TikTok Ads</div>
+          </div>
+          <div class="platform-desc">Analyze your TikTok ad campaigns and creative performance.</div>
+          <button class="connect-btn" id="tiktokBtn">Connect</button>
+        </div>
+
+        <div class="platform-card" onclick="connectPlatform('linkedin')">
+          <div class="platform-header">
+            <div class="platform-icon linkedin">in</div>
+            <div class="platform-name">LinkedIn Ads</div>
+          </div>
+          <div class="platform-desc">Connect LinkedIn Campaign Manager for B2B insights.</div>
+          <button class="connect-btn" id="linkedinBtn">Connect</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Custom Data -->
+    <section class="section">
+      <div class="custom-data-card">
+        <div class="custom-data-header">
+          <h3>Custom Data Sources</h3>
+          <a href="/custom-data.html" class="btn btn-secondary">Manage Data</a>
+        </div>
+        <div class="upload-zone" onclick="window.location.href='/custom-data.html'">
+          <p>Upload CSV or connect to your data warehouse</p>
+          <span>Supports CSV, Google Sheets, and database connections</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // State
+    let currentUser = null;
+    let workspaces = [];
+    let selectedWorkspaceId = null;
+    let connectedAccounts = [];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+      await checkAuth();
+      await loadWorkspaces();
+      await loadAccounts();
+      checkOAuthCallback();
+    }
+
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!res.ok) throw new Error('Not authenticated');
+        const data = await res.json();
+        currentUser = data.user;
+        document.getElementById('userEmail').textContent = currentUser.email;
+      } catch (err) {
+        window.location.href = '/login';
+      }
+    }
+
+    async function loadWorkspaces() {
+      try {
+        const res = await fetch('/api/workspaces', { credentials: 'include' });
+        const data = await res.json();
+        workspaces = data.workspaces || [];
+        if (workspaces.length > 0) {
+          selectedWorkspaceId = workspaces[0].id;
+        }
+      } catch (err) {
+        console.error('Failed to load workspaces:', err);
+      }
+    }
+
+    async function loadAccounts() {
+      if (!selectedWorkspaceId) return;
+
+      try {
+        const res = await fetch(`/api/workspaces/${selectedWorkspaceId}/accounts`, { credentials: 'include' });
+        const data = await res.json();
+        connectedAccounts = data.accounts || [];
+        renderAccounts();
+        updatePlatformButtons();
+      } catch (err) {
+        console.error('Failed to load accounts:', err);
+      }
+    }
+
+    function renderAccounts() {
+      const list = document.getElementById('accountsList');
+
+      if (connectedAccounts.length === 0) {
+        list.innerHTML = `
+          <div class="no-accounts">
+            <p>No accounts connected yet. Choose a platform below to get started.</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = connectedAccounts.map(acc => {
+        const iconClass = acc.platform === 'search_console' ? 'google' : acc.platform;
+        const platformName = getPlatformName(acc.platform);
+        const displayName = acc.account_name || acc.account_id;
+
+        return `
+          <div class="account-card">
+            <div class="account-info">
+              <div class="account-icon ${iconClass}">${getPlatformIcon(acc.platform)}</div>
+              <div class="account-details">
+                <h3>${displayName}</h3>
+                <p>${platformName}</p>
+              </div>
+            </div>
+            <div class="account-status">
+              <span class="dot"></span>
+              Connected
+            </div>
+            <div class="account-actions">
+              <button class="btn btn-secondary" onclick="refreshAccount('${acc.id}')">Refresh</button>
+              <button class="btn btn-danger" onclick="disconnectAccount('${acc.id}')">Disconnect</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getPlatformName(platform) {
+      const names = {
+        meta: 'Meta Ads (Facebook/Instagram)',
+        google: 'Google Ads',
+        search_console: 'Google Search Console',
+        tiktok: 'TikTok Ads',
+        linkedin: 'LinkedIn Ads'
+      };
+      return names[platform] || platform;
+    }
+
+    function getPlatformIcon(platform) {
+      const icons = {
+        meta: 'M',
+        google: 'G',
+        search_console: 'SC',
+        tiktok: 'T',
+        linkedin: 'in'
+      };
+      return icons[platform] || '?';
+    }
+
+    function updatePlatformButtons() {
+      const platforms = ['meta', 'google', 'search_console', 'tiktok', 'linkedin'];
+
+      platforms.forEach(platform => {
+        const btnId = platform === 'search_console' ? 'searchConsoleBtn' : `${platform}Btn`;
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+
+        const isConnected = connectedAccounts.some(acc => acc.platform === platform);
+
+        if (isConnected) {
+          btn.textContent = 'Connected';
+          btn.classList.add('connected');
+        } else {
+          btn.textContent = 'Connect';
+          btn.classList.remove('connected');
+        }
+      });
+    }
+
+    function connectPlatform(platform) {
+      if (!selectedWorkspaceId) {
+        showAlert('Please wait for workspace to load', 'warning');
+        return;
+      }
+
+      // OAuth flow URLs
+      const urls = {
+        meta: `/api/oauth/meta/start?workspaceId=${selectedWorkspaceId}`,
+        google: `/api/oauth/google/start?workspaceId=${selectedWorkspaceId}`,
+        search_console: `/api/oauth/search-console/start?workspaceId=${selectedWorkspaceId}`,
+        tiktok: `/api/oauth/tiktok/start?workspaceId=${selectedWorkspaceId}`,
+        linkedin: `/api/oauth/linkedin/start?workspaceId=${selectedWorkspaceId}`
+      };
+
+      const url = urls[platform];
+      if (url) {
+        window.location.href = url;
+      } else {
+        showAlert('Platform connection not yet available', 'warning');
+      }
+    }
+
+    async function refreshAccount(accountId) {
+      showAlert('Refreshing account data...', 'info');
+      // TODO: Implement refresh API call
+      setTimeout(() => {
+        showAlert('Account data refreshed', 'success');
+      }, 1500);
+    }
+
+    async function disconnectAccount(accountId) {
+      if (!confirm('Are you sure you want to disconnect this account? You will lose access to its data.')) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/workspaces/${selectedWorkspaceId}/accounts/${accountId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+
+        if (res.ok) {
+          showAlert('Account disconnected', 'success');
+          loadAccounts();
+        } else {
+          const data = await res.json();
+          showAlert(data.message || 'Failed to disconnect account', 'error');
+        }
+      } catch (err) {
+        showAlert('Failed to disconnect account', 'error');
+      }
+    }
+
+    function checkOAuthCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const oauth = params.get('oauth');
+      const platform = params.get('platform');
+      const message = params.get('message');
+
+      if (oauth === 'success') {
+        showAlert(`Successfully connected ${getPlatformName(platform)}!`, 'success');
+        window.history.replaceState({}, '', '/connections');
+        loadAccounts();
+      } else if (oauth === 'error') {
+        showAlert(`Connection failed: ${message || 'Unknown error'}`, 'error');
+        window.history.replaceState({}, '', '/connections');
+      }
+    }
+
+    function showAlert(message, type = 'info') {
+      const container = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type === 'info' ? 'warning' : type}`;
+      alert.textContent = message;
+      container.appendChild(alert);
+
+      setTimeout(() => alert.remove(), 5000);
+    }
+
+    function logout() {
+      fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+        .then(() => window.location.href = '/login')
+        .catch(() => window.location.href = '/login');
+    }
+  </script>
+</body>
+</html>

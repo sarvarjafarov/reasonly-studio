@@ -64,7 +64,11 @@ app.get('/verify-email', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
+  res.sendFile(path.join(__dirname, '../public/dashboard-v2.html'));
+});
+
+app.get('/connections', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/connections.html'));
 });
 
 app.get('/dashboard-viewer', (req, res) => {
