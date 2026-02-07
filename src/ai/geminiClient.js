@@ -10,8 +10,8 @@ function ensureApiKey() {
 async function generate(prompt) {
   ensureApiKey();
 
-  // Use generateContent endpoint with API key as query parameter (Gemini 3 format)
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${config.geminiModel}:generateContent?key=${config.geminiApiKey}`;
+  // Use generateContent endpoint with x-goog-api-key header (Gemini 3 recommended)
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${config.geminiModel}:generateContent`;
 
   const payload = {
     contents: [
@@ -30,6 +30,7 @@ async function generate(prompt) {
   const response = await axios.post(url, payload, {
     headers: {
       'Content-Type': 'application/json',
+      'x-goog-api-key': config.geminiApiKey,
     },
   });
 
