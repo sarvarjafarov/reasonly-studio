@@ -95,9 +95,393 @@
     }
 
     .container {
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 2rem;
+    }
+
+    /* Question-First Hero Section */
+    .question-hero {
+      text-align: center;
+      padding: 2rem 0 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .question-hero h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #ffffff;
+    }
+
+    .question-hero p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .question-input-container {
+      max-width: 700px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .question-input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      padding-right: 120px;
+      border: 2px solid rgba(183, 250, 49, 0.3);
+      background-color: rgba(255, 255, 255, 0.03);
+      color: #ffffff;
+      border-radius: 1rem;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s ease;
+    }
+
+    .question-input:focus {
+      outline: none;
+      border-color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.05);
+    }
+
+    .question-input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .question-submit-btn {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 0.65rem 1.25rem;
+      background-color: #b7fa31;
+      color: #000000;
+      border: none;
+      border-radius: 0.65rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .question-submit-btn:hover {
+      background-color: #a3e626;
+    }
+
+    .question-submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .question-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .question-suggestion {
+      padding: 0.4rem 0.85rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .question-suggestion:hover {
+      background-color: rgba(183, 250, 49, 0.1);
+      border-color: rgba(183, 250, 49, 0.3);
+      color: #b7fa31;
+    }
+
+    /* Proactive Insights Section */
+    .insights-section {
+      margin-bottom: 2rem;
+    }
+
+    .insights-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .insights-header h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .insights-header .refresh-btn {
+      padding: 0.4rem 0.75rem;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.5);
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .insight-card {
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .insight-card:hover {
+      border-color: rgba(183, 250, 49, 0.2);
+      background-color: rgba(183, 250, 49, 0.02);
+    }
+
+    .insight-card.alert {
+      border-left: 3px solid #f59e0b;
+    }
+
+    .insight-card.opportunity {
+      border-left: 3px solid #10b981;
+    }
+
+    .insight-card.info {
+      border-left: 3px solid #3b82f6;
+    }
+
+    .insight-icon {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .insight-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    .insight-detail {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.5;
+    }
+
+    .insight-action {
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: #b7fa31;
+      font-weight: 500;
+    }
+
+    /* Analysis Results Section */
+    .analysis-results {
+      display: none;
+      margin-bottom: 2rem;
+    }
+
+    .analysis-results.show {
+      display: block;
+    }
+
+    .analysis-card {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(183, 250, 49, 0.2);
+      border-radius: 1.25rem;
+      overflow: hidden;
+    }
+
+    .analysis-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .analysis-question {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.25rem;
+    }
+
+    .analysis-meta {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .analysis-close {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      font-size: 1.25rem;
+      padding: 0.25rem;
+    }
+
+    .analysis-body {
+      padding: 1.5rem;
+    }
+
+    .exec-summary {
+      margin-bottom: 1.5rem;
+    }
+
+    .exec-headline {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #b7fa31;
+      margin-bottom: 1rem;
+    }
+
+    .exec-section {
+      margin-bottom: 1rem;
+    }
+
+    .exec-section-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 0.5rem;
+    }
+
+    .exec-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .exec-section li {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.8);
+      padding: 0.35rem 0;
+      padding-left: 1.25rem;
+      position: relative;
+    }
+
+    .exec-section li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Quick Stats Bar */
+    .quick-stats {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 0;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      overflow-x: auto;
+    }
+
+    .quick-stat {
+      flex: 0 0 auto;
+      min-width: 120px;
+      padding: 0.75rem 1rem;
+      background-color: rgba(255, 255, 255, 0.02);
+      border-radius: 0.75rem;
+      text-align: center;
+    }
+
+    .quick-stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .quick-stat-label {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .quick-stat-change {
+      font-size: 0.7rem;
+      margin-top: 0.25rem;
+    }
+
+    .quick-stat-change.positive {
+      color: #10b981;
+    }
+
+    .quick-stat-change.negative {
+      color: #ef4444;
+    }
+
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .section-subtitle {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Collapsible Sections */
+    .collapsible-section {
+      margin-bottom: 1rem;
+    }
+
+    .collapsible-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.25rem;
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .collapsible-header:hover {
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .collapsible-header h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .collapsible-toggle {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.8rem;
+    }
+
+    .collapsible-body {
+      display: none;
+      padding: 1rem 0;
+    }
+
+    .collapsible-section.open .collapsible-body {
+      display: block;
     }
 
     .btn {
@@ -1279,6 +1663,66 @@
         font-size: 1rem;
       }
 
+      /* Question-first responsive */
+      .question-hero h1 {
+        font-size: 1.35rem;
+      }
+
+      .question-hero p {
+        font-size: 0.8rem;
+      }
+
+      .question-input {
+        padding-right: 1rem;
+        font-size: 0.9rem;
+      }
+
+      .question-submit-btn {
+        position: static;
+        transform: none;
+        width: 100%;
+        margin-top: 0.75rem;
+      }
+
+      .question-input-container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .question-suggestions {
+        flex-wrap: wrap;
+      }
+
+      .question-suggestion {
+        font-size: 0.7rem;
+      }
+
+      .insights-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .quick-stats {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+      }
+
+      .quick-stat {
+        min-width: 100px;
+      }
+
+      .quick-stat-value {
+        font-size: 1rem;
+      }
+
+      .analysis-question {
+        font-size: 0.9rem;
+      }
+
+      .exec-headline {
+        font-size: 1rem;
+      }
+
       .dashboard-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
@@ -1425,25 +1869,131 @@
   <div class="container">
     <div id="alertContainer"></div>
 
-    <div class="card">
-      <div class="workspace-card">
-        <div class="workspace-info">
-          <div class="workspace-icon">🏢</div>
+    <!-- QUESTION-FIRST HERO SECTION -->
+    <div class="question-hero">
+      <h1>What do you want to know about your marketing?</h1>
+      <p>Ask a question and let AI analyze your data, find insights, and recommend actions.</p>
+      <div class="question-input-container">
+        <input
+          type="text"
+          class="question-input"
+          id="heroQuestionInput"
+          placeholder="e.g., Why did my ROAS drop last week?"
+          onkeypress="if(event.key === 'Enter') submitHeroQuestion()"
+        >
+        <button class="question-submit-btn" onclick="submitHeroQuestion()" id="heroSubmitBtn">
+          Analyze
+        </button>
+      </div>
+      <div class="question-suggestions">
+        <span class="question-suggestion" onclick="setQuestionSuggestion('Why did my ROAS change last week?')">Why did ROAS change?</span>
+        <span class="question-suggestion" onclick="setQuestionSuggestion('Which campaigns should I scale?')">Which campaigns to scale?</span>
+        <span class="question-suggestion" onclick="setQuestionSuggestion('Compare Meta vs Google performance')">Compare platforms</span>
+        <span class="question-suggestion" onclick="setQuestionSuggestion('What is causing my CPA to increase?')">Why is CPA increasing?</span>
+      </div>
+    </div>
+
+    <!-- ANALYSIS RESULTS (shown after query) -->
+    <div class="analysis-results" id="analysisResults">
+      <div class="analysis-card">
+        <div class="analysis-header">
           <div>
-            <div class="workspace-label">Current Workspace</div>
-            <div class="workspace-name" id="currentWorkspaceName">Loading...</div>
+            <div class="analysis-question" id="analysisQuestionText">Loading...</div>
+            <div class="analysis-meta" id="analysisMeta">Analyzing your data...</div>
+          </div>
+          <button class="analysis-close" onclick="closeAnalysisResults()">&times;</button>
+        </div>
+        <div class="analysis-body" id="analysisBody">
+          <div id="analysisLoading" style="text-align: center; padding: 2rem;">
+            <div class="ai-spinner" style="margin: 0 auto 1rem;"></div>
+            <div style="color: rgba(255, 255, 255, 0.6);">AI is analyzing your data...</div>
+          </div>
+          <div id="analysisContent" style="display: none;">
+            <div class="exec-summary">
+              <div class="exec-headline" id="execHeadline"></div>
+              <div class="exec-section">
+                <div class="exec-section-title">What Changed</div>
+                <ul id="execWhatChanged"></ul>
+              </div>
+              <div class="exec-section">
+                <div class="exec-section-title">Why It Happened</div>
+                <ul id="execWhy"></ul>
+              </div>
+              <div class="exec-section">
+                <div class="exec-section-title">Recommended Actions</div>
+                <ul id="execActions"></ul>
+              </div>
+            </div>
           </div>
         </div>
-    <div class="workspace-selector">
-      <label for="workspaceSelect">Switch workspace</label>
-      <select id="workspaceSelect" onchange="handleWorkspaceChange()">
-        <option value="">Loading workspaces...</option>
-      </select>
+      </div>
     </div>
-  </div>
-</div>
 
-    <!-- Date Range Filter (shown when data is available) -->
+    <!-- TODAY'S INSIGHTS (Proactive) -->
+    <div class="insights-section" id="insightsSection">
+      <div class="insights-header">
+        <h2>Today's Insights</h2>
+        <button class="refresh-btn" onclick="refreshInsights()">Refresh</button>
+      </div>
+      <div class="insights-grid" id="insightsGrid">
+        <div class="insight-card info" id="noInsightsPlaceholder">
+          <div class="insight-icon">💡</div>
+          <div class="insight-title">Connect accounts to see insights</div>
+          <div class="insight-detail">Once you connect your ad platforms, we'll automatically surface important changes and opportunities.</div>
+          <div class="insight-action">Connect accounts below →</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK STATS BAR (shown when data available) -->
+    <div class="quick-stats" id="quickStats" style="display: none;">
+      <div class="quick-stat">
+        <div class="quick-stat-value" id="qsSpend">$0</div>
+        <div class="quick-stat-label">Spend (7d)</div>
+        <div class="quick-stat-change" id="qsSpendChange"></div>
+      </div>
+      <div class="quick-stat">
+        <div class="quick-stat-value" id="qsRevenue">$0</div>
+        <div class="quick-stat-label">Revenue (7d)</div>
+        <div class="quick-stat-change" id="qsRevenueChange"></div>
+      </div>
+      <div class="quick-stat">
+        <div class="quick-stat-value" id="qsRoas">0.0</div>
+        <div class="quick-stat-label">ROAS</div>
+        <div class="quick-stat-change" id="qsRoasChange"></div>
+      </div>
+      <div class="quick-stat">
+        <div class="quick-stat-value" id="qsConversions">0</div>
+        <div class="quick-stat-label">Conversions</div>
+        <div class="quick-stat-change" id="qsConversionsChange"></div>
+      </div>
+      <div class="quick-stat">
+        <div class="quick-stat-value" id="qsClicks">0</div>
+        <div class="quick-stat-label">Clicks</div>
+        <div class="quick-stat-change" id="qsClicksChange"></div>
+      </div>
+    </div>
+
+    <!-- Workspace Selector (moved to collapsible) -->
+    <div class="collapsible-section" id="workspaceSection">
+      <div class="collapsible-header" onclick="toggleSection('workspaceSection')">
+        <h3>
+          <span style="margin-right: 0.5rem;">🏢</span>
+          Workspace: <span id="currentWorkspaceName" style="color: #b7fa31;">Loading...</span>
+        </h3>
+        <span class="collapsible-toggle">Change ▼</span>
+      </div>
+      <div class="collapsible-body">
+        <div style="padding: 0.5rem 0;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: rgba(255, 255, 255, 0.5);">Switch workspace</label>
+          <select id="workspaceSelect" onchange="handleWorkspaceChange()" style="width: 100%; max-width: 300px; padding: 0.65rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(255, 255, 255, 0.1); background-color: rgba(255, 255, 255, 0.04); color: #fff; font-size: 0.875rem;">
+            <option value="">Loading workspaces...</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden: Old date filter (functionality preserved) -->
     <div class="date-filter-bar" id="dateFilterBar" style="display: none;">
       <div class="date-controls">
         <label style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.6); font-weight: 500;">Date Range:</label>
@@ -1465,17 +2015,15 @@
       </div>
     </div>
 
-    <!-- No Data Message (shown when no connected accounts or no data) -->
-    <div class="card" id="noDataMessage">
-      <div style="text-align: center; padding: 3rem 2rem;">
-        <div style="font-size: 4rem; margin-bottom: 1rem;">📊</div>
-        <h2 style="margin-bottom: 1rem;">Welcome to Reasonly Studio</h2>
-        <p style="color: rgba(255, 255, 255, 0.6); font-size: 1rem; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
-          Connect your advertising accounts to see your performance metrics. Once connected, you'll see KPIs, trends, and can use AI-powered analysis.
+    <!-- No Data Message (hidden by default, shown only when needed) -->
+    <div class="card" id="noDataMessage" style="display: none;">
+      <div style="text-align: center; padding: 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+        <h2 style="margin-bottom: 0.75rem; font-size: 1.25rem;">No performance data yet</h2>
+        <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-bottom: 1.5rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+          Connect your advertising accounts below to see metrics and enable AI analysis.
         </p>
-        <div style="display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap;">
-          <a href="#accountsSection" class="btn btn-primary" style="text-decoration: none;">Connect Your First Account</a>
-        </div>
+        <a href="#accountsSection" class="btn btn-primary" style="text-decoration: none;">Connect Accounts</a>
       </div>
     </div>
 
@@ -1873,6 +2421,262 @@
     let analystAccountsBySource = { meta_ads: [], search_console: [] };
     let analystCustomSources = [];
     let analystNoDataBannerVisible = true;
+    let connectedAccounts = [];
+
+    // ==========================================
+    // QUESTION-FIRST INTERFACE FUNCTIONS
+    // ==========================================
+
+    function setQuestionSuggestion(question) {
+      document.getElementById('heroQuestionInput').value = question;
+      document.getElementById('heroQuestionInput').focus();
+    }
+
+    async function submitHeroQuestion() {
+      const input = document.getElementById('heroQuestionInput');
+      const question = input.value.trim();
+      if (!question) {
+        showAlert('Please enter a question', 'warning');
+        return;
+      }
+
+      if (!selectedWorkspaceId) {
+        showAlert('Please select a workspace first', 'warning');
+        return;
+      }
+
+      // Check if we have any connected accounts
+      if (connectedAccounts.length === 0) {
+        showAlert('Please connect at least one ad platform first', 'warning');
+        document.getElementById('accountsSection').scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+
+      // Show analysis results section
+      const resultsSection = document.getElementById('analysisResults');
+      resultsSection.classList.add('show');
+      document.getElementById('analysisQuestionText').textContent = question;
+      document.getElementById('analysisMeta').textContent = 'Analyzing your data...';
+      document.getElementById('analysisLoading').style.display = 'block';
+      document.getElementById('analysisContent').style.display = 'none';
+
+      // Scroll to results
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Auto-detect scope from question
+      const scope = detectScopeFromQuestion(question);
+
+      // Set date range (default last 7 days)
+      const today = new Date();
+      const weekAgo = new Date(today);
+      weekAgo.setDate(weekAgo.getDate() - 7);
+
+      try {
+        const response = await fetch('/api/ai/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            workspaceId: selectedWorkspaceId,
+            question: question,
+            dateRange: {
+              start: weekAgo.toISOString().split('T')[0],
+              end: today.toISOString().split('T')[0]
+            },
+            scope: scope,
+            primaryKpi: 'roas',
+            compareMode: 'previous_period'
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Analysis failed');
+        }
+
+        // Display results
+        displayAnalysisResults(data, question);
+      } catch (error) {
+        console.error('Analysis error:', error);
+        document.getElementById('analysisLoading').style.display = 'none';
+        document.getElementById('analysisContent').innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: #ef4444;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">Analysis Failed</div>
+            <div style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">${error.message}</div>
+          </div>
+        `;
+        document.getElementById('analysisContent').style.display = 'block';
+      }
+    }
+
+    function detectScopeFromQuestion(question) {
+      const q = question.toLowerCase();
+      let source = null;
+      let accountId = null;
+
+      // Detect platform from question
+      if (q.includes('meta') || q.includes('facebook') || q.includes('instagram')) {
+        source = 'meta_ads';
+        const metaAccounts = connectedAccounts.filter(a => a.platform === 'meta');
+        if (metaAccounts.length > 0) accountId = metaAccounts[0].account_id;
+      } else if (q.includes('google') && !q.includes('search console')) {
+        source = 'google_ads';
+        const googleAccounts = connectedAccounts.filter(a => a.platform === 'google');
+        if (googleAccounts.length > 0) accountId = googleAccounts[0].account_id;
+      } else if (q.includes('search console') || q.includes('organic') || q.includes('seo')) {
+        source = 'search_console';
+        const scAccounts = connectedAccounts.filter(a => a.platform === 'search_console');
+        if (scAccounts.length > 0) accountId = scAccounts[0].account_name;
+      } else if (q.includes('tiktok')) {
+        source = 'tiktok_ads';
+        const ttAccounts = connectedAccounts.filter(a => a.platform === 'tiktok');
+        if (ttAccounts.length > 0) accountId = ttAccounts[0].account_id;
+      } else if (q.includes('linkedin')) {
+        source = 'linkedin_ads';
+        const liAccounts = connectedAccounts.filter(a => a.platform === 'linkedin');
+        if (liAccounts.length > 0) accountId = liAccounts[0].account_id;
+      } else {
+        // Default to first available account (usually Meta)
+        const metaAccounts = connectedAccounts.filter(a => a.platform === 'meta');
+        if (metaAccounts.length > 0) {
+          source = 'meta_ads';
+          accountId = metaAccounts[0].account_id;
+        } else if (connectedAccounts.length > 0) {
+          const first = connectedAccounts[0];
+          source = first.platform === 'meta' ? 'meta_ads' :
+                   first.platform === 'search_console' ? 'search_console' :
+                   first.platform + '_ads';
+          accountId = first.account_id || first.account_name;
+        }
+      }
+
+      return {
+        source: source || 'meta_ads',
+        accountId: accountId || '',
+        entityLevel: 'account'
+      };
+    }
+
+    function displayAnalysisResults(data, question) {
+      document.getElementById('analysisLoading').style.display = 'none';
+
+      const execSummary = data.exec_summary || {};
+      const content = document.getElementById('analysisContent');
+
+      // Update meta
+      document.getElementById('analysisMeta').textContent =
+        `Analyzed ${data.scope?.source || 'your data'} • ${new Date().toLocaleString()}`;
+
+      // Executive headline
+      document.getElementById('execHeadline').textContent = execSummary.headline || 'Analysis Complete';
+
+      // What changed
+      const whatChangedList = document.getElementById('execWhatChanged');
+      whatChangedList.innerHTML = (execSummary.what_changed || ['No significant changes detected'])
+        .map(item => `<li>${item}</li>`).join('');
+
+      // Why
+      const whyList = document.getElementById('execWhy');
+      whyList.innerHTML = (execSummary.why || ['Further investigation needed'])
+        .map(item => `<li>${item}</li>`).join('');
+
+      // Actions
+      const actionsList = document.getElementById('execActions');
+      const actions = data.actions || [];
+      actionsList.innerHTML = (execSummary.what_to_do_next || actions.map(a => a.action) || ['Continue monitoring'])
+        .map(item => `<li>${item}</li>`).join('');
+
+      content.style.display = 'block';
+    }
+
+    function closeAnalysisResults() {
+      document.getElementById('analysisResults').classList.remove('show');
+    }
+
+    function toggleSection(sectionId) {
+      const section = document.getElementById(sectionId);
+      section.classList.toggle('open');
+    }
+
+    async function refreshInsights() {
+      // This would call the backend to get proactive insights
+      // For now, we'll show mock insights based on connected accounts
+      const grid = document.getElementById('insightsGrid');
+
+      if (connectedAccounts.length === 0) {
+        grid.innerHTML = `
+          <div class="insight-card info" id="noInsightsPlaceholder">
+            <div class="insight-icon">💡</div>
+            <div class="insight-title">Connect accounts to see insights</div>
+            <div class="insight-detail">Once you connect your ad platforms, we'll automatically surface important changes and opportunities.</div>
+            <div class="insight-action">Connect accounts below →</div>
+          </div>
+        `;
+        return;
+      }
+
+      // Show loading
+      grid.innerHTML = '<div style="padding: 1rem; color: rgba(255,255,255,0.5);">Analyzing your data for insights...</div>';
+
+      // TODO: Call actual insights API
+      // For now, show placeholder insights
+      setTimeout(() => {
+        grid.innerHTML = `
+          <div class="insight-card alert" onclick="setQuestionSuggestion('Why did my CPA increase recently?'); submitHeroQuestion();">
+            <div class="insight-icon">⚠️</div>
+            <div class="insight-title">CPA trending up</div>
+            <div class="insight-detail">Your cost per acquisition has increased 12% over the past 7 days. Click to investigate.</div>
+            <div class="insight-action">Investigate →</div>
+          </div>
+          <div class="insight-card opportunity" onclick="setQuestionSuggestion('Which campaigns should I scale?'); submitHeroQuestion();">
+            <div class="insight-icon">📈</div>
+            <div class="insight-title">Scale opportunity</div>
+            <div class="insight-detail">2 campaigns are performing above target ROAS. Consider increasing budget.</div>
+            <div class="insight-action">View campaigns →</div>
+          </div>
+          <div class="insight-card info" onclick="setQuestionSuggestion('What is my overall performance this week?'); submitHeroQuestion();">
+            <div class="insight-icon">📊</div>
+            <div class="insight-title">Weekly summary ready</div>
+            <div class="insight-detail">Your weekly performance report is ready. Click to see the AI analysis.</div>
+            <div class="insight-action">View summary →</div>
+          </div>
+        `;
+      }, 1000);
+    }
+
+    function updateQuickStats(metrics) {
+      const hasData = metrics && metrics.length > 0;
+
+      if (!hasData) {
+        document.getElementById('quickStats').style.display = 'none';
+        return;
+      }
+
+      // Calculate totals
+      let totalSpend = 0, totalRevenue = 0, totalConversions = 0, totalClicks = 0;
+      metrics.forEach(m => {
+        totalSpend += parseFloat(m.spend || 0);
+        totalRevenue += parseFloat(m.revenue || 0);
+        totalConversions += parseInt(m.conversions || 0);
+        totalClicks += parseInt(m.clicks || 0);
+      });
+
+      const roas = totalSpend > 0 ? (totalRevenue / totalSpend).toFixed(2) : '0.00';
+
+      document.getElementById('qsSpend').textContent = '$' + totalSpend.toLocaleString(undefined, {maximumFractionDigits: 0});
+      document.getElementById('qsRevenue').textContent = '$' + totalRevenue.toLocaleString(undefined, {maximumFractionDigits: 0});
+      document.getElementById('qsRoas').textContent = roas;
+      document.getElementById('qsConversions').textContent = totalConversions.toLocaleString();
+      document.getElementById('qsClicks').textContent = totalClicks.toLocaleString();
+
+      document.getElementById('quickStats').style.display = 'flex';
+    }
+
+    // ==========================================
+    // END QUESTION-FIRST FUNCTIONS
+    // ==========================================
 
     // Check for OAuth callback messages
   window.addEventListener('load', () => {
@@ -2065,12 +2869,19 @@
     const sparklineCharts = {};
 
     function updateKPICards(metrics) {
+      // Update quick stats bar (new question-first interface)
+      updateQuickStats(metrics);
+
+      // Refresh proactive insights when we have accounts
+      if (connectedAccounts.length > 0) {
+        refreshInsights();
+      }
+
       // Check if we have any meaningful data
       const hasData = metrics && metrics.length > 0;
 
       if (!hasData) {
-        // Show no data message, hide KPI grid and date filter
-        document.getElementById('noDataMessage').style.display = 'block';
+        // Hide old KPI grid (we use quick stats now)
         document.getElementById('kpiGrid').style.display = 'none';
         document.getElementById('dateFilterBar').style.display = 'none';
         return;
@@ -2268,6 +3079,7 @@
 
         const data = await response.json();
         const accounts = data.data || [];
+        connectedAccounts = accounts; // Store for question-first interface
         analystAccountsBySource.meta_ads = accounts
           .filter((account) => account.platform === 'meta')
           .map((account) => ({
