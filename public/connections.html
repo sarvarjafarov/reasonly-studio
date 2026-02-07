@@ -690,11 +690,11 @@
 
       // OAuth flow URLs
       const urls = {
-        meta: `/api/oauth/meta/start?workspaceId=${selectedWorkspaceId}`,
-        google: `/api/oauth/google/start?workspaceId=${selectedWorkspaceId}`,
-        search_console: `/api/oauth/search-console/start?workspaceId=${selectedWorkspaceId}`,
-        tiktok: `/api/oauth/tiktok/start?workspaceId=${selectedWorkspaceId}`,
-        linkedin: `/api/oauth/linkedin/start?workspaceId=${selectedWorkspaceId}`
+        meta: `/api/oauth/meta?workspaceId=${selectedWorkspaceId}`,
+        google: `/api/oauth/google?workspaceId=${selectedWorkspaceId}`,
+        search_console: `/api/oauth/search-console?workspaceId=${selectedWorkspaceId}`,
+        tiktok: `/api/oauth/tiktok?workspaceId=${selectedWorkspaceId}`,
+        linkedin: `/api/oauth/linkedin?workspaceId=${selectedWorkspaceId}`
       };
 
       const url = urls[platform];
