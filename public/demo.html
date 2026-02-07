@@ -198,9 +198,18 @@
       margin-bottom: 0.5rem;
     }
 
-    .kpi-sparkline {
+    .kpi-sparkline-container {
       height: 40px;
       width: 100%;
+      position: relative;
+    }
+
+    .kpi-sparkline {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 40px !important;
     }
 
     /* Charts Grid */
@@ -613,11 +622,28 @@
     }
 
     .widget-preview {
-      background-color: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(17, 17, 17, 0.95) 100%);
+      border: 1px solid rgba(183, 250, 49, 0.12);
       border-radius: 0.75rem;
       padding: 1rem;
-      min-height: 120px;
+      min-height: 140px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .widget-preview::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #b7fa31, #7dd3fc);
+    }
+
+    .widget-preview.chart-widget {
+      min-height: 200px;
+      grid-column: span 2;
     }
 
     .widget-preview-header {
@@ -629,27 +655,102 @@
 
     .widget-preview-title {
       font-size: 0.75rem;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.7);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
     }
 
     .widget-preview-type {
       font-size: 0.6rem;
-      color: rgba(255, 255, 255, 0.3);
+      color: #7dd3fc;
       padding: 0.15rem 0.4rem;
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(125, 211, 252, 0.1);
+      border: 1px solid rgba(125, 211, 252, 0.2);
       border-radius: 4px;
+      font-weight: 500;
     }
 
     .widget-preview-value {
-      font-size: 1.5rem;
-      font-weight: 700;
+      font-size: 1.75rem;
+      font-weight: 800;
       color: #b7fa31;
+    }
+
+    .widget-preview-change {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 999px;
+    }
+
+    .widget-preview-change.positive {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+    }
+
+    .widget-preview-change.negative {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
     }
 
     .widget-mini-chart {
       height: 50px;
       margin-top: 0.5rem;
+      position: relative;
+    }
+
+    .widget-full-chart {
+      height: 120px;
+      margin-top: 0.75rem;
+      position: relative;
+    }
+
+    .widget-pie-chart {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
+    .widget-mini-heatmap {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-top: 0.5rem;
+    }
+
+    .mini-heat-cell {
+      aspect-ratio: 1;
+      border-radius: 2px;
+    }
+
+    .widget-mini-table {
+      margin-top: 0.5rem;
+      font-size: 0.65rem;
+    }
+
+    .widget-mini-table-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .widget-mini-table-row:last-child {
+      border-bottom: none;
+    }
+
+    .widget-mini-table-row span:first-child {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .widget-mini-table-row span:last-child {
+      color: #b7fa31;
+      font-weight: 600;
     }
 
     /* Spinner */
@@ -751,7 +852,9 @@
           <span class="kpi-change positive">&#9650; 8.3%</span>
         </div>
         <div class="kpi-value">$12,847</div>
-        <canvas id="sparkline1" class="kpi-sparkline"></canvas>
+        <div class="kpi-sparkline-container">
+          <canvas id="sparkline1" class="kpi-sparkline"></canvas>
+        </div>
       </div>
       <div class="kpi-card">
         <div class="kpi-header">
@@ -759,7 +862,9 @@
           <span class="kpi-change positive">&#9650; 12.1%</span>
         </div>
         <div class="kpi-value">$48,392</div>
-        <canvas id="sparkline2" class="kpi-sparkline"></canvas>
+        <div class="kpi-sparkline-container">
+          <canvas id="sparkline2" class="kpi-sparkline"></canvas>
+        </div>
       </div>
       <div class="kpi-card">
         <div class="kpi-header">
@@ -767,7 +872,9 @@
           <span class="kpi-change positive">&#9650; 3.5%</span>
         </div>
         <div class="kpi-value">3.77x</div>
-        <canvas id="sparkline3" class="kpi-sparkline"></canvas>
+        <div class="kpi-sparkline-container">
+          <canvas id="sparkline3" class="kpi-sparkline"></canvas>
+        </div>
       </div>
       <div class="kpi-card">
         <div class="kpi-header">
@@ -775,7 +882,9 @@
           <span class="kpi-change positive">&#9650; 15.2%</span>
         </div>
         <div class="kpi-value">892</div>
-        <canvas id="sparkline4" class="kpi-sparkline"></canvas>
+        <div class="kpi-sparkline-container">
+          <canvas id="sparkline4" class="kpi-sparkline"></canvas>
+        </div>
       </div>
     </div>
 
@@ -1277,20 +1386,30 @@
           const dashboard = data.data;
           document.getElementById('dashboardName').textContent = dashboard.name || 'Custom Dashboard';
 
-          // Render widgets with mini visualizations
+          // Render widgets with sophisticated visualizations
           grid.innerHTML = (dashboard.widgets || []).slice(0, 8).map((widget, idx) => {
             const demoValue = getDemoValue(widget.metric || 'spend');
             const chartType = widget.widgetType || 'kpi_card';
-            const chartHtml = getWidgetVisualization(chartType, idx);
+            const isChartWidget = ['line_chart', 'bar_chart', 'pie_chart'].includes(chartType);
+            const change = (Math.random() * 20 - 5).toFixed(1);
+            const isPositive = parseFloat(change) >= 0;
+            const chartHtml = getWidgetVisualization(chartType, idx, widget.metric);
 
             return `
-              <div class="widget-preview">
+              <div class="widget-preview ${isChartWidget ? 'chart-widget' : ''}">
                 <div class="widget-preview-header">
                   <div class="widget-preview-title">${widget.title}</div>
-                  <div class="widget-preview-type">${chartType.replace('_', ' ')}</div>
+                  <div class="widget-preview-type">${formatWidgetType(chartType)}</div>
                 </div>
-                <div class="widget-preview-value">${demoValue}</div>
-                ${chartHtml}
+                ${chartType === 'kpi_card' ? `
+                  <div>
+                    <span class="widget-preview-value">${demoValue}</span>
+                    <span class="widget-preview-change ${isPositive ? 'positive' : 'negative'}">
+                      ${isPositive ? '▲' : '▼'} ${Math.abs(change)}%
+                    </span>
+                  </div>
+                  <div class="widget-mini-chart"><canvas id="miniChart${idx}"></canvas></div>
+                ` : chartHtml}
               </div>
             `;
           }).join('');
@@ -1324,9 +1443,50 @@
       return values[metric] || '$' + Math.floor(Math.random() * 10000).toLocaleString();
     }
 
-    function getWidgetVisualization(type, idx) {
-      if (type === 'line_chart' || type === 'bar_chart') {
-        return `<div class="widget-mini-chart"><canvas id="miniChart${idx}"></canvas></div>`;
+    function formatWidgetType(type) {
+      const types = {
+        'kpi_card': 'KPI',
+        'line_chart': 'Trend',
+        'bar_chart': 'Bar',
+        'pie_chart': 'Pie',
+        'table': 'Table',
+        'heatmap': 'Heatmap'
+      };
+      return types[type] || type.replace('_', ' ');
+    }
+
+    function getWidgetVisualization(type, idx, metric) {
+      if (type === 'line_chart') {
+        return `<div class="widget-full-chart"><canvas id="miniChart${idx}"></canvas></div>`;
+      }
+      if (type === 'bar_chart') {
+        return `<div class="widget-full-chart"><canvas id="miniChart${idx}"></canvas></div>`;
+      }
+      if (type === 'pie_chart') {
+        return `<div class="widget-pie-chart"><canvas id="miniChart${idx}"></canvas></div>`;
+      }
+      if (type === 'heatmap') {
+        const cells = Array(28).fill(0).map(() => {
+          const intensity = Math.random();
+          const color = intensity > 0.7 ? '#b7fa31' :
+                        intensity > 0.4 ? 'rgba(183, 250, 49, 0.6)' :
+                        intensity > 0.2 ? 'rgba(183, 250, 49, 0.3)' : 'rgba(183, 250, 49, 0.1)';
+          return `<div class="mini-heat-cell" style="background: ${color};"></div>`;
+        }).join('');
+        return `<div class="widget-mini-heatmap">${cells}</div>`;
+      }
+      if (type === 'table') {
+        const rows = [
+          ['Summer Sale', '$4,521'],
+          ['Brand Awareness', '$3,892'],
+          ['Retargeting', '$2,134']
+        ].map(r => `
+          <div class="widget-mini-table-row">
+            <span>${r[0]}</span>
+            <span>${r[1]}</span>
+          </div>
+        `).join('');
+        return `<div class="widget-mini-table">${rows}</div>`;
       }
       return '';
     }
@@ -1337,34 +1497,113 @@
         if (!canvas) return;
 
         const ctx = canvas.getContext('2d');
-        const type = widget.widgetType === 'bar_chart' ? 'bar' : 'line';
+        const chartType = widget.widgetType;
 
-        new Chart(ctx, {
-          type: type,
-          data: {
-            labels: ['', '', '', '', '', '', ''],
-            datasets: [{
-              data: [3, 5, 4, 6, 5, 7, 6].map(v => v + Math.random() * 2),
-              borderColor: '#b7fa31',
-              backgroundColor: type === 'bar' ? '#b7fa31' : 'rgba(183, 250, 49, 0.1)',
-              borderWidth: 2,
-              fill: type === 'line',
-              tension: 0.4,
-              pointRadius: 0,
-              barThickness: 6,
-              borderRadius: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-              x: { display: false },
-              y: { display: false }
+        if (chartType === 'pie_chart') {
+          new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: ['Campaign A', 'Campaign B', 'Campaign C', 'Campaign D'],
+              datasets: [{
+                data: [35, 28, 22, 15],
+                backgroundColor: ['#b7fa31', '#7dd3fc', '#f59e0b', '#8b5cf6'],
+                borderWidth: 0
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: '65%',
+              plugins: { legend: { display: false } }
             }
-          }
-        });
+          });
+        } else if (chartType === 'bar_chart') {
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+              datasets: [{
+                data: [65, 72, 58, 84, 76, 92, 68].map(v => v + Math.random() * 10),
+                backgroundColor: ['#b7fa31', '#7dd3fc', '#f59e0b', '#8b5cf6', '#10b981', '#ef4444', '#3b82f6'],
+                borderRadius: 4,
+                barThickness: 16
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { size: 9 } }
+                },
+                y: {
+                  display: false,
+                  beginAtZero: true
+                }
+              }
+            }
+          });
+        } else {
+          // Line chart (for kpi_card sparklines and line_chart widgets)
+          const isFullChart = chartType === 'line_chart';
+          new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: isFullChart ? ['Jan 31', 'Feb 1', 'Feb 2', 'Feb 3', 'Feb 4', 'Feb 5', 'Feb 6'] : ['', '', '', '', '', '', ''],
+              datasets: [{
+                label: 'Value',
+                data: [3, 5, 4, 6, 5, 7, 6].map(v => v * 1000 + Math.random() * 1000),
+                borderColor: '#b7fa31',
+                backgroundColor: 'rgba(183, 250, 49, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: isFullChart ? 3 : 0,
+                pointBackgroundColor: '#b7fa31'
+              },
+              ...(isFullChart ? [{
+                label: 'Comparison',
+                data: [2, 4, 3, 5, 4, 6, 5].map(v => v * 1000 + Math.random() * 1000),
+                borderColor: '#7dd3fc',
+                backgroundColor: 'rgba(125, 211, 252, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: '#7dd3fc'
+              }] : [])]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: isFullChart,
+                  position: 'top',
+                  align: 'end',
+                  labels: { boxWidth: 8, padding: 8, font: { size: 9 } }
+                }
+              },
+              scales: {
+                x: {
+                  display: isFullChart,
+                  grid: { display: false },
+                  ticks: { font: { size: 9 } }
+                },
+                y: {
+                  display: isFullChart,
+                  grid: { color: 'rgba(255, 255, 255, 0.03)' },
+                  ticks: {
+                    font: { size: 9 },
+                    callback: v => '$' + (v/1000).toFixed(0) + 'k'
+                  }
+                }
+              }
+            }
+          });
+        }
       });
     }
 
