@@ -35,10 +35,13 @@ class Dashboard {
 
   static async findByWorkspaceId(workspaceId) {
     const result = await query(
-      `SELECT id, name, workspace_id, description, layout, filters, date_range, created_at, updated_at
-       FROM dashboards
-       WHERE workspace_id = $1
-       ORDER BY created_at DESC`,
+      `SELECT d.id, d.name, d.workspace_id, d.description, d.layout, d.filters, d.date_range, d.created_at, d.updated_at,
+              COUNT(dw.id)::int AS widget_count
+       FROM dashboards d
+       LEFT JOIN dashboard_widgets dw ON dw.dashboard_id = d.id
+       WHERE d.workspace_id = $1
+       GROUP BY d.id
+       ORDER BY d.created_at DESC`,
       [workspaceId]
     );
 
