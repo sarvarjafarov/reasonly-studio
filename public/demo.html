@@ -6,6 +6,7 @@
   <title>Reasonly - AI Marketing Analytics Powered by Gemini 3</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -67,15 +68,10 @@
       color: #7dd3fc;
     }
 
-    .gemini-badge svg {
-      width: 16px;
-      height: 16px;
-    }
-
     /* Hero Section */
     .hero {
       text-align: center;
-      padding: 4rem 2rem 3rem;
+      padding: 3rem 2rem 2rem;
       max-width: 900px;
       margin: 0 auto;
     }
@@ -91,14 +87,14 @@
       font-size: 0.8rem;
       font-weight: 500;
       color: #b7fa31;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
     }
 
     .hero h1 {
-      font-size: 3rem;
+      font-size: 2.5rem;
       font-weight: 900;
       line-height: 1.1;
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
       background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.7) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -113,49 +109,17 @@
     }
 
     .hero p {
-      font-size: 1.1rem;
+      font-size: 1rem;
       color: rgba(255, 255, 255, 0.6);
       max-width: 600px;
-      margin: 0 auto 2rem;
-      line-height: 1.6;
-    }
-
-    /* Demo Section */
-    .demo-container {
-      max-width: 1000px;
       margin: 0 auto;
-      padding: 0 2rem 3rem;
     }
 
-    .demo-card {
-      background-color: #151515;
-      border: 1px solid rgba(183, 250, 49, 0.2);
-      border-radius: 1rem;
-      overflow: hidden;
-    }
-
-    .demo-header {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .demo-title {
-      font-size: 1rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .demo-title .ai-icon {
-      font-size: 1.25rem;
-    }
-
-    .demo-body {
-      padding: 1.5rem;
+    /* Dashboard Container */
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1.5rem 3rem;
     }
 
     /* KPI Grid */
@@ -166,56 +130,308 @@
       margin-bottom: 1.5rem;
     }
 
-    @media (max-width: 768px) {
-      .kpi-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    @media (max-width: 1024px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      .kpi-grid { grid-template-columns: 1fr; }
     }
 
     .kpi-card {
-      background-color: rgba(183, 250, 49, 0.05);
+      background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(17, 17, 17, 0.95) 100%);
       border: 1px solid rgba(183, 250, 49, 0.15);
-      border-radius: 0.75rem;
-      padding: 1rem;
-      text-align: center;
+      border-radius: 1rem;
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
     }
 
-    .kpi-value {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #b7fa31;
-      margin-bottom: 0.25rem;
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #b7fa31, #7dd3fc);
+    }
+
+    .kpi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
     }
 
     .kpi-label {
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       color: rgba(255, 255, 255, 0.5);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
     .kpi-change {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
       font-size: 0.7rem;
-      margin-top: 0.25rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
     }
 
-    .kpi-change.positive { color: #10b981; }
-    .kpi-change.negative { color: #ef4444; }
-
-    /* AI Input Section */
-    .ai-section {
-      margin-top: 1.5rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    .kpi-change.positive {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
     }
 
-    .ai-section-title {
+    .kpi-change.negative {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #b7fa31;
+      margin-bottom: 0.5rem;
+    }
+
+    .kpi-sparkline {
+      height: 40px;
+      width: 100%;
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+
+    .chart-card {
+      background: rgba(26, 26, 26, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 1rem;
+      padding: 1.25rem;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .chart-title {
       font-size: 0.9rem;
       font-weight: 600;
-      margin-bottom: 1rem;
+    }
+
+    .chart-subtitle {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .chart-container {
+      height: 250px;
+      position: relative;
+    }
+
+    /* Heatmap */
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 600;
+      transition: transform 0.15s ease;
+    }
+
+    .heatmap-cell:hover {
+      transform: scale(1.1);
+      z-index: 1;
+    }
+
+    .heatmap-labels {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 0.5rem;
+    }
+
+    .heatmap-label {
+      text-align: center;
+      font-size: 0.6rem;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+    }
+
+    .heatmap-row-label {
+      font-size: 0.6rem;
+      color: rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      padding-right: 0.5rem;
+    }
+
+    .heatmap-wrapper {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 0;
+    }
+
+    .heatmap-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* Campaign Table */
+    .table-card {
+      background: rgba(26, 26, 26, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 1rem;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .table-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .campaign-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .campaign-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .campaign-table td {
+      padding: 0.875rem 1rem;
+      font-size: 0.85rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .campaign-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .campaign-table tr:hover {
+      background: rgba(183, 250, 49, 0.03);
+    }
+
+    .campaign-name {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .campaign-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .status-badge.active {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+    }
+
+    .status-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .roas-bar {
       display: flex;
       align-items: center;
       gap: 0.5rem;
+    }
+
+    .roas-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .roas-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #b7fa31, #7dd3fc);
+      border-radius: 3px;
+    }
+
+    /* AI Section */
+    .ai-section {
+      background: linear-gradient(135deg, rgba(183, 250, 49, 0.05) 0%, rgba(125, 211, 252, 0.05) 100%);
+      border: 1px solid rgba(183, 250, 49, 0.2);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .ai-section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .ai-section-title {
+      font-size: 1rem;
+      font-weight: 600;
     }
 
     .ai-input-row {
@@ -228,10 +444,10 @@
       flex: 1;
       padding: 0.875rem 1rem;
       border: 2px solid rgba(183, 250, 49, 0.25);
-      background-color: rgba(255, 255, 255, 0.03);
+      background-color: rgba(0, 0, 0, 0.3);
       color: #fff;
       border-radius: 0.75rem;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-family: inherit;
       transition: all 0.15s ease;
     }
@@ -253,7 +469,7 @@
       border: none;
       border-radius: 0.75rem;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       cursor: pointer;
       transition: all 0.15s ease;
       font-family: inherit;
@@ -299,7 +515,7 @@
       display: none;
       margin-top: 1.5rem;
       padding: 1.25rem;
-      background-color: rgba(183, 250, 49, 0.03);
+      background-color: rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(183, 250, 49, 0.15);
       border-radius: 0.75rem;
     }
@@ -316,8 +532,20 @@
       line-height: 1.4;
     }
 
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .analysis-grid { grid-template-columns: 1fr; }
+    }
+
     .analysis-group {
-      margin-bottom: 0.75rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 0.5rem;
+      padding: 1rem;
     }
 
     .analysis-group-title {
@@ -325,7 +553,7 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: rgba(255, 255, 255, 0.4);
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.5rem;
     }
 
     .analysis-group ul {
@@ -335,9 +563,9 @@
     }
 
     .analysis-group li {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: rgba(255, 255, 255, 0.8);
-      padding: 0.25rem 0;
+      padding: 0.3rem 0;
       padding-left: 1rem;
       position: relative;
     }
@@ -349,12 +577,87 @@
       color: rgba(183, 250, 49, 0.5);
     }
 
-    /* Loading Spinner */
+    /* Generated Dashboard Preview */
+    .dashboard-preview {
+      display: none;
+      margin-top: 1.5rem;
+    }
+
+    .dashboard-preview.show {
+      display: block;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .preview-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .widget-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 1024px) {
+      .widget-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .widget-preview {
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      min-height: 120px;
+    }
+
+    .widget-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+
+    .widget-preview-title {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .widget-preview-type {
+      font-size: 0.6rem;
+      color: rgba(255, 255, 255, 0.3);
+      padding: 0.15rem 0.4rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+
+    .widget-preview-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #b7fa31;
+    }
+
+    .widget-mini-chart {
+      height: 50px;
+      margin-top: 0.5rem;
+    }
+
+    /* Spinner */
     .spinner {
-      width: 24px;
-      height: 24px;
-      border: 3px solid rgba(183, 250, 49, 0.2);
-      border-top-color: #b7fa31;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(0, 0, 0, 0.2);
+      border-top-color: #000;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       display: inline-block;
@@ -364,56 +667,6 @@
 
     @keyframes spin {
       to { transform: rotate(360deg); }
-    }
-
-    /* Features Grid */
-    .features {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 2rem 2rem 4rem;
-    }
-
-    .features-title {
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 2rem;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-    }
-
-    @media (max-width: 768px) {
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .feature-card {
-      background-color: #151515;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 1rem;
-      padding: 1.5rem;
-    }
-
-    .feature-icon {
-      font-size: 2rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .feature-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-
-    .feature-desc {
-      font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.5);
-      line-height: 1.5;
     }
 
     /* Footer */
@@ -430,76 +683,38 @@
       text-decoration: none;
     }
 
-    /* Dashboard Preview */
-    .dashboard-preview {
-      display: none;
-      margin-top: 1.5rem;
+    /* Donut Chart Legend */
+    .donut-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
     }
 
-    .dashboard-preview.show {
-      display: block;
-    }
-
-    .dashboard-preview-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
+    .legend-item {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-    }
-
-    .widget-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-    }
-
-    @media (max-width: 768px) {
-      .widget-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    .widget-preview {
-      background-color: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 0.6rem;
-      padding: 1rem;
-    }
-
-    .widget-preview-title {
       font-size: 0.75rem;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 0.5rem;
     }
 
-    .widget-preview-value {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #b7fa31;
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
     }
 
-    .widget-preview-type {
-      font-size: 0.65rem;
-      color: rgba(255, 255, 255, 0.4);
-      margin-top: 0.25rem;
+    .legend-value {
+      margin-left: auto;
+      color: rgba(255, 255, 255, 0.6);
     }
 
     /* Responsive */
     @media (max-width: 640px) {
-      .hero h1 {
-        font-size: 2rem;
-      }
-
-      .header {
-        padding: 1rem;
-      }
-
-      .ai-input-row {
-        flex-direction: column;
-      }
+      .hero h1 { font-size: 1.75rem; }
+      .header { padding: 0.75rem 1rem; }
+      .ai-input-row { flex-direction: column; }
+      .kpi-value { font-size: 1.5rem; }
     }
   </style>
 </head>
@@ -524,73 +739,226 @@
       <span>&#10024;</span> Gemini 3 Hackathon Submission
     </div>
     <h1>Transform Marketing Data into <span>AI-Powered Insights</span></h1>
-    <p>Describe the dashboard you want in plain English. Gemini 3 will create it instantly with real-time analytics and actionable recommendations.</p>
+    <p>Describe the dashboard you want in plain English. Gemini 3 analyzes your data and creates actionable visualizations.</p>
   </section>
 
-  <div class="demo-container">
-    <div class="demo-card">
-      <div class="demo-header">
-        <div class="demo-title">
-          <span class="ai-icon">&#128202;</span>
-          Live Demo - Marketing Analytics
+  <div class="dashboard-container">
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Total Spend</span>
+          <span class="kpi-change positive">&#9650; 8.3%</span>
         </div>
-        <div class="gemini-badge" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;">
-          Gemini 3 Flash
+        <div class="kpi-value">$12,847</div>
+        <canvas id="sparkline1" class="kpi-sparkline"></canvas>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Revenue</span>
+          <span class="kpi-change positive">&#9650; 12.1%</span>
+        </div>
+        <div class="kpi-value">$48,392</div>
+        <canvas id="sparkline2" class="kpi-sparkline"></canvas>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">ROAS</span>
+          <span class="kpi-change positive">&#9650; 3.5%</span>
+        </div>
+        <div class="kpi-value">3.77x</div>
+        <canvas id="sparkline3" class="kpi-sparkline"></canvas>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Conversions</span>
+          <span class="kpi-change positive">&#9650; 15.2%</span>
+        </div>
+        <div class="kpi-value">892</div>
+        <canvas id="sparkline4" class="kpi-sparkline"></canvas>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Revenue vs Spend Trend</div>
+            <div class="chart-subtitle">Last 7 days performance</div>
+          </div>
+          <div class="gemini-badge" style="font-size: 0.65rem; padding: 0.25rem 0.5rem;">Live Data</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="trendChart"></canvas>
         </div>
       </div>
-      <div class="demo-body">
-        <!-- KPI Cards -->
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-value" id="kpiSpend">$12,847</div>
-            <div class="kpi-label">Ad Spend</div>
-            <div class="kpi-change positive">+8.3% vs last week</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-value" id="kpiRevenue">$48,392</div>
-            <div class="kpi-label">Revenue</div>
-            <div class="kpi-change positive">+12.1% vs last week</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-value" id="kpiRoas">3.77x</div>
-            <div class="kpi-label">ROAS</div>
-            <div class="kpi-change positive">+0.24 vs last week</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-value" id="kpiConversions">892</div>
-            <div class="kpi-label">Conversions</div>
-            <div class="kpi-change positive">+15.2% vs last week</div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Spend by Campaign</div>
+            <div class="chart-subtitle">Budget allocation</div>
           </div>
         </div>
+        <div class="chart-container" style="height: 180px;">
+          <canvas id="donutChart"></canvas>
+        </div>
+        <div class="donut-legend" id="donutLegend"></div>
+      </div>
+    </div>
 
-        <!-- AI Question Section -->
-        <div class="ai-section">
-          <div class="ai-section-title">
-            <span>&#10024;</span> Ask AI About Your Data
-          </div>
-          <div class="ai-input-row">
-            <input
-              type="text"
-              class="ai-input"
-              id="questionInput"
-              placeholder="e.g., Why did my ROAS improve this week?"
-              onkeypress="if(event.key === 'Enter') analyzeData()"
-            >
-            <button class="ai-submit" onclick="analyzeData()" id="analyzeBtn">
-              Analyze with Gemini
-            </button>
-          </div>
-          <div class="example-chips">
-            <span class="example-chip" onclick="setQuestion('Why did ROAS improve?')">Why did ROAS improve?</span>
-            <span class="example-chip" onclick="setQuestion('Which campaign should I scale?')">Which campaign to scale?</span>
-            <span class="example-chip" onclick="setQuestion('What is driving conversions?')">What drives conversions?</span>
-            <span class="example-chip" onclick="setQuestion('Give me a performance summary')">Performance summary</span>
+    <!-- Heatmap & Bar Chart Row -->
+    <div class="charts-grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Conversion Heatmap</div>
+            <div class="chart-subtitle">Hourly performance by day</div>
           </div>
         </div>
+        <div style="padding: 0.5rem 0;">
+          <div class="heatmap-labels">
+            <div class="heatmap-label">Mon</div>
+            <div class="heatmap-label">Tue</div>
+            <div class="heatmap-label">Wed</div>
+            <div class="heatmap-label">Thu</div>
+            <div class="heatmap-label">Fri</div>
+            <div class="heatmap-label">Sat</div>
+            <div class="heatmap-label">Sun</div>
+          </div>
+          <div class="heatmap-wrapper">
+            <div class="heatmap-rows" id="heatmapLabels"></div>
+            <div id="heatmapGrid"></div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Campaign ROAS Comparison</div>
+            <div class="chart-subtitle">Performance by campaign</div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+    </div>
 
-        <!-- Analysis Results -->
-        <div class="analysis-result" id="analysisResult">
-          <div class="analysis-headline" id="analysisHeadline"></div>
+    <!-- Campaign Table -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">Campaign Performance</div>
+        <div class="gemini-badge" style="font-size: 0.65rem; padding: 0.25rem 0.5rem;">4 Active Campaigns</div>
+      </div>
+      <table class="campaign-table">
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            <th>Status</th>
+            <th>Spend</th>
+            <th>Revenue</th>
+            <th>ROAS</th>
+            <th>Conversions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <div class="campaign-icon" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">SS</div>
+                <span>Summer Sale 2026</span>
+              </div>
+            </td>
+            <td><span class="status-badge active">Active</span></td>
+            <td>$4,521</td>
+            <td>$18,234</td>
+            <td>
+              <div class="roas-bar">
+                <span>4.03x</span>
+                <div class="roas-bar-bg"><div class="roas-bar-fill" style="width: 93%;"></div></div>
+              </div>
+            </td>
+            <td>314</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <div class="campaign-icon" style="background: linear-gradient(135deg, #3b82f6, #60a5fa);">BA</div>
+                <span>Brand Awareness</span>
+              </div>
+            </td>
+            <td><span class="status-badge active">Active</span></td>
+            <td>$3,892</td>
+            <td>$14,123</td>
+            <td>
+              <div class="roas-bar">
+                <span>3.63x</span>
+                <div class="roas-bar-bg"><div class="roas-bar-fill" style="width: 84%;"></div></div>
+              </div>
+            </td>
+            <td>268</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <div class="campaign-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">RC</div>
+                <span>Retargeting - Cart</span>
+              </div>
+            </td>
+            <td><span class="status-badge active">Active</span></td>
+            <td>$2,134</td>
+            <td>$9,234</td>
+            <td>
+              <div class="roas-bar">
+                <span>4.33x</span>
+                <div class="roas-bar-bg"><div class="roas-bar-fill" style="width: 100%;"></div></div>
+              </div>
+            </td>
+            <td>198</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <div class="campaign-icon" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">NC</div>
+                <span>New Customer Acq</span>
+              </div>
+            </td>
+            <td><span class="status-badge active">Active</span></td>
+            <td>$2,300</td>
+            <td>$6,801</td>
+            <td>
+              <div class="roas-bar">
+                <span>2.96x</span>
+                <div class="roas-bar-bg"><div class="roas-bar-fill" style="width: 68%;"></div></div>
+              </div>
+            </td>
+            <td>112</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- AI Analysis Section -->
+    <div class="ai-section">
+      <div class="ai-section-header">
+        <span style="font-size: 1.25rem;">&#10024;</span>
+        <span class="ai-section-title">Ask AI About Your Data</span>
+      </div>
+      <div class="ai-input-row">
+        <input type="text" class="ai-input" id="questionInput" placeholder="e.g., Why did my ROAS improve this week?" onkeypress="if(event.key === 'Enter') analyzeData()">
+        <button class="ai-submit" onclick="analyzeData()" id="analyzeBtn">Analyze with Gemini</button>
+      </div>
+      <div class="example-chips">
+        <span class="example-chip" onclick="setQuestion('Why did ROAS improve?')">Why did ROAS improve?</span>
+        <span class="example-chip" onclick="setQuestion('Which campaign should I scale?')">Which campaign to scale?</span>
+        <span class="example-chip" onclick="setQuestion('What is driving conversions?')">What drives conversions?</span>
+        <span class="example-chip" onclick="setQuestion('Give me a performance summary')">Performance summary</span>
+      </div>
+
+      <div class="analysis-result" id="analysisResult">
+        <div class="analysis-headline" id="analysisHeadline"></div>
+        <div class="analysis-grid">
           <div class="analysis-group">
             <div class="analysis-group-title">What Changed</div>
             <ul id="whatChangedList"></ul>
@@ -604,63 +972,35 @@
             <ul id="actionsList"></ul>
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Dashboard Generation Section -->
-        <div class="ai-section">
-          <div class="ai-section-title">
-            <span>&#127912;</span> Generate Custom Dashboard
-          </div>
-          <div class="ai-input-row">
-            <input
-              type="text"
-              class="ai-input"
-              id="dashboardInput"
-              placeholder="e.g., Create a dashboard showing ROAS trends and top campaigns"
-              onkeypress="if(event.key === 'Enter') generateDashboard()"
-            >
-            <button class="ai-submit" onclick="generateDashboard()" id="generateBtn">
-              Generate Dashboard
-            </button>
-          </div>
-          <div class="example-chips">
-            <span class="example-chip" onclick="setDashboardPrompt('Performance overview with spend and ROAS trends')">Performance Overview</span>
-            <span class="example-chip" onclick="setDashboardPrompt('Campaign comparison dashboard')">Campaign Comparison</span>
-            <span class="example-chip" onclick="setDashboardPrompt('E-commerce metrics with revenue and conversions')">E-commerce Metrics</span>
+    <!-- Dashboard Generation Section -->
+    <div class="ai-section">
+      <div class="ai-section-header">
+        <span style="font-size: 1.25rem;">&#127912;</span>
+        <span class="ai-section-title">Generate Custom Dashboard</span>
+      </div>
+      <div class="ai-input-row">
+        <input type="text" class="ai-input" id="dashboardInput" placeholder="e.g., Create a dashboard showing ROAS trends and top campaigns" onkeypress="if(event.key === 'Enter') generateDashboard()">
+        <button class="ai-submit" onclick="generateDashboard()" id="generateBtn">Generate Dashboard</button>
+      </div>
+      <div class="example-chips">
+        <span class="example-chip" onclick="setDashboardPrompt('Performance overview with spend and ROAS trends')">Performance Overview</span>
+        <span class="example-chip" onclick="setDashboardPrompt('Campaign comparison dashboard')">Campaign Comparison</span>
+        <span class="example-chip" onclick="setDashboardPrompt('E-commerce metrics with revenue and conversions')">E-commerce Metrics</span>
+      </div>
+
+      <div class="dashboard-preview" id="dashboardPreview">
+        <div class="preview-header">
+          <div class="preview-title">
+            <span>&#10024;</span> Generated: <span id="dashboardName"></span>
           </div>
         </div>
-
-        <!-- Dashboard Preview -->
-        <div class="dashboard-preview" id="dashboardPreview">
-          <div class="dashboard-preview-title">
-            <span>&#10024;</span> Generated Dashboard: <span id="dashboardName"></span>
-          </div>
-          <div class="widget-grid" id="widgetGrid"></div>
-        </div>
+        <div class="widget-grid" id="widgetGrid"></div>
       </div>
     </div>
   </div>
-
-  <!-- Features Section -->
-  <section class="features">
-    <h2 class="features-title">Powered by Gemini 3 Capabilities</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">&#129504;</div>
-        <div class="feature-title">Enhanced Reasoning</div>
-        <div class="feature-desc">Gemini 3's advanced reasoning analyzes complex marketing data patterns and provides actionable insights.</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">&#9889;</div>
-        <div class="feature-title">Real-Time Analysis</div>
-        <div class="feature-desc">Ask questions in natural language and get instant AI-powered answers about your marketing performance.</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">&#128200;</div>
-        <div class="feature-title">Auto-Generated Dashboards</div>
-        <div class="feature-desc">Describe what you want to see and Gemini 3 creates comprehensive dashboards automatically.</div>
-      </div>
-    </div>
-  </section>
 
   <footer class="footer">
     <p>Built for the <a href="https://gemini3.devpost.com/" target="_blank">Gemini 3 Hackathon</a> by Reasonly</p>
@@ -668,7 +1008,193 @@
   </footer>
 
   <script>
-    // Set question
+    // Chart.js defaults
+    Chart.defaults.color = 'rgba(255, 255, 255, 0.6)';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.06)';
+    Chart.defaults.font.family = 'Inter, sans-serif';
+
+    // Demo data
+    const demoData = {
+      dates: ['Jan 31', 'Feb 1', 'Feb 2', 'Feb 3', 'Feb 4', 'Feb 5', 'Feb 6'],
+      spend: [1823, 1956, 1789, 2134, 1678, 1890, 1577],
+      revenue: [6892, 7234, 7012, 7891, 6543, 7123, 6097],
+      roas: [3.78, 3.70, 3.92, 3.70, 3.90, 3.77, 3.87],
+      conversions: [118, 124, 121, 136, 113, 123, 105],
+      campaigns: [
+        { name: 'Summer Sale', spend: 4521, color: '#f59e0b' },
+        { name: 'Brand Awareness', spend: 3892, color: '#3b82f6' },
+        { name: 'Retargeting', spend: 2134, color: '#10b981' },
+        { name: 'New Customer', spend: 2300, color: '#8b5cf6' }
+      ]
+    };
+
+    // Sparkline charts
+    function createSparkline(canvasId, data, color = '#b7fa31') {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: demoData.dates,
+          datasets: [{
+            data: data,
+            borderColor: color,
+            borderWidth: 2,
+            fill: true,
+            backgroundColor: color.replace(')', ', 0.1)').replace('rgb', 'rgba'),
+            tension: 0.4,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { display: false },
+            y: { display: false }
+          }
+        }
+      });
+    }
+
+    createSparkline('sparkline1', demoData.spend);
+    createSparkline('sparkline2', demoData.revenue, '#7dd3fc');
+    createSparkline('sparkline3', demoData.roas, '#b7fa31');
+    createSparkline('sparkline4', demoData.conversions, '#f59e0b');
+
+    // Trend Chart
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: demoData.dates,
+        datasets: [
+          {
+            label: 'Revenue',
+            data: demoData.revenue,
+            borderColor: '#b7fa31',
+            backgroundColor: 'rgba(183, 250, 49, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+          },
+          {
+            label: 'Spend',
+            data: demoData.spend,
+            borderColor: '#7dd3fc',
+            backgroundColor: 'rgba(125, 211, 252, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { intersect: false, mode: 'index' },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, padding: 15 } }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(255, 255, 255, 0.03)' },
+            ticks: { callback: v => '$' + v.toLocaleString() }
+          },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+
+    // Donut Chart
+    const donutCtx = document.getElementById('donutChart').getContext('2d');
+    new Chart(donutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: demoData.campaigns.map(c => c.name),
+        datasets: [{
+          data: demoData.campaigns.map(c => c.spend),
+          backgroundColor: demoData.campaigns.map(c => c.color),
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    // Donut Legend
+    const legendHtml = demoData.campaigns.map(c => `
+      <div class="legend-item">
+        <div class="legend-color" style="background: ${c.color}"></div>
+        <span>${c.name}</span>
+        <span class="legend-value">$${c.spend.toLocaleString()}</span>
+      </div>
+    `).join('');
+    document.getElementById('donutLegend').innerHTML = legendHtml;
+
+    // Bar Chart
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Summer Sale', 'Brand Aware', 'Retargeting', 'New Customer'],
+        datasets: [{
+          label: 'ROAS',
+          data: [4.03, 3.63, 4.33, 2.96],
+          backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'],
+          borderRadius: 6,
+          barThickness: 40
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            beginAtZero: true,
+            grid: { color: 'rgba(255, 255, 255, 0.03)' },
+            ticks: { callback: v => v + 'x' }
+          },
+          y: { grid: { display: false } }
+        }
+      }
+    });
+
+    // Heatmap
+    function createHeatmap() {
+      const hours = ['12am', '4am', '8am', '12pm', '4pm', '8pm'];
+      const grid = document.getElementById('heatmapGrid');
+      const labels = document.getElementById('heatmapLabels');
+
+      // Add hour labels
+      labels.innerHTML = hours.map(h => `<div class="heatmap-row-label">${h}</div>`).join('');
+
+      // Generate heatmap data
+      let html = '';
+      for (let h = 0; h < 6; h++) {
+        html += '<div class="heatmap-grid">';
+        for (let d = 0; d < 7; d++) {
+          const value = Math.floor(Math.random() * 100);
+          const intensity = value / 100;
+          const color = intensity > 0.7 ? '#b7fa31' :
+                        intensity > 0.4 ? 'rgba(183, 250, 49, 0.6)' :
+                        intensity > 0.2 ? 'rgba(183, 250, 49, 0.3)' : 'rgba(183, 250, 49, 0.1)';
+          html += `<div class="heatmap-cell" style="background: ${color};" title="${value} conversions"></div>`;
+        }
+        html += '</div>';
+      }
+      grid.innerHTML = html;
+    }
+    createHeatmap();
+
+    // AI Functions
     function setQuestion(q) {
       document.getElementById('questionInput').value = q;
       document.getElementById('questionInput').focus();
@@ -679,7 +1205,6 @@
       document.getElementById('dashboardInput').focus();
     }
 
-    // Analyze data with Gemini 3
     async function analyzeData() {
       const input = document.getElementById('questionInput');
       const question = input.value.trim();
@@ -723,7 +1248,6 @@
       }
     }
 
-    // Generate dashboard with Gemini 3
     async function generateDashboard() {
       const input = document.getElementById('dashboardInput');
       const prompt = input.value.trim();
@@ -753,19 +1277,28 @@
           const dashboard = data.data;
           document.getElementById('dashboardName').textContent = dashboard.name || 'Custom Dashboard';
 
-          // Render widgets
-          grid.innerHTML = (dashboard.widgets || []).slice(0, 6).map(widget => {
+          // Render widgets with mini visualizations
+          grid.innerHTML = (dashboard.widgets || []).slice(0, 8).map((widget, idx) => {
             const demoValue = getDemoValue(widget.metric || 'spend');
+            const chartType = widget.widgetType || 'kpi_card';
+            const chartHtml = getWidgetVisualization(chartType, idx);
+
             return `
               <div class="widget-preview">
-                <div class="widget-preview-title">${widget.title}</div>
+                <div class="widget-preview-header">
+                  <div class="widget-preview-title">${widget.title}</div>
+                  <div class="widget-preview-type">${chartType.replace('_', ' ')}</div>
+                </div>
                 <div class="widget-preview-value">${demoValue}</div>
-                <div class="widget-preview-type">${widget.widgetType?.replace('_', ' ') || 'KPI Card'}</div>
+                ${chartHtml}
               </div>
             `;
           }).join('');
 
           preview.classList.add('show');
+
+          // Initialize mini charts after DOM update
+          setTimeout(() => initMiniCharts(dashboard.widgets), 100);
         }
       } catch (err) {
         console.error('Dashboard generation error:', err);
@@ -786,20 +1319,60 @@
         clicks: '34,521',
         ctr: '2.78%',
         cpc: '$0.37',
-        cpa: '$14.40',
+        cpa: '$14.40'
       };
       return values[metric] || '$' + Math.floor(Math.random() * 10000).toLocaleString();
     }
 
-    // Initial load - verify API is working
+    function getWidgetVisualization(type, idx) {
+      if (type === 'line_chart' || type === 'bar_chart') {
+        return `<div class="widget-mini-chart"><canvas id="miniChart${idx}"></canvas></div>`;
+      }
+      return '';
+    }
+
+    function initMiniCharts(widgets) {
+      widgets.slice(0, 8).forEach((widget, idx) => {
+        const canvas = document.getElementById(`miniChart${idx}`);
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        const type = widget.widgetType === 'bar_chart' ? 'bar' : 'line';
+
+        new Chart(ctx, {
+          type: type,
+          data: {
+            labels: ['', '', '', '', '', '', ''],
+            datasets: [{
+              data: [3, 5, 4, 6, 5, 7, 6].map(v => v + Math.random() * 2),
+              borderColor: '#b7fa31',
+              backgroundColor: type === 'bar' ? '#b7fa31' : 'rgba(183, 250, 49, 0.1)',
+              borderWidth: 2,
+              fill: type === 'line',
+              tension: 0.4,
+              pointRadius: 0,
+              barThickness: 6,
+              borderRadius: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { display: false },
+              y: { display: false }
+            }
+          }
+        });
+      });
+    }
+
+    // Initial API check
     fetch('/api/demo/status')
       .then(res => res.json())
-      .then(data => {
-        console.log('Demo mode:', data);
-      })
-      .catch(err => {
-        console.error('Demo API not available:', err);
-      });
+      .then(data => console.log('Demo mode:', data))
+      .catch(err => console.error('Demo API not available:', err));
   </script>
 </body>
 </html>
