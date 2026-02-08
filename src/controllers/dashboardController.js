@@ -2,6 +2,7 @@ const Dashboard = require('../models/Dashboard');
 const Workspace = require('../models/Workspace');
 const widgetDataService = require('../services/widgetDataService');
 const { startAIAnalysisJob, getJobStatus } = require('../services/backgroundJobs');
+const aiWidgetAnalysis = require('../services/aiWidgetAnalysis');
 const crypto = require('crypto');
 
 // Get all dashboards for a workspace
@@ -804,6 +805,15 @@ const analyzeWidgetWithAI = async (req, res) => {
     const { includeHistorical = false } = req.body;
 
     console.log(`[AI Analysis] Starting analysis for widget ${widgetId}`);
+
+    // Check if AI service is available before proceeding
+    if (!aiWidgetAnalysis.isAvailable()) {
+      console.log(`[AI Analysis] AI service not available - API key not configured`);
+      return res.status(503).json({
+        success: false,
+        message: 'AI analysis service is not configured. Please contact support.',
+      });
+    }
 
     // Get widget
     const widget = await Dashboard.getWidget(widgetId);

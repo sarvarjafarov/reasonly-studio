@@ -2370,6 +2370,39 @@
       opacity: 1;
     }
 
+    /* Enhanced AI Analyze Button */
+    .ai-analyze-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(183, 250, 49, 0.4);
+      background: linear-gradient(135deg, rgba(183, 250, 49, 0.15) 0%, rgba(143, 212, 23, 0.1) 100%);
+      color: #b7fa31;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .ai-analyze-btn:hover {
+      background: linear-gradient(135deg, rgba(183, 250, 49, 0.25) 0%, rgba(143, 212, 23, 0.2) 100%);
+      border-color: rgba(183, 250, 49, 0.6);
+      box-shadow: 0 0 12px rgba(183, 250, 49, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .ai-analyze-btn .ai-icon {
+      font-size: 0.85rem;
+    }
+
+    .ai-analyze-btn:active {
+      transform: translateY(0);
+    }
+
     /* Widget Zoom Modal */
     .widget-zoom-modal {
       position: fixed;
@@ -3579,7 +3612,9 @@
                 <button class="widget-size-btn${largeActive}" onclick="setWidgetGridSize('${widget.id}', 'large')" title="Large (3 columns)" data-size="large">L</button>
               </div>
               <button class="widget-action-btn" onclick="openWidgetZoom('${widget.id}')" title="Expand"><span class="icon icon-expand"></span></button>
-              <button class="widget-action-btn" onclick="analyzeWidgetWithAI('${widget.id}')" title="AI Analysis"><span class="icon icon-ai"></span></button>
+              <button class="ai-analyze-btn" onclick="analyzeWidgetWithAI('${widget.id}')" title="Get AI-powered performance insights and recommendations">
+                <span class="ai-icon">✨</span> Analyze
+              </button>
               <button class="widget-refresh-btn" onclick="refreshSingleWidget('${widget.id}')" title="Refresh"><span class="icon icon-refresh"></span></button>
               <span class="widget-action" onclick="editWidget('${widget.id}')" title="Edit"><span class="icon icon-edit"></span></span>
               <span class="widget-action delete" onclick="deleteWidget('${widget.id}')" title="Delete"><span class="icon icon-delete"></span></span>
@@ -5910,8 +5945,15 @@
       } catch (error) {
         console.error('AI analysis error:', error);
         document.getElementById('aiAnalysisLoading').style.display = 'none';
-        document.getElementById('aiAnalysisError').textContent =
-          error.message || 'Failed to analyze widget. Please try again.';
+
+        // Show helpful error message based on error type
+        let errorMessage = error.message || 'Failed to analyze widget. Please try again.';
+        if (errorMessage.includes('not configured') || errorMessage.includes('service not')) {
+          errorMessage = 'AI analysis is temporarily unavailable. Please contact support or try again later.';
+        } else if (errorMessage.includes('timed out')) {
+          errorMessage = 'Analysis is taking longer than expected. Please try again in a few minutes.';
+        }
+        document.getElementById('aiAnalysisError').textContent = errorMessage;
         document.getElementById('aiAnalysisError').style.display = 'block';
       }
     }
