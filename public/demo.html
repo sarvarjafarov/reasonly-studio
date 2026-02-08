@@ -282,6 +282,43 @@
       color: #b7fa31;
     }
 
+    /* Hero Locked State */
+    .hero-locked {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1.25rem 2rem;
+      background: rgba(26, 26, 26, 0.6);
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 1rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.95rem;
+      animation: pulse-border 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-border {
+      0%, 100% { border-color: rgba(255, 255, 255, 0.15); }
+      50% { border-color: rgba(183, 250, 49, 0.3); }
+    }
+
+    .locked-icon {
+      font-size: 1.25rem;
+    }
+
+    .locked-text {
+      font-weight: 500;
+    }
+
+    .hero-unlocked {
+      animation: unlockFade 0.5s ease;
+    }
+
+    @keyframes unlockFade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     /* Preview Hint */
     .preview-hint {
       display: flex;
@@ -854,6 +891,19 @@
       margin-bottom: 2rem;
     }
 
+    .step-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: linear-gradient(135deg, #b7fa31 0%, #7dd3fc 100%);
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-radius: 999px;
+      margin-bottom: 0.75rem;
+    }
+
     .accounts-header h3 {
       font-size: 1.25rem;
       font-weight: 600;
@@ -1214,17 +1264,26 @@
     <p>Just tell Gemini what you want to see. It analyzes your marketing data and creates a complete dashboard with KPIs, charts, and insights.</p>
 
     <div class="hero-input-container">
-      <div class="hero-input-wrapper">
-        <input type="text" class="hero-input" id="dashboardInput" placeholder="e.g., Show me campaign performance with ROAS trends and top performers" onkeypress="if(event.key === 'Enter') generateDashboard()">
-        <button class="hero-submit" onclick="generateDashboard()" id="generateBtn">
-          <span>&#10024;</span> Generate Dashboard
-        </button>
+      <!-- Locked state - shown before account connection -->
+      <div class="hero-locked" id="heroLocked">
+        <div class="locked-icon">🔒</div>
+        <div class="locked-text">Connect an ad account below to unlock dashboard generation</div>
       </div>
-      <div class="example-chips">
-        <span class="example-chip" onclick="setPromptAndGenerate('Performance overview with spend and ROAS trends')">Performance Overview</span>
-        <span class="example-chip" onclick="setPromptAndGenerate('Campaign comparison with conversions')">Campaign Comparison</span>
-        <span class="example-chip" onclick="setPromptAndGenerate('E-commerce metrics with revenue breakdown')">E-commerce Metrics</span>
-        <span class="example-chip" onclick="setPromptAndGenerate('Weekly trend analysis')">Weekly Trends</span>
+
+      <!-- Unlocked state - shown after account connection -->
+      <div class="hero-unlocked" id="heroUnlocked" style="display: none;">
+        <div class="hero-input-wrapper">
+          <input type="text" class="hero-input" id="dashboardInput" placeholder="e.g., Show me campaign performance with ROAS trends and top performers" onkeypress="if(event.key === 'Enter') generateDashboard()">
+          <button class="hero-submit" onclick="generateDashboard()" id="generateBtn">
+            <span>&#10024;</span> Generate Dashboard
+          </button>
+        </div>
+        <div class="example-chips">
+          <span class="example-chip" onclick="setPromptAndGenerate('Performance overview with spend and ROAS trends')">Performance Overview</span>
+          <span class="example-chip" onclick="setPromptAndGenerate('Campaign comparison with conversions')">Campaign Comparison</span>
+          <span class="example-chip" onclick="setPromptAndGenerate('E-commerce metrics with revenue breakdown')">E-commerce Metrics</span>
+          <span class="example-chip" onclick="setPromptAndGenerate('Weekly trend analysis')">Weekly Trends</span>
+        </div>
       </div>
     </div>
 
@@ -1247,8 +1306,9 @@
   <!-- Account Connection Demo -->
   <section class="accounts-section">
     <div class="accounts-header">
+      <div class="step-badge">Step 1</div>
       <h3>Connect Your Ad Accounts</h3>
-      <p>Click any platform to see the connection flow (demo mode)</p>
+      <p>Click any platform to start - this unlocks AI dashboard generation</p>
     </div>
     <div class="platforms-grid">
       <div class="platform-card" id="platform-meta" onclick="connectPlatform('meta')">
@@ -1554,6 +1614,21 @@
       card.classList.add('connected');
       card.querySelector('.platform-status').textContent = 'Connected';
       card.querySelector('.connect-badge').textContent = '✓ Active';
+
+      // Unlock dashboard generation if this is the first connected account
+      unlockDashboardGeneration();
+    }
+
+    function unlockDashboardGeneration() {
+      const hasConnectedAccount = Object.keys(connectedPlatforms).length > 0;
+      if (hasConnectedAccount) {
+        document.getElementById('heroLocked').style.display = 'none';
+        document.getElementById('heroUnlocked').style.display = 'block';
+        // Focus the input for better UX
+        setTimeout(() => {
+          document.getElementById('dashboardInput').focus();
+        }, 100);
+      }
     }
 
     function sleep(ms) {
