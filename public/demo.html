@@ -646,6 +646,172 @@
       color: rgba(255, 255, 255, 0.6);
     }
 
+    /* AI Analysis Section */
+    .ai-section {
+      background: linear-gradient(135deg, rgba(183, 250, 49, 0.05) 0%, rgba(125, 211, 252, 0.05) 100%);
+      border: 1px solid rgba(183, 250, 49, 0.2);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .ai-section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .ai-section-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .ai-input-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .ai-input {
+      flex: 1;
+      padding: 0.875rem 1rem;
+      border: 2px solid rgba(183, 250, 49, 0.25);
+      background-color: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      border-radius: 0.75rem;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+
+    .ai-input:focus {
+      outline: none;
+      border-color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.04);
+    }
+
+    .ai-input::placeholder {
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .ai-submit {
+      padding: 0.875rem 1.5rem;
+      background: linear-gradient(135deg, #b7fa31 0%, #7dd3fc 100%);
+      color: #000;
+      border: none;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .ai-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(183, 250, 49, 0.3);
+    }
+
+    .ai-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .ai-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .ai-chip {
+      padding: 0.4rem 0.75rem;
+      background-color: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .ai-chip:hover {
+      background-color: rgba(183, 250, 49, 0.08);
+      border-color: rgba(183, 250, 49, 0.3);
+      color: #b7fa31;
+    }
+
+    /* Analysis Results */
+    .analysis-result {
+      display: none;
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(183, 250, 49, 0.15);
+      border-radius: 0.75rem;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .analysis-result.show {
+      display: block;
+    }
+
+    .analysis-headline {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #b7fa31;
+      margin-bottom: 1rem;
+      line-height: 1.4;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .analysis-grid { grid-template-columns: 1fr; }
+      .ai-input-row { flex-direction: column; }
+    }
+
+    .analysis-group {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 0.5rem;
+      padding: 1rem;
+    }
+
+    .analysis-group-title {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 0.5rem;
+    }
+
+    .analysis-group ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .analysis-group li {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.8);
+      padding: 0.3rem 0;
+      padding-left: 1rem;
+      position: relative;
+    }
+
+    .analysis-group li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: rgba(183, 250, 49, 0.5);
+    }
+
     /* Spinner */
     .spinner {
       width: 20px;
@@ -809,6 +975,42 @@
         </thead>
         <tbody id="campaignTableBody"></tbody>
       </table>
+    </div>
+
+    <!-- AI Analysis Section -->
+    <div class="ai-section">
+      <div class="ai-section-header">
+        <span style="font-size: 1.25rem;">&#10024;</span>
+        <span class="ai-section-title">Ask AI About Your Data</span>
+      </div>
+      <div class="ai-input-row">
+        <input type="text" class="ai-input" id="questionInput" placeholder="e.g., Why did my ROAS improve this week?" onkeypress="if(event.key === 'Enter') analyzeData()">
+        <button class="ai-submit" onclick="analyzeData()" id="analyzeBtn">Analyze with Gemini</button>
+      </div>
+      <div class="ai-chips">
+        <span class="ai-chip" onclick="setQuestion('Why did ROAS improve?')">Why did ROAS improve?</span>
+        <span class="ai-chip" onclick="setQuestion('Which campaign should I scale?')">Which campaign to scale?</span>
+        <span class="ai-chip" onclick="setQuestion('What is driving conversions?')">What drives conversions?</span>
+        <span class="ai-chip" onclick="setQuestion('Give me a performance summary')">Performance summary</span>
+      </div>
+
+      <div class="analysis-result" id="analysisResult">
+        <div class="analysis-headline" id="analysisHeadline"></div>
+        <div class="analysis-grid">
+          <div class="analysis-group">
+            <div class="analysis-group-title">What Changed</div>
+            <ul id="whatChangedList"></ul>
+          </div>
+          <div class="analysis-group">
+            <div class="analysis-group-title">Why It Happened</div>
+            <ul id="whyList"></ul>
+          </div>
+          <div class="analysis-group">
+            <div class="analysis-group-title">Recommended Actions</div>
+            <ul id="actionsList"></ul>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1078,6 +1280,56 @@
             <span class="legend-value">$${c.spend.toLocaleString()}</span>
           </div>
         `).join('');
+      }
+    }
+
+    // AI Analysis Functions
+    function setQuestion(q) {
+      document.getElementById('questionInput').value = q;
+      document.getElementById('questionInput').focus();
+    }
+
+    async function analyzeData() {
+      const input = document.getElementById('questionInput');
+      const question = input.value.trim();
+      const btn = document.getElementById('analyzeBtn');
+      const result = document.getElementById('analysisResult');
+
+      if (!question) {
+        alert('Please enter a question');
+        input.focus();
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Analyzing...';
+      result.classList.remove('show');
+
+      try {
+        const res = await fetch('/api/demo/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
+        });
+
+        const data = await res.json();
+
+        if (data.exec_summary) {
+          document.getElementById('analysisHeadline').textContent = data.exec_summary.headline || 'Analysis complete';
+          document.getElementById('whatChangedList').innerHTML =
+            (data.exec_summary.what_changed || []).map(i => `<li>${i}</li>`).join('');
+          document.getElementById('whyList').innerHTML =
+            (data.exec_summary.why || []).map(i => `<li>${i}</li>`).join('');
+          document.getElementById('actionsList').innerHTML =
+            (data.exec_summary.what_to_do_next || []).map(i => `<li>${i}</li>`).join('');
+          result.classList.add('show');
+        }
+      } catch (err) {
+        console.error('Analysis error:', err);
+        alert('Analysis failed. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Analyze with Gemini';
       }
     }
 
