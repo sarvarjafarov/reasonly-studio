@@ -9,6 +9,16 @@ const {
 
 const router = express.Router();
 
+// Timeout wrapper for Gemini calls (25 seconds to leave buffer for Heroku's 30s limit)
+function withTimeout(promise, ms = 25000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Gemini timeout - falling back to fast mode')), ms)
+    )
+  ]);
+}
+
 function validateRequest(body) {
   if (!body.workspaceId || typeof body.workspaceId !== 'string') return 'workspaceId is required';
   if (!body.question || typeof body.question !== 'string') return 'question is required';
@@ -49,11 +59,12 @@ router.post('/analyze', async (req, res) => {
 
   try {
     if (config.useGemini) {
-      console.log('AI analyze mode: gemini');
+      console.log('AI analyze mode: gemini (with 25s timeout)');
       try {
-        return res.json(await runGeminiAgent(agentInput, { debug: req.body.debug }));
+        const result = await withTimeout(runGeminiAgent(agentInput, { debug: req.body.debug }), 25000);
+        return res.json(result);
       } catch (err) {
-        console.warn('Gemini agent failed, falling back:', err.message);
+        console.warn('Gemini agent failed or timed out, falling back to fast mode:', err.message);
         const fallback = await runAgent(agentInput);
         if (req.body.debug) {
           return res.json({
