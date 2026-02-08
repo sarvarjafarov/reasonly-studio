@@ -365,8 +365,8 @@ SELECT
   SUM((metrics->>'spend')::numeric) as total_spend
 FROM custom_data_records
 WHERE source_id = 'abc'
-  AND record_date >= '2024-01-01'
-  AND record_date <= '2024-12-31'
+  AND record_date >= '2026-01-01'
+  AND record_date <= '2026-12-31'
   AND dimensions @> '{"campaign":"Summer"}'::jsonb
 GROUP BY record_date
 ORDER BY record_date DESC;
@@ -624,5 +624,5 @@ Built with:
 
 ---
 
-**Last Updated:** December 2024
+**Last Updated:** February 2026
 **Version:** 1.0.0

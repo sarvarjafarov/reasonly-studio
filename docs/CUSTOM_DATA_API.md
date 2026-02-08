@@ -54,7 +54,7 @@ curl -X POST \
     "totalRows": 1500,
     "sampleData": [
       {
-        "date": "2024-01-01",
+        "date": "2026-01-01",
         "campaign": "Summer Sale",
         "spend": 125.50,
         "clicks": 450
@@ -133,7 +133,7 @@ Confirm the import after reviewing the preview and schema.
 ```json
 {
   "sourceName": "Q4 Campaign Data",
-  "description": "Sales campaign performance data for Q4 2024",
+  "description": "Sales campaign performance data for Q4 2026",
   "detectedSchema": { ... },
   "parsedRows": [ ... ],
   "filename": "data.xlsx",
@@ -227,7 +227,7 @@ List all custom data sources for a workspace.
       "syncEnabled": false,
       "syncStatus": null,
       "lastSyncedAt": null,
-      "createdAt": "2024-12-15T10:00:00Z"
+      "createdAt": "2026-12-15T10:00:00Z"
     },
     {
       "id": "source-id-2",
@@ -240,9 +240,9 @@ List all custom data sources for a workspace.
       "syncEnabled": true,
       "syncFrequency": "hourly",
       "syncStatus": "active",
-      "lastSyncedAt": "2024-12-15T11:00:00Z",
-      "nextSyncAt": "2024-12-15T12:00:00Z",
-      "createdAt": "2024-12-10T15:30:00Z"
+      "lastSyncedAt": "2026-12-15T11:00:00Z",
+      "nextSyncAt": "2026-12-15T12:00:00Z",
+      "createdAt": "2026-12-10T15:30:00Z"
     }
   ],
   "count": 2
@@ -275,8 +275,8 @@ Get detailed information about a specific custom data source.
     "dimensionColumns": ["campaign", "region"],
     "syncEnabled": false,
     "recommendedVisualizations": [ ... ],
-    "createdAt": "2024-12-15T10:00:00Z",
-    "updatedAt": "2024-12-15T10:00:00Z"
+    "createdAt": "2026-12-15T10:00:00Z",
+    "updatedAt": "2026-12-15T10:00:00Z"
   }
 }
 ```
@@ -312,7 +312,7 @@ Update source settings and configuration.
     "name": "Q4 Campaign Data - Updated",
     "syncEnabled": true,
     "syncFrequency": "daily",
-    "updatedAt": "2024-12-15T12:00:00Z"
+    "updatedAt": "2026-12-15T12:00:00Z"
   }
 }
 ```
@@ -376,16 +376,16 @@ curl -X GET \
     "changePercent": 23.43,
     "label": "spend",
     "dateRange": {
-      "startDate": "2024-11-15",
-      "endDate": "2024-12-15"
+      "startDate": "2026-11-15",
+      "endDate": "2026-12-15"
     },
     "timeSeries": [
       {
-        "date": "2024-11-15",
+        "date": "2026-11-15",
         "value": 125.50
       },
       {
-        "date": "2024-11-16",
+        "date": "2026-11-16",
         "value": 134.20
       }
     ],
@@ -417,8 +417,8 @@ Advanced querying with filtering, grouping, and pagination.
   "groupBy": ["campaign"],
   "orderBy": ["spend DESC"],
   "dateRange": {
-    "startDate": "2024-01-01",
-    "endDate": "2024-12-31"
+    "startDate": "2026-01-01",
+    "endDate": "2026-12-31"
   },
   "limit": 100,
   "offset": 0
@@ -507,8 +507,8 @@ Get sync operation history for a source.
       "newRows": 45,
       "updatedRows": 1455,
       "failedRows": 0,
-      "startedAt": "2024-12-15T11:00:00Z",
-      "completedAt": "2024-12-15T11:02:15Z",
+      "startedAt": "2026-12-15T11:00:00Z",
+      "completedAt": "2026-12-15T11:02:15Z",
       "duration": 135
     },
     {
@@ -516,8 +516,8 @@ Get sync operation history for a source.
       "jobType": "manual_refresh",
       "status": "failed",
       "errorMessage": "Invalid credentials",
-      "startedAt": "2024-12-15T10:00:00Z",
-      "completedAt": "2024-12-15T10:00:05Z"
+      "startedAt": "2026-12-15T10:00:00Z",
+      "completedAt": "2026-12-15T10:00:05Z"
     }
   ],
   "pagination": {

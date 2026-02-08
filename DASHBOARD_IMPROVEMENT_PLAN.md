@@ -1,5 +1,5 @@
 # AdsData Dashboard Improvement Plan
-## Inspired by Google Looker Studio 2025 Best Practices
+## Inspired by Google Looker Studio 2026 Best Practices
 
 ---
 
@@ -20,7 +20,7 @@
 
 ## 📊 DASHBOARD IMPROVEMENTS BASED ON LOOKER STUDIO
 
-### 1. RESPONSIVE GRID LAYOUT (NEW IN 2025)
+### 1. RESPONSIVE GRID LAYOUT (NEW IN 2026)
 **Current Issue:** Fixed layout doesn't adapt to mobile/tablet
 **Looker Studio Solution:** 12-column responsive grid system
 
@@ -145,7 +145,7 @@ Monthly Revenue Goal
 │ Date Range: [Last 7 Days ▾]                 │
 │ Compare to: [Previous Period ▾]             │
 │ ┌────────────┬────────────┐                 │
-│ │ 2025-12-22 │ 2025-12-29 │ [Apply]         │
+│ │ 2026-12-22 │ 2026-12-29 │ [Apply]         │
 │ └────────────┴────────────┘                 │
 └─────────────────────────────────────────────┘
 
@@ -163,7 +163,7 @@ Platform: [All ▾]
 ☐ Twitter Ads
 
 Campaign: [Search or select... ▾]
-☑ Black Friday 2025
+☑ Black Friday 2026
 ☑ Holiday Promo
 ☐ Brand Awareness Q4
 ```
@@ -195,7 +195,7 @@ Only show campaigns with ROAS between 2.0x and 5.0x
 │       Google Ads (currently 18% lower CPM)          │
 │                                        [Take Action] │
 ├─────────────────────────────────────────────────────┤
-│ 🟡 WARNING: TikTok campaign "Holiday2025" is        │
+│ 🟡 WARNING: TikTok campaign "Holiday2026" is        │
 │    pacing 23% over daily budget                     │
 │    → On track to deplete monthly budget 6 days early│
 │    → Recommended: Reduce daily budget to $245       │
@@ -339,7 +339,7 @@ Metric selector: [Revenue ▾] [ROAS ▾] [Spend ▾] [Conversions ▾]
 
 ### 6. MOBILE-FIRST RESPONSIVE DESIGN
 
-#### Looker Studio 2025 Approach:
+#### Looker Studio 2026 Approach:
 1. **Stack widgets vertically on mobile** (grid-column: span 12)
 2. **Larger touch targets** (min 44px height for buttons)
 3. **Simplified filters** (dropdowns instead of multi-select on mobile)
@@ -462,8 +462,8 @@ Quick Views:
 │ ┌─────────────────────────────────────────────────────────┐    │
 │ │ Campaign Performance (Sortable Table)                    │    │
 │ │ Campaign     │Spend  │Revenue │ROAS │Conv. │Trend       │    │
-│ │ Holiday2025  │$5.2k  │$20.1k  │3.85x│ 456  │↑ +12%      │    │
-│ │ BF2025       │$4.1k  │$18.2k  │4.42x│ 389  │↑ +8%       │    │
+│ │ Holiday2026  │$5.2k  │$20.1k  │3.85x│ 456  │↑ +12%      │    │
+│ │ BF2026       │$4.1k  │$18.2k  │4.42x│ 389  │↑ +8%       │    │
 │ └─────────────────────────────────────────────────────────┘    │
 │                                                                  │
 │ ┌──────────────────────────┐ ┌──────────────────────────┐      │
@@ -505,14 +505,14 @@ Quick Views:
 
 ## 📚 SOURCES & INSPIRATION
 
-Research based on 2025 Google Looker Studio best practices:
+Research based on 2026 Google Looker Studio best practices:
 
-- [12 Best Looker Studio Dashboard Examples for 2025](https://www.databloo.com/blog/looker-studio-dashboard-examples/)
+- [12 Best Looker Studio Dashboard Examples for 2026](https://www.databloo.com/blog/looker-studio-dashboard-examples/)
 - [11 Best Looker Studio Report and Dashboard Examples](https://whatagraph.com/blog/articles/looker-studio-report-dashboard-examples)
-- [How to Create Effective Dashboards in Looker Studio (2025)](https://measureschool.com/create-effective-dashboards/)
-- [The Complete Guide to Looker Studio Data Visualization for Marketing Agencies in 2025](https://www.swydo.com/blog/looker-studio-data-visualization/)
+- [How to Create Effective Dashboards in Looker Studio (2026)](https://measureschool.com/create-effective-dashboards/)
+- [The Complete Guide to Looker Studio Data Visualization for Marketing Agencies in 2026](https://www.swydo.com/blog/looker-studio-data-visualization/)
 - [Effective Looker Studio Dashboards: Best Practices and Tips](https://supermetrics.com/blog/google-data-studio-design)
-- [Looker Studio Charts: Types and Use Cases (2025)](https://measureschool.com/looker-studio-charts/)
+- [Looker Studio Charts: Types and Use Cases (2026)](https://measureschool.com/looker-studio-charts/)
 
 ---
 

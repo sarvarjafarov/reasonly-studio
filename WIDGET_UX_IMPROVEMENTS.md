@@ -71,7 +71,7 @@ Top Countries - Last 30 Days
 🌍 Other             10%  ($3,555 spend)
 
 💡 Insight: UK showing strong growth (+15%). Consider
-           increasing budget there for Q1 2025.
+           increasing budget there for Q1 2026.
 ```
 
 **Implementation:**
@@ -100,7 +100,7 @@ Top Search Queries by Clicks - Last 7 Days
 Query                    Clicks    CTR    Impr.    Change
 ────────────────────────────────────────────────────────
 "nike running shoes"     16.6K    3.2%   518K    ↓ 68.3% ⚠️
-"best sneakers 2025"     13.2K    4.1%   322K    ↑ 12.4%
+"best sneakers 2026"     13.2K    4.1%   322K    ↑ 12.4%
 "adidas sale"             9.8K    2.8%   350K    ↓ 3.4%
 "winter boots women"      8.4K    5.2%   162K    ↑ 244% 🔥
 
@@ -246,7 +246,7 @@ Clicks by Campaign - Last 30 Days
 
 Campaign                Clicks    CTR    Cost/Click    Status
 ───────────────────────────────────────────────────────────
-Black Friday 2025       78.2K    5.2%    $0.45        ✅ Ended
+Black Friday 2026       78.2K    5.2%    $0.45        ✅ Ended
 Holiday Promo           65.4K    4.8%    $0.52        🔴 Active
 Winter Collection       48.7K    3.9%    $0.38        ✅ Best CPC
 Brand Awareness         42.1K    2.1%    $0.89        ⚠️ High CPC

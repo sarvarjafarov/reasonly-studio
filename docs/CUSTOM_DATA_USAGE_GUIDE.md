@@ -452,8 +452,8 @@ const result = await queryCustomData('workspace-123', 'source-456', {
   limit: 10,
   offset: 0,
   dateRange: {
-    startDate: '2024-01-01',
-    endDate: '2024-12-31',
+    startDate: '2026-01-01',
+    endDate: '2026-12-31',
   },
 });
 
@@ -474,8 +474,8 @@ const result = await queryCustomData('workspace-123', 'source-456', {
   orderBy: ['date DESC'],
   limit: 100,
   dateRange: {
-    startDate: '2024-10-01',
-    endDate: '2024-12-31',
+    startDate: '2026-10-01',
+    endDate: '2026-12-31',
   },
 });
 ```
@@ -499,8 +499,8 @@ async function getMultiDimensionalAnalytics(workspaceId, sourceId) {
     groupBy: ['date'],
     orderBy: ['date ASC'],
     dateRange: {
-      startDate: '2024-11-01',
-      endDate: '2024-12-31',
+      startDate: '2026-11-01',
+      endDate: '2026-12-31',
     },
   });
 
