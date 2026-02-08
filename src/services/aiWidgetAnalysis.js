@@ -18,12 +18,21 @@ class AIWidgetAnalysisService {
    */
   initializeClient() {
     if (!config.anthropic?.apiKey) {
-      throw new Error('Anthropic API key not configured. Please set ANTHROPIC_API_KEY in environment variables.');
+      console.warn('[AI Widget Analysis] Anthropic API key not configured. Widget analysis features will be disabled.');
+      this.anthropic = null;
+      return;
     }
 
     this.anthropic = new Anthropic({
       apiKey: config.anthropic.apiKey,
     });
+  }
+
+  /**
+   * Check if service is available
+   */
+  isAvailable() {
+    return this.anthropic !== null;
   }
 
   /**
@@ -36,6 +45,17 @@ class AIWidgetAnalysisService {
    */
   async analyzeWidget(widget, metricsData, options = {}) {
     try {
+      // Check if service is available
+      if (!this.isAvailable()) {
+        return {
+          success: false,
+          error: 'AI analysis service not configured',
+          headline: 'AI analysis unavailable',
+          insights: [],
+          recommendations: [],
+        };
+      }
+
       // Validate inputs
       if (!widget || !metricsData) {
         throw new Error('Widget and metrics data are required');

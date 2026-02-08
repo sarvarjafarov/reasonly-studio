@@ -18,12 +18,21 @@ class AIWebsiteAuditService {
    */
   initializeClient() {
     if (!config.anthropic?.apiKey) {
-      throw new Error('Anthropic API key not configured. Please set ANTHROPIC_API_KEY in environment variables.');
+      console.warn('[AI Website Audit] Anthropic API key not configured. Audit analysis features will be disabled.');
+      this.anthropic = null;
+      return;
     }
 
     this.anthropic = new Anthropic({
       apiKey: config.anthropic.apiKey,
     });
+  }
+
+  /**
+   * Check if service is available
+   */
+  isAvailable() {
+    return this.anthropic !== null;
   }
 
   /**
@@ -34,6 +43,16 @@ class AIWebsiteAuditService {
    */
   async analyzeBusinessImpact(technicalFindings, websiteUrl) {
     try {
+      // Check if service is available
+      if (!this.isAvailable()) {
+        return {
+          success: false,
+          error: 'AI audit service not configured',
+          summary: 'AI analysis unavailable',
+          recommendations: [],
+        };
+      }
+
       // Build analysis prompt
       const prompt = this.buildAnalysisPrompt(technicalFindings, websiteUrl);
 
