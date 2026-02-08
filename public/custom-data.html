@@ -271,8 +271,12 @@
     }
 
     .logo img {
-      height: 1.5rem;
+      height: 2.5rem;
       width: auto;
+    }
+
+    .nav-container {
+      padding-left: 0;
     }
 
     .nav-menu {
@@ -304,9 +308,11 @@
 </head>
 <body>
   <div class="app-header">
-    <a href="/" class="logo">
-      <img src="/images/reasonlystudio-logo.png" alt="Reasonly Studio">
-    </a>
+    <div class="nav-container" style="padding-left: 0;">
+      <a href="/" class="logo">
+        <img src="/images/reasonlystudio-logo.png" alt="Reasonly Studio">
+      </a>
+    </div>
     <nav class="nav-menu">
       <a href="/dashboard" class="nav-link">Overview</a>
       <a href="/campaigns.html" class="nav-link">Campaigns</a>
