@@ -842,6 +842,331 @@
       text-decoration: none;
     }
 
+    /* Account Connection Section */
+    .accounts-section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 2rem 2rem;
+      text-align: center;
+    }
+
+    .accounts-header {
+      margin-bottom: 2rem;
+    }
+
+    .accounts-header h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .accounts-header p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+    }
+
+    .platforms-grid {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .platform-card {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1.5rem;
+      background: rgba(26, 26, 26, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .platform-card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .platform-card.connected {
+      border-color: rgba(52, 168, 83, 0.5);
+      background: rgba(52, 168, 83, 0.08);
+    }
+
+    .platform-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .platform-icon.meta { background: #1877f2; }
+    .platform-icon.google { background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335); }
+    .platform-icon.tiktok { background: #000; border: 1px solid rgba(255,255,255,0.2); }
+    .platform-icon.linkedin { background: #0a66c2; }
+
+    .platform-icon svg {
+      width: 16px;
+      height: 16px;
+      fill: #fff;
+    }
+
+    .platform-info {
+      text-align: left;
+    }
+
+    .platform-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .platform-status {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .platform-card.connected .platform-status {
+      color: #34a853;
+    }
+
+    .connect-badge {
+      margin-left: auto;
+      padding: 0.25rem 0.5rem;
+      background: rgba(183, 250, 49, 0.15);
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #b7fa31;
+    }
+
+    .platform-card.connected .connect-badge {
+      background: rgba(52, 168, 83, 0.15);
+      color: #34a853;
+    }
+
+    /* OAuth Modal */
+    .oauth-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .oauth-modal.show {
+      display: flex;
+    }
+
+    .oauth-content {
+      background: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.25rem;
+      padding: 2.5rem;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .oauth-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .oauth-icon svg {
+      width: 32px;
+      height: 32px;
+      fill: #fff;
+    }
+
+    .oauth-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .oauth-desc {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.875rem;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    .oauth-steps {
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+
+    .oauth-step {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .oauth-step:last-child {
+      border-bottom: none;
+    }
+
+    .oauth-step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(183, 250, 49, 0.15);
+      color: #b7fa31;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .oauth-step.active .oauth-step-num {
+      background: #b7fa31;
+      color: #000;
+    }
+
+    .oauth-step.done .oauth-step-num {
+      background: #34a853;
+      color: #fff;
+    }
+
+    .oauth-step-text {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .oauth-step.active .oauth-step-text {
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .oauth-step.done .oauth-step-text {
+      color: #34a853;
+    }
+
+    .oauth-loading {
+      display: none;
+      margin: 1.5rem 0;
+    }
+
+    .oauth-loading.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+
+    .oauth-spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid rgba(183, 250, 49, 0.2);
+      border-top-color: #b7fa31;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .oauth-loading-text {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .oauth-btn {
+      width: 100%;
+      padding: 0.875rem 1.5rem;
+      background: linear-gradient(135deg, #b7fa31 0%, #7dd3fc 100%);
+      color: #000;
+      border: none;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .oauth-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(183, 250, 49, 0.3);
+    }
+
+    .oauth-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .oauth-cancel {
+      margin-top: 1rem;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.6);
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .oauth-cancel:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .oauth-success {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .oauth-success.show {
+      display: flex;
+    }
+
+    .oauth-check {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(52, 168, 83, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      animation: scaleIn 0.3s ease;
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0); }
+      to { transform: scale(1); }
+    }
+
+    .oauth-success-text {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #34a853;
+    }
+
     /* Responsive */
     @media (max-width: 640px) {
       .hero h1 { font-size: 2rem; }
@@ -851,6 +1176,8 @@
       .hero-submit { justify-content: center; }
       .preview-hint { flex-direction: column; gap: 1rem; }
       .kpi-value { font-size: 1.5rem; }
+      .platforms-grid { gap: 0.75rem; }
+      .platform-card { padding: 0.75rem 1rem; width: 100%; }
     }
   </style>
 </head>
@@ -916,6 +1243,93 @@
       </div>
     </div>
   </section>
+
+  <!-- Account Connection Demo -->
+  <section class="accounts-section">
+    <div class="accounts-header">
+      <h3>Connect Your Ad Accounts</h3>
+      <p>Click any platform to see the connection flow (demo mode)</p>
+    </div>
+    <div class="platforms-grid">
+      <div class="platform-card" id="platform-meta" onclick="connectPlatform('meta')">
+        <div class="platform-icon meta">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg>
+        </div>
+        <div class="platform-info">
+          <div class="platform-name">Meta Ads</div>
+          <div class="platform-status">Click to connect</div>
+        </div>
+        <span class="connect-badge">Connect</span>
+      </div>
+      <div class="platform-card" id="platform-google" onclick="connectPlatform('google')">
+        <div class="platform-icon google">
+          <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        </div>
+        <div class="platform-info">
+          <div class="platform-name">Google Ads</div>
+          <div class="platform-status">Click to connect</div>
+        </div>
+        <span class="connect-badge">Connect</span>
+      </div>
+      <div class="platform-card" id="platform-tiktok" onclick="connectPlatform('tiktok')">
+        <div class="platform-icon tiktok">
+          <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/></svg>
+        </div>
+        <div class="platform-info">
+          <div class="platform-name">TikTok Ads</div>
+          <div class="platform-status">Click to connect</div>
+        </div>
+        <span class="connect-badge">Connect</span>
+      </div>
+      <div class="platform-card" id="platform-linkedin" onclick="connectPlatform('linkedin')">
+        <div class="platform-icon linkedin">
+          <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </div>
+        <div class="platform-info">
+          <div class="platform-name">LinkedIn Ads</div>
+          <div class="platform-status">Click to connect</div>
+        </div>
+        <span class="connect-badge">Connect</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- OAuth Modal -->
+  <div class="oauth-modal" id="oauthModal">
+    <div class="oauth-content">
+      <div class="oauth-icon" id="oauthIcon"></div>
+      <h3 class="oauth-title" id="oauthTitle">Connect Account</h3>
+      <p class="oauth-desc" id="oauthDesc">Authorize Reasonly to access your advertising data for analytics and insights.</p>
+
+      <div class="oauth-steps" id="oauthSteps">
+        <div class="oauth-step" id="step1">
+          <div class="oauth-step-num">1</div>
+          <span class="oauth-step-text">Redirect to authorization</span>
+        </div>
+        <div class="oauth-step" id="step2">
+          <div class="oauth-step-num">2</div>
+          <span class="oauth-step-text">Grant read-only access</span>
+        </div>
+        <div class="oauth-step" id="step3">
+          <div class="oauth-step-num">3</div>
+          <span class="oauth-step-text">Import account data</span>
+        </div>
+      </div>
+
+      <div class="oauth-loading" id="oauthLoading">
+        <div class="oauth-spinner"></div>
+        <span class="oauth-loading-text" id="loadingText">Connecting...</span>
+      </div>
+
+      <div class="oauth-success" id="oauthSuccess">
+        <div class="oauth-check">✓</div>
+        <span class="oauth-success-text" id="successText">Account Connected!</span>
+      </div>
+
+      <button class="oauth-btn" id="oauthBtn" onclick="startOAuthFlow()">Authorize Access</button>
+      <button class="oauth-cancel" id="oauthCancel" onclick="closeOAuthModal()">Cancel</button>
+    </div>
+  </div>
 
   <!-- Generated Dashboard Section - Hidden by Default -->
   <section class="generated-section" id="generatedSection">
@@ -1024,6 +1438,132 @@
     Chart.defaults.color = 'rgba(255, 255, 255, 0.6)';
     Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.06)';
     Chart.defaults.font.family = 'Inter, sans-serif';
+
+    // Platform connection state
+    const connectedPlatforms = {};
+    let currentPlatform = null;
+
+    const platformConfig = {
+      meta: {
+        name: 'Meta Ads',
+        color: '#1877f2',
+        icon: '<svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg>'
+      },
+      google: {
+        name: 'Google Ads',
+        color: 'linear-gradient(135deg, #4285f4, #34a853)',
+        icon: '<svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/></svg>'
+      },
+      tiktok: {
+        name: 'TikTok Ads',
+        color: '#000',
+        icon: '<svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/></svg>'
+      },
+      linkedin: {
+        name: 'LinkedIn Ads',
+        color: '#0a66c2',
+        icon: '<svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>'
+      }
+    };
+
+    function connectPlatform(platform) {
+      if (connectedPlatforms[platform]) return; // Already connected
+
+      currentPlatform = platform;
+      const config = platformConfig[platform];
+
+      // Update modal content
+      const icon = document.getElementById('oauthIcon');
+      icon.innerHTML = config.icon;
+      icon.style.background = config.color;
+
+      document.getElementById('oauthTitle').textContent = `Connect ${config.name}`;
+      document.getElementById('oauthDesc').textContent = `Authorize Reasonly to access your ${config.name} data for analytics and AI-powered insights.`;
+
+      // Reset modal state
+      document.getElementById('oauthSteps').style.display = 'block';
+      document.getElementById('oauthLoading').classList.remove('show');
+      document.getElementById('oauthSuccess').classList.remove('show');
+      document.getElementById('oauthBtn').style.display = 'block';
+      document.getElementById('oauthBtn').disabled = false;
+      document.getElementById('oauthCancel').style.display = 'block';
+
+      ['step1', 'step2', 'step3'].forEach(id => {
+        document.getElementById(id).classList.remove('active', 'done');
+      });
+
+      // Show modal
+      document.getElementById('oauthModal').classList.add('show');
+    }
+
+    function closeOAuthModal() {
+      document.getElementById('oauthModal').classList.remove('show');
+      currentPlatform = null;
+    }
+
+    async function startOAuthFlow() {
+      const btn = document.getElementById('oauthBtn');
+      const loading = document.getElementById('oauthLoading');
+      const loadingText = document.getElementById('loadingText');
+
+      btn.disabled = true;
+      btn.style.display = 'none';
+      document.getElementById('oauthCancel').style.display = 'none';
+
+      // Step 1: Redirect
+      document.getElementById('step1').classList.add('active');
+      loading.classList.add('show');
+      loadingText.textContent = 'Redirecting to authorization...';
+      await sleep(800);
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step1').classList.add('done');
+
+      // Step 2: Grant access
+      document.getElementById('step2').classList.add('active');
+      loadingText.textContent = 'Granting read-only access...';
+      await sleep(1000);
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('step2').classList.add('done');
+
+      // Step 3: Import data
+      document.getElementById('step3').classList.add('active');
+      loadingText.textContent = 'Importing account data...';
+      await sleep(1200);
+      document.getElementById('step3').classList.remove('active');
+      document.getElementById('step3').classList.add('done');
+
+      // Success
+      loading.classList.remove('show');
+      document.getElementById('oauthSteps').style.display = 'none';
+
+      const success = document.getElementById('oauthSuccess');
+      document.getElementById('successText').textContent = `${platformConfig[currentPlatform].name} Connected!`;
+      success.classList.add('show');
+
+      // Mark platform as connected
+      connectedPlatforms[currentPlatform] = true;
+      updatePlatformCard(currentPlatform);
+
+      // Auto close after 1.5s
+      await sleep(1500);
+      closeOAuthModal();
+    }
+
+    function updatePlatformCard(platform) {
+      const card = document.getElementById(`platform-${platform}`);
+      card.classList.add('connected');
+      card.querySelector('.platform-status').textContent = 'Connected';
+      card.querySelector('.connect-badge').textContent = '✓ Active';
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Close modal on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeOAuthModal();
+    });
 
     // Demo data
     const demoData = {
