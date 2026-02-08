@@ -202,11 +202,12 @@ async function fetchPlatformData(dataSource, dateRange) {
   }
 
   // Get ad account details
+  // Note: adAccountId can be either the internal UUID or external account_id (e.g., Meta numeric ID)
   const accountResult = await query(
     `SELECT a.*, o.access_token, o.refresh_token, o.expires_at
      FROM ad_accounts a
-     JOIN oauth_tokens o ON a.oauth_token_id = o.id
-     WHERE a.id = $1`,
+     JOIN oauth_tokens o ON a.workspace_id = o.workspace_id AND a.platform = o.platform
+     WHERE a.account_id = $1 OR a.id::text = $1`,
     [adAccountId]
   );
 
