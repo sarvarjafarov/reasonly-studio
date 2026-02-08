@@ -14,7 +14,7 @@ async function generateWithGemini(prompt, retries = 1) {
     throw new Error('GEMINI_API_KEY not configured');
   }
 
-  const model = config.geminiModel || 'gemini-2.0-flash';
+  const model = config.geminiModel || 'gemini-3-flash-preview';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
   const payload = {

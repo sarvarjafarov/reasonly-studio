@@ -1896,8 +1896,8 @@
           placeholder="e.g., Why did my ROAS drop last week?"
           onkeypress="if(event.key === 'Enter') submitHeroQuestion()"
         >
-        <button class="question-submit-btn" onclick="submitHeroQuestion()" id="heroSubmitBtn">
-          Analyze
+        <button class="question-submit-btn" onclick="submitHeroQuestion()" id="heroSubmitBtn" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 100%);">
+          ✨ Ask Gemini 3
         </button>
       </div>
       <div class="question-suggestions">
@@ -1905,6 +1905,11 @@
         <span class="question-suggestion" onclick="setQuestionSuggestion('Which campaigns should I scale?')">Which campaigns to scale?</span>
         <span class="question-suggestion" onclick="setQuestionSuggestion('Compare Meta vs Google performance')">Compare platforms</span>
         <span class="question-suggestion" onclick="setQuestionSuggestion('What is causing my CPA to increase?')">Why is CPA increasing?</span>
+      </div>
+      <div style="margin-top: 1.5rem;">
+        <button onclick="runDemoAnalysis()" style="padding: 0.6rem 1.5rem; background: transparent; border: 2px solid rgba(66, 133, 244, 0.5); color: #4285f4; border-radius: 2rem; font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(66, 133, 244, 0.1)'" onmouseout="this.style.background='transparent'">
+          🎯 Try Demo (No account needed)
+        </button>
       </div>
     </div>
 
@@ -1921,7 +1926,10 @@
         <div class="analysis-body" id="analysisBody">
           <div id="analysisLoading" style="text-align: center; padding: 2rem;">
             <div class="ai-spinner" style="margin: 0 auto 1rem;"></div>
-            <div style="color: rgba(255, 255, 255, 0.6);">AI is analyzing your data...</div>
+            <div style="color: rgba(255, 255, 255, 0.6);">
+              <span class="gemini-badge" style="margin-bottom: 0.5rem;">✨ Gemini 3</span>
+              <div style="margin-top: 0.5rem;">Analyzing your data...</div>
+            </div>
           </div>
           <div id="analysisContent" style="display: none;">
             <div class="exec-summary">
@@ -2608,6 +2616,50 @@
 
     function closeAnalysisResults() {
       document.getElementById('analysisResults').classList.remove('show');
+    }
+
+    async function runDemoAnalysis() {
+      const question = 'Analyze my ad performance and find optimization opportunities';
+
+      // Show analysis results section
+      const resultsSection = document.getElementById('analysisResults');
+      resultsSection.classList.add('show');
+      document.getElementById('analysisQuestionText').textContent = question;
+      document.getElementById('analysisMeta').textContent = 'Demo Mode • Gemini 3 Analysis';
+      document.getElementById('analysisLoading').style.display = 'block';
+      document.getElementById('analysisContent').style.display = 'none';
+
+      // Scroll to results
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      try {
+        const response = await fetch('/api/demo/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ question })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Demo analysis failed');
+        }
+
+        displayAnalysisResults(data, question);
+        document.getElementById('analysisMeta').textContent = 'Demo Mode • Powered by Gemini 3 • ' + new Date().toLocaleString();
+      } catch (error) {
+        console.error('Demo analysis error:', error);
+        document.getElementById('analysisLoading').style.display = 'none';
+        document.getElementById('analysisContent').innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: #ef4444;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">Demo Analysis Failed</div>
+            <div style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">${error.message}</div>
+          </div>
+        `;
+        document.getElementById('analysisContent').style.display = 'block';
+      }
     }
 
     function toggleSection(sectionId) {

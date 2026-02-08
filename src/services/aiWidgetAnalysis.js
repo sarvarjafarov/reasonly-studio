@@ -24,7 +24,7 @@ class AIWidgetAnalysisService {
     if (config.useGemini && config.geminiApiKey) {
       try {
         this.gemini = new GoogleGenerativeAI(config.geminiApiKey);
-        this.geminiModel = this.gemini.getGenerativeModel({ model: config.geminiModel || 'gemini-2.0-flash' });
+        this.geminiModel = this.gemini.getGenerativeModel({ model: config.geminiModel || 'gemini-3-flash-preview' });
         console.log('[AI Widget Analysis] Gemini client initialized (preferred)');
       } catch (error) {
         console.warn('[AI Widget Analysis] Failed to initialize Gemini:', error.message);
