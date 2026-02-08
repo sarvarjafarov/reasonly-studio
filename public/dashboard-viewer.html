@@ -111,16 +111,48 @@
     }
 
     .widget {
-      background-color: #1a1a1a;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: linear-gradient(165deg, rgba(32, 32, 35, 0.98) 0%, rgba(20, 20, 22, 0.99) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 1.5rem;
-      padding: 1.5rem;
+      padding: 1.75rem;
       cursor: grab;
       min-height: 180px;
-      max-height: 420px; /* CRITICAL: Prevents vertical expansion causing layout shift */
-      overflow-y: auto; /* Allow scrolling if content exceeds max-height */
+      max-height: 420px;
+      overflow-y: auto;
       overflow-x: hidden;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.3),
+        0 2px 4px -1px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .widget::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #b7fa31, #7dd3fc);
+      border-radius: 1.5rem 1.5rem 0 0;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .widget:hover::before {
+      opacity: 1;
+    }
+
+    .widget:hover {
+      transform: translateY(-4px);
+      border-color: rgba(183, 250, 49, 0.2);
+      box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.35),
+        0 10px 10px -5px rgba(0, 0, 0, 0.2),
+        0 0 40px rgba(183, 250, 49, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     .widget:active {
@@ -158,12 +190,16 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
     }
 
     .widget-title {
-      font-size: 1rem;
+      font-size: 0.85rem;
       font-weight: 600;
-      color: #ffffff;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
     .widget-actions {
@@ -174,17 +210,20 @@
     .widget-action {
       color: rgba(255, 255, 255, 0.4);
       cursor: pointer;
-      padding: 0.25rem;
+      padding: 0.35rem;
       font-size: 0.875rem;
-      transition: color 0.2s ease;
+      transition: all 0.2s ease;
+      border-radius: 0.5rem;
     }
 
     .widget-action:hover {
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.08);
     }
 
     .widget-action.delete:hover {
       color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
     }
 
     .loading-spinner {
@@ -525,72 +564,84 @@
 
     .metric-card {
       text-align: center;
-      padding: 1.5rem 1rem;
+      padding: 1.75rem 1.25rem;
       position: relative;
     }
 
     .metric-value {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #b7fa31;
-      margin-bottom: 0.25rem;
+      font-size: 2.75rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 0%, rgba(183, 250, 49, 0.9) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
     }
 
     .metric-label {
-      font-size: 0.875rem;
-      color: rgba(255, 255, 255, 0.6);
-      margin-bottom: 0.5rem;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.55);
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
     }
 
     .metric-change {
       font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.375rem;
+      font-weight: 700;
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
       display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.3rem;
+      backdrop-filter: blur(4px);
     }
 
     .metric-change.positive {
-      background-color: rgba(183, 250, 49, 0.15);
-      color: #b7fa31;
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.2);
     }
 
     .metric-change.negative {
-      background-color: rgba(239, 68, 68, 0.15);
-      color: #ef4444;
+      background: rgba(239, 68, 68, 0.18);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
     .metric-change.neutral {
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(255, 255, 255, 0.08);
       color: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .metric-sparkline {
-      margin-top: 0.75rem;
-      height: 40px;
+      margin-top: 1rem;
+      height: 48px;
     }
 
     .metric-sparkline canvas {
       width: 100% !important;
-      height: 40px !important;
+      height: 48px !important;
     }
 
     .metric-date-range {
-      font-size: 0.6875rem;
-      color: rgba(255, 255, 255, 0.4);
-      margin-top: 0.5rem;
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.45);
+      margin-top: 0.75rem;
     }
 
     .metric-comparison {
-      font-size: 0.6875rem;
-      color: rgba(255, 255, 255, 0.4);
-      margin-top: 0.25rem;
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.45);
+      margin-top: 0.35rem;
     }
 
     /* Table Widget Styles */
     .table-widget {
-      padding: 0.5rem;
+      padding: 0.75rem;
       overflow-x: auto;
       max-height: 350px;
       overflow-y: auto;
@@ -598,25 +649,36 @@
 
     .data-table {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       font-size: 0.8125rem;
     }
 
     .data-table th {
       text-align: left;
-      padding: 0.75rem 0.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.5);
-      font-weight: 500;
-      font-size: 0.75rem;
+      padding: 1rem 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.55);
+      font-weight: 700;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .data-table th:first-child {
+      border-radius: 0.5rem 0 0 0;
+    }
+
+    .data-table th:last-child {
+      border-radius: 0 0.5rem 0 0;
     }
 
     .data-table td {
-      padding: 0.75rem 0.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      color: rgba(255, 255, 255, 0.8);
+      padding: 0.875rem 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: rgba(255, 255, 255, 0.85);
+      transition: background-color 0.2s ease;
     }
 
     .data-table tr:last-child td {
@@ -624,16 +686,20 @@
     }
 
     .data-table tr:hover td {
-      background-color: rgba(255, 255, 255, 0.02);
+      background-color: rgba(183, 250, 49, 0.03);
     }
 
     .data-table .value-cell {
-      font-weight: 600;
-      color: #b7fa31;
+      font-weight: 700;
+      background: linear-gradient(135deg, #b7fa31 0%, #7dd3fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .data-table .change-cell {
       font-size: 0.75rem;
+      font-weight: 600;
     }
 
     .data-table .change-positive {
@@ -2374,37 +2440,44 @@
     .ai-analyze-btn {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 5px 12px;
-      border-radius: 8px;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
       font-size: 0.7rem;
       font-weight: 700;
       cursor: pointer;
-      border: 1px solid rgba(66, 133, 244, 0.5);
-      background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 100%);
+      border: none;
+      background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%);
+      background-size: 200% 200%;
       color: white;
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      animation: gemini-pulse 2s ease-in-out infinite alternate;
+      letter-spacing: 0.6px;
+      animation: gemini-gradient 3s ease infinite;
+      box-shadow:
+        0 2px 8px rgba(66, 133, 244, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
     }
 
-    @keyframes gemini-pulse {
-      from { box-shadow: 0 0 5px rgba(66, 133, 244, 0.3); }
-      to { box-shadow: 0 0 15px rgba(66, 133, 244, 0.6), 0 0 25px rgba(52, 168, 83, 0.3); }
+    @keyframes gemini-gradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
 
     .ai-analyze-btn:hover {
-      transform: translateY(-2px) scale(1.05);
-      box-shadow: 0 4px 20px rgba(66, 133, 244, 0.4), 0 0 30px rgba(52, 168, 83, 0.3);
+      transform: translateY(-3px) scale(1.05);
+      box-shadow:
+        0 8px 25px rgba(66, 133, 244, 0.4),
+        0 4px 15px rgba(52, 168, 83, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
     }
 
     .ai-analyze-btn .ai-icon {
-      font-size: 0.9rem;
+      font-size: 1rem;
     }
 
     .ai-analyze-btn:active {
-      transform: translateY(0) scale(1);
+      transform: translateY(-1px) scale(1.02);
     }
 
     /* Widget Zoom Modal */
