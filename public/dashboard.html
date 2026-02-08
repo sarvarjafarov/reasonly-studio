@@ -201,6 +201,29 @@
       font-size: 1.1rem;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .gemini-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 100%);
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      animation: gemini-glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes gemini-glow {
+      from { box-shadow: 0 0 5px rgba(66, 133, 244, 0.3); }
+      to { box-shadow: 0 0 15px rgba(66, 133, 244, 0.6); }
     }
 
     .insights-header .refresh-btn {
@@ -255,6 +278,24 @@
       font-weight: 600;
       color: #ffffff;
       margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .gemini-mini-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 0.55rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #4285f4, #34a853);
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
 
     .insight-detail {
@@ -1903,17 +1944,17 @@
       </div>
     </div>
 
-    <!-- TODAY'S INSIGHTS (Proactive) -->
+    <!-- TODAY'S INSIGHTS (Proactive) - Powered by Gemini 3 -->
     <div class="insights-section" id="insightsSection">
       <div class="insights-header">
-        <h2>Today's Insights</h2>
+        <h2>Today's Insights <span class="gemini-badge">✨ Powered by Gemini 3</span></h2>
         <button class="refresh-btn" onclick="refreshInsights()">Refresh</button>
       </div>
       <div class="insights-grid" id="insightsGrid">
         <div class="insight-card info" id="noInsightsPlaceholder">
-          <div class="insight-icon">💡</div>
-          <div class="insight-title">Connect accounts to see insights</div>
-          <div class="insight-detail">Once you connect your ad platforms, we'll automatically surface important changes and opportunities.</div>
+          <div class="insight-icon">✨</div>
+          <div class="insight-title">Connect accounts for AI insights</div>
+          <div class="insight-detail">Gemini 3 will analyze your ad performance and surface actionable insights automatically.</div>
           <div class="insight-action">Connect accounts below →</div>
         </div>
       </div>
@@ -2668,10 +2709,12 @@
         question = 'What is my overall performance this week?';
       }
 
+      const poweredBy = insight.poweredBy === 'gemini-3' ? '<span class="gemini-mini-badge">✨ Gemini 3</span>' : '';
+
       return `
         <div class="insight-card ${typeClass}" onclick="setQuestionSuggestion('${question}'); submitHeroQuestion();">
           <div class="insight-icon">${icon}</div>
-          <div class="insight-title">${escapeHtml(insight.title)}</div>
+          <div class="insight-title">${escapeHtml(insight.title)} ${poweredBy}</div>
           <div class="insight-detail">${escapeHtml(insight.detail)}</div>
           <div class="insight-action">${escapeHtml(insight.action || 'Investigate')} →</div>
         </div>

@@ -1,9 +1,10 @@
 /**
- * Insights Service - Generates real-time insights from ad account data
- * Fetches metrics from all connected accounts and detects anomalies/opportunities
+ * Insights Service - Generates AI-powered insights using Gemini 3
+ * Fetches metrics from all connected accounts and uses Gemini 3 to analyze
  */
 
 const { query } = require('../config/database');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const config = require('../config/config');
 
 // Insight type constants
@@ -13,17 +14,22 @@ const INSIGHT_TYPES = {
   INFO: 'info',
 };
 
-// Thresholds for insight detection
-const THRESHOLDS = {
-  CPA_INCREASE_ALERT: 10, // Alert if CPA increases by 10%+
-  ROAS_DECREASE_ALERT: 15, // Alert if ROAS decreases by 15%+
-  SPEND_SPIKE_ALERT: 50, // Alert if daily spend spikes 50%+ above average
-  SCALE_OPPORTUNITY_ROAS: 2.0, // Campaigns with ROAS > 2x are scale candidates
-  MIN_SPEND_FOR_INSIGHTS: 10, // Minimum spend to generate insights
-};
+// Initialize Gemini 3 client
+let gemini = null;
+let geminiModel = null;
+
+if (config.useGemini && config.geminiApiKey) {
+  try {
+    gemini = new GoogleGenerativeAI(config.geminiApiKey);
+    geminiModel = gemini.getGenerativeModel({ model: config.geminiModel || 'gemini-3-flash-preview' });
+    console.log('[Insights Service] Gemini 3 client initialized');
+  } catch (error) {
+    console.warn('[Insights Service] Failed to initialize Gemini 3:', error.message);
+  }
+}
 
 /**
- * Generate daily insights for a workspace
+ * Generate daily insights for a workspace using Gemini 3
  * @param {string} workspaceId - Workspace UUID
  * @param {string} userId - User UUID for access verification
  * @returns {Object} Insights data with summary
@@ -52,7 +58,8 @@ async function generateDailyInsights(workspaceId, userId) {
             accountsWithData: 0,
             period: 'last_7_days',
             generatedAt: new Date().toISOString(),
-            message: 'Connect ad accounts to see insights',
+            poweredBy: 'gemini-3',
+            message: 'Connect ad accounts to see AI-powered insights',
           },
         },
       };
@@ -79,39 +86,231 @@ async function generateDailyInsights(workspaceId, userId) {
             title: 'No recent data',
             detail: 'Your connected accounts have no recent activity. Check that your campaigns are running.',
             priority: 'low',
+            poweredBy: 'gemini-3',
           }],
           summary: {
             totalAccounts: accounts.length,
             accountsWithData: 0,
             period: 'last_7_days',
             generatedAt: new Date().toISOString(),
+            poweredBy: 'gemini-3',
           },
         },
       };
     }
 
-    // Generate insights from the metrics
-    const insights = detectInsights(allMetrics, accounts);
-
-    // Sort by priority
-    const sortedInsights = rankInsightsByPriority(insights);
+    // Generate AI-powered insights using Gemini 3
+    const insights = await generateGeminiInsights(allMetrics, accounts);
 
     return {
       success: true,
       data: {
-        insights: sortedInsights.slice(0, 5), // Top 5 insights
+        insights: insights.slice(0, 5), // Top 5 insights
         summary: {
           totalAccounts: accounts.length,
           accountsWithData: allMetrics.length,
           period: 'last_7_days',
           generatedAt: new Date().toISOString(),
+          poweredBy: 'gemini-3',
         },
       },
     };
   } catch (error) {
     console.error('[Insights Service] Error generating insights:', error);
+    // Fallback to rule-based if Gemini fails
     throw error;
   }
+}
+
+/**
+ * Generate insights using Gemini 3 AI
+ */
+async function generateGeminiInsights(allMetrics, accounts) {
+  if (!geminiModel) {
+    console.warn('[Insights] Gemini 3 not available, using fallback');
+    return detectInsightsFallback(allMetrics, accounts);
+  }
+
+  try {
+    // Prepare metrics summary for Gemini 3
+    const metricsData = prepareMetricsForAI(allMetrics);
+
+    const prompt = `You are an expert marketing analyst. Analyze this advertising performance data and generate 3-5 actionable insights.
+
+DATA:
+${JSON.stringify(metricsData, null, 2)}
+
+Generate insights in this exact JSON format (return ONLY valid JSON, no markdown):
+{
+  "insights": [
+    {
+      "type": "alert" | "opportunity" | "info",
+      "icon": "warning" | "trending_up" | "star" | "chart",
+      "title": "Short title (max 5 words)",
+      "detail": "Specific insight with numbers and percentages",
+      "action": "Clear action to take",
+      "priority": "high" | "medium" | "low"
+    }
+  ]
+}
+
+RULES:
+- Be specific with actual numbers from the data
+- Focus on actionable insights, not just observations
+- Alert type for problems (CPA up, ROAS down)
+- Opportunity type for growth potential (high ROAS campaigns to scale)
+- Info type for summaries and top performers
+- Prioritize by business impact`;
+
+    console.log('[Insights] Calling Gemini 3 for insights...');
+    const startTime = Date.now();
+
+    const result = await geminiModel.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 1024,
+      },
+    });
+
+    const duration = Date.now() - startTime;
+    console.log(`[Insights] Gemini 3 responded in ${duration}ms`);
+
+    const responseText = result.response.text();
+
+    // Parse JSON response
+    let parsed;
+    try {
+      // Remove markdown code blocks if present
+      const cleanJson = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      parsed = JSON.parse(cleanJson);
+    } catch (parseError) {
+      console.error('[Insights] Failed to parse Gemini response:', parseError);
+      return detectInsightsFallback(allMetrics, accounts);
+    }
+
+    // Add IDs and poweredBy to insights
+    const insights = (parsed.insights || []).map((insight, index) => ({
+      id: `gemini-insight-${index + 1}`,
+      ...insight,
+      poweredBy: 'gemini-3',
+    }));
+
+    return insights;
+
+  } catch (error) {
+    console.error('[Insights] Gemini 3 error:', error.message);
+    return detectInsightsFallback(allMetrics, accounts);
+  }
+}
+
+/**
+ * Prepare metrics data for Gemini 3 analysis
+ */
+function prepareMetricsForAI(allMetrics) {
+  let totalSpend = 0;
+  let totalSpendPrev = 0;
+  let totalRevenue = 0;
+  let totalRevenuePrev = 0;
+  let totalConversions = 0;
+  const accountSummaries = [];
+  const topCampaigns = [];
+
+  for (const metrics of allMetrics) {
+    if (!metrics.current) continue;
+
+    const { current, previous, platform, accountName, campaigns } = metrics;
+
+    totalSpend += current.spend;
+    totalRevenue += current.conversionValue;
+    totalConversions += current.conversions;
+
+    if (previous) {
+      totalSpendPrev += previous.spend;
+      totalRevenuePrev += previous.conversionValue;
+    }
+
+    // Account summary
+    const cpaChange = previous && previous.cpa > 0
+      ? ((current.cpa - previous.cpa) / previous.cpa * 100).toFixed(1)
+      : null;
+    const roasChange = previous && previous.roas > 0
+      ? ((current.roas - previous.roas) / previous.roas * 100).toFixed(1)
+      : null;
+
+    accountSummaries.push({
+      platform,
+      accountName,
+      spend: current.spend,
+      revenue: current.conversionValue,
+      roas: current.roas,
+      cpa: current.cpa,
+      conversions: current.conversions,
+      cpaChange: cpaChange ? `${cpaChange}%` : 'N/A',
+      roasChange: roasChange ? `${roasChange}%` : 'N/A',
+    });
+
+    // Top campaigns
+    if (campaigns) {
+      for (const c of campaigns.slice(0, 3)) {
+        topCampaigns.push({
+          name: c.name,
+          platform,
+          roas: c.roas,
+          spend: c.spend,
+        });
+      }
+    }
+  }
+
+  const overallRoas = totalSpend > 0 ? (totalRevenue / totalSpend).toFixed(2) : 0;
+  const prevRoas = totalSpendPrev > 0 ? (totalRevenuePrev / totalSpendPrev).toFixed(2) : 0;
+  const roasChange = prevRoas > 0 ? (((overallRoas - prevRoas) / prevRoas) * 100).toFixed(1) : 0;
+
+  return {
+    period: 'Last 7 days vs previous 7 days',
+    overall: {
+      totalSpend: `$${totalSpend.toFixed(0)}`,
+      totalRevenue: `$${totalRevenue.toFixed(0)}`,
+      totalConversions,
+      overallRoas: `${overallRoas}x`,
+      roasChange: `${roasChange}%`,
+    },
+    accounts: accountSummaries,
+    topCampaigns: topCampaigns.sort((a, b) => b.roas - a.roas).slice(0, 5),
+  };
+}
+
+/**
+ * Fallback rule-based insight detection (when Gemini 3 unavailable)
+ */
+function detectInsightsFallback(allMetrics, accounts) {
+  const insights = [];
+  let insightId = 0;
+
+  let totalSpend = 0;
+  let totalRevenue = 0;
+
+  for (const metrics of allMetrics) {
+    if (!metrics.current) continue;
+    totalSpend += metrics.current.spend;
+    totalRevenue += metrics.current.conversionValue;
+  }
+
+  const totalRoas = totalSpend > 0 ? totalRevenue / totalSpend : 0;
+
+  insights.push({
+    id: `insight-${++insightId}`,
+    type: INSIGHT_TYPES.INFO,
+    icon: 'chart',
+    title: 'Weekly summary',
+    detail: `This week: $${totalSpend.toLocaleString(undefined, {maximumFractionDigits: 0})} spent, $${totalRevenue.toLocaleString(undefined, {maximumFractionDigits: 0})} revenue, ${totalRoas.toFixed(2)}x ROAS`,
+    action: 'View full performance analysis',
+    priority: 'medium',
+    poweredBy: 'fallback',
+  });
+
+  return insights;
 }
 
 /**
@@ -198,11 +397,9 @@ async function fetchMetaMetrics(accountId, accessToken, accountName, currentStar
 }
 
 /**
- * Fetch Google Ads metrics (placeholder - uses similar structure)
+ * Fetch Google Ads metrics (placeholder)
  */
 async function fetchGoogleMetrics(accountId, accessToken, accountName, currentStart, currentEnd, previousStart, previousEnd) {
-  // Google Ads API would be called here
-  // For now, return null as it requires more complex setup
   return null;
 }
 
@@ -249,7 +446,7 @@ function parseMetaInsights(insights) {
 }
 
 /**
- * Parse campaign data for opportunity detection
+ * Parse campaign data
  */
 function parseCampaigns(campaigns) {
   return campaigns
@@ -276,192 +473,6 @@ function parseCampaigns(campaigns) {
       };
     })
     .sort((a, b) => b.roas - a.roas);
-}
-
-/**
- * Detect insights from metrics data
- */
-function detectInsights(allMetrics, accounts) {
-  const insights = [];
-  let insightId = 0;
-
-  // Aggregate totals
-  let totalSpend = 0;
-  let totalSpendPrev = 0;
-  let totalConversions = 0;
-  let totalConversionsPrev = 0;
-  let totalRevenue = 0;
-  let totalRevenuePrev = 0;
-
-  const topCampaigns = [];
-  const scaleCandidates = [];
-  const platformPerformance = {};
-
-  for (const metrics of allMetrics) {
-    if (!metrics.current) continue;
-
-    const { current, previous, platform, accountName, campaigns } = metrics;
-
-    totalSpend += current.spend;
-    totalConversions += current.conversions;
-    totalRevenue += current.conversionValue;
-
-    if (previous) {
-      totalSpendPrev += previous.spend;
-      totalConversionsPrev += previous.conversions;
-      totalRevenuePrev += previous.conversionValue;
-    }
-
-    // Track platform performance
-    if (!platformPerformance[platform]) {
-      platformPerformance[platform] = { spend: 0, revenue: 0 };
-    }
-    platformPerformance[platform].spend += current.spend;
-    platformPerformance[platform].revenue += current.conversionValue;
-
-    // Account-level CPA alert
-    if (previous && current.cpa > 0 && previous.cpa > 0) {
-      const cpaChange = ((current.cpa - previous.cpa) / previous.cpa) * 100;
-      if (cpaChange >= THRESHOLDS.CPA_INCREASE_ALERT) {
-        insights.push({
-          id: `insight-${++insightId}`,
-          type: INSIGHT_TYPES.ALERT,
-          icon: 'warning',
-          title: 'CPA trending up',
-          detail: `Cost per acquisition increased ${cpaChange.toFixed(0)}% on ${accountName || platform} this week ($${current.cpa.toFixed(2)} vs $${previous.cpa.toFixed(2)})`,
-          metrics: {
-            current: current.cpa,
-            previous: previous.cpa,
-            change: cpaChange,
-            unit: 'USD',
-          },
-          platform,
-          action: `Review campaigns with high CPA on ${accountName || platform}`,
-          priority: 'high',
-        });
-      }
-    }
-
-    // Account-level ROAS alert
-    if (previous && current.roas > 0 && previous.roas > 0) {
-      const roasChange = ((current.roas - previous.roas) / previous.roas) * 100;
-      if (roasChange <= -THRESHOLDS.ROAS_DECREASE_ALERT) {
-        insights.push({
-          id: `insight-${++insightId}`,
-          type: INSIGHT_TYPES.ALERT,
-          icon: 'warning',
-          title: 'ROAS declining',
-          detail: `Return on ad spend dropped ${Math.abs(roasChange).toFixed(0)}% on ${accountName || platform} (${current.roas.toFixed(2)}x vs ${previous.roas.toFixed(2)}x)`,
-          metrics: {
-            current: current.roas,
-            previous: previous.roas,
-            change: roasChange,
-            unit: 'x',
-          },
-          platform,
-          action: 'Investigate underperforming campaigns',
-          priority: 'high',
-        });
-      }
-    }
-
-    // Find scale opportunities from campaigns
-    if (campaigns) {
-      for (const campaign of campaigns) {
-        if (campaign.status === 'ACTIVE' && campaign.roas >= THRESHOLDS.SCALE_OPPORTUNITY_ROAS && campaign.spend > THRESHOLDS.MIN_SPEND_FOR_INSIGHTS) {
-          scaleCandidates.push({
-            name: campaign.name,
-            roas: campaign.roas,
-            spend: campaign.spend,
-            platform,
-          });
-        }
-        if (campaign.roas > 0) {
-          topCampaigns.push({
-            name: campaign.name,
-            roas: campaign.roas,
-            spend: campaign.spend,
-            platform,
-          });
-        }
-      }
-    }
-  }
-
-  // Scale opportunity insight
-  if (scaleCandidates.length > 0) {
-    const topScaleCampaigns = scaleCandidates.slice(0, 3);
-    insights.push({
-      id: `insight-${++insightId}`,
-      type: INSIGHT_TYPES.OPPORTUNITY,
-      icon: 'trending_up',
-      title: 'Scale opportunity',
-      detail: `${scaleCandidates.length} campaign${scaleCandidates.length > 1 ? 's' : ''} performing above ${THRESHOLDS.SCALE_OPPORTUNITY_ROAS}x ROAS. Consider increasing budget.`,
-      campaigns: topScaleCampaigns.map(c => c.name),
-      metrics: {
-        count: scaleCandidates.length,
-        avgRoas: scaleCandidates.reduce((sum, c) => sum + c.roas, 0) / scaleCandidates.length,
-      },
-      action: 'Review campaigns for budget increase',
-      priority: 'high',
-    });
-  }
-
-  // Top performer insight
-  if (topCampaigns.length > 0) {
-    topCampaigns.sort((a, b) => b.roas - a.roas);
-    const top = topCampaigns[0];
-    insights.push({
-      id: `insight-${++insightId}`,
-      type: INSIGHT_TYPES.INFO,
-      icon: 'star',
-      title: 'Top performer',
-      detail: `"${top.name}" is your best performing campaign with ${top.roas.toFixed(2)}x ROAS`,
-      metrics: {
-        roas: top.roas,
-        spend: top.spend,
-      },
-      platform: top.platform,
-      action: 'Analyze what makes this campaign successful',
-      priority: 'medium',
-    });
-  }
-
-  // Weekly summary
-  const totalRoas = totalSpend > 0 ? totalRevenue / totalSpend : 0;
-  const totalRoasPrev = totalSpendPrev > 0 ? totalRevenuePrev / totalSpendPrev : 0;
-  const roasChange = totalRoasPrev > 0 ? ((totalRoas - totalRoasPrev) / totalRoasPrev) * 100 : 0;
-
-  insights.push({
-    id: `insight-${++insightId}`,
-    type: INSIGHT_TYPES.INFO,
-    icon: 'chart',
-    title: 'Weekly summary',
-    detail: `This week: $${totalSpend.toLocaleString(undefined, {maximumFractionDigits: 0})} spent, $${totalRevenue.toLocaleString(undefined, {maximumFractionDigits: 0})} revenue, ${totalRoas.toFixed(2)}x ROAS${roasChange !== 0 ? ` (${roasChange > 0 ? '+' : ''}${roasChange.toFixed(0)}% vs last week)` : ''}`,
-    metrics: {
-      spend: totalSpend,
-      revenue: totalRevenue,
-      roas: totalRoas,
-      conversions: totalConversions,
-      roasChange,
-    },
-    action: 'View full performance analysis',
-    priority: 'low',
-  });
-
-  return insights;
-}
-
-/**
- * Sort insights by priority
- */
-function rankInsightsByPriority(insights) {
-  const priorityOrder = { high: 1, medium: 2, low: 3 };
-  return insights.sort((a, b) => {
-    const aPriority = priorityOrder[a.priority] || 3;
-    const bPriority = priorityOrder[b.priority] || 3;
-    return aPriority - bPriority;
-  });
 }
 
 module.exports = {
