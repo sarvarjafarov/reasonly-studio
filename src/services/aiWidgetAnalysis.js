@@ -104,19 +104,36 @@ class AIWidgetAnalysisService {
   }
 
   /**
+   * Promise timeout wrapper
+   */
+  withTimeout(promise, ms, errorMsg = 'Operation timed out') {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(errorMsg)), ms)
+      )
+    ]);
+  }
+
+  /**
    * Analyze using Gemini (faster)
    */
   async analyzeWithGemini(prompt, systemPrompt) {
     console.log('[AI Analysis] Calling Gemini API...');
     const startTime = Date.now();
 
-    const result = await this.geminiModel.generateContent({
-      contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${prompt}` }] }],
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 2048,
-      },
-    });
+    // 45 second timeout for Gemini API
+    const result = await this.withTimeout(
+      this.geminiModel.generateContent({
+        contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${prompt}` }] }],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 2048,
+        },
+      }),
+      45000,
+      'Gemini API timed out after 45 seconds'
+    );
 
     const duration = Date.now() - startTime;
     console.log(`[AI Analysis] Gemini API responded in ${duration}ms`);
@@ -124,6 +141,7 @@ class AIWidgetAnalysisService {
     const responseText = result.response.text();
     const analysis = this.parseAnalysisResponse(responseText);
     analysis.provider = 'gemini';
+    analysis.responseTime = duration;
 
     return analysis;
   }
@@ -135,12 +153,17 @@ class AIWidgetAnalysisService {
     console.log('[AI Analysis] Calling Anthropic API with Haiku (fast)...');
     const startTime = Date.now();
 
-    const message = await this.anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022', // Haiku for faster responses
-      max_tokens: 2048,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: prompt }]
-    });
+    // 45 second timeout for Anthropic API
+    const message = await this.withTimeout(
+      this.anthropic.messages.create({
+        model: 'claude-3-5-haiku-20241022', // Haiku for faster responses
+        max_tokens: 2048,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: prompt }]
+      }),
+      45000,
+      'Anthropic API timed out after 45 seconds'
+    );
 
     const duration = Date.now() - startTime;
     console.log(`[AI Analysis] Anthropic API responded in ${duration}ms`);
@@ -149,6 +172,7 @@ class AIWidgetAnalysisService {
     const analysis = this.parseAnalysisResponse(responseText);
     analysis.tokensUsed = (message.usage?.input_tokens || 0) + (message.usage?.output_tokens || 0);
     analysis.provider = 'anthropic';
+    analysis.responseTime = duration;
 
     return analysis;
   }

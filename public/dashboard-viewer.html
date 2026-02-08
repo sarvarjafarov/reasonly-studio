@@ -5988,15 +5988,27 @@
     let currentAnalysisWidgetId = null;
 
     async function pollForAnalysisResults(jobId) {
-      const maxAttempts = 120; // 120 seconds max (Claude API can be slow)
+      const maxAttempts = 60; // 60 seconds max (Gemini is fast)
       const pollInterval = 1000; // Poll every 1 second
       let attempts = 0;
 
+      // Update loading message with progress
+      const loadingEl = document.getElementById('aiAnalysisLoading');
+      const updateProgress = (msg) => {
+        const progressEl = loadingEl.querySelector('.ai-loading-text');
+        if (progressEl) progressEl.textContent = msg;
+      };
+
       while (attempts < maxAttempts) {
         try {
+          // Update progress message every 10 seconds
+          if (attempts > 0 && attempts % 10 === 0) {
+            updateProgress(`Analyzing data with Gemini 3... (${attempts}s)`);
+          }
+
           const response = await fetch(`/api/dashboards/ai-jobs/${jobId}`, {
             credentials: 'include',
-            cache: 'no-cache', // Prevent 304 Not Modified responses
+            cache: 'no-cache',
             headers: {
               'Cache-Control': 'no-cache',
             },
@@ -6007,6 +6019,7 @@
           }
 
           const result = await response.json();
+          console.log(`[AI Analysis] Job ${jobId} status:`, result.status);
 
           if (result.status === 'completed' && result.data) {
             // Success! Display results
@@ -6020,8 +6033,20 @@
             let errorMsg = result.error || 'AI analysis failed';
             if (errorMsg.includes('not configured') || errorMsg.includes('service not')) {
               errorMsg = 'AI analysis service is temporarily unavailable. Please try again later.';
+            } else if (errorMsg.includes('timed out')) {
+              errorMsg = 'AI analysis took too long. Please try again.';
             }
             throw new Error(errorMsg);
+          }
+
+          if (result.status === 'not_found') {
+            // Job not found - might be a race condition, wait a bit
+            if (attempts < 5) {
+              await new Promise(resolve => setTimeout(resolve, pollInterval));
+              attempts++;
+              continue;
+            }
+            throw new Error('Analysis job not found. Please try again.');
           }
 
           // Still processing, wait and try again
@@ -6035,7 +6060,7 @@
       }
 
       // Timeout
-      throw new Error('AI analysis timed out after 120 seconds. Please try again or contact support.');
+      throw new Error('AI analysis timed out. Please try again.');
     }
 
     async function analyzeWidgetWithAI(widgetId) {
