@@ -2575,8 +2575,6 @@
     }
 
     async function refreshInsights() {
-      // This would call the backend to get proactive insights
-      // For now, we'll show mock insights based on connected accounts
       const grid = document.getElementById('insightsGrid');
 
       if (connectedAccounts.length === 0) {
@@ -2591,33 +2589,100 @@
         return;
       }
 
+      if (!selectedWorkspaceId) {
+        return;
+      }
+
       // Show loading
       grid.innerHTML = '<div style="padding: 1rem; color: rgba(255,255,255,0.5);">Analyzing your data for insights...</div>';
 
-      // TODO: Call actual insights API
-      // For now, show placeholder insights
-      setTimeout(() => {
+      try {
+        const response = await fetch(`/api/insights/daily?workspaceId=${selectedWorkspaceId}`, {
+          credentials: 'include'
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Failed to load insights');
+        }
+
+        const insights = result.data?.insights || [];
+
+        if (insights.length === 0) {
+          grid.innerHTML = `
+            <div class="insight-card info">
+              <div class="insight-icon">📊</div>
+              <div class="insight-title">No insights yet</div>
+              <div class="insight-detail">We're still analyzing your data. Check back soon or try asking a question above.</div>
+              <div class="insight-action">Ask a question →</div>
+            </div>
+          `;
+          return;
+        }
+
+        // Render real insights
+        grid.innerHTML = insights.map(insight => renderInsightCard(insight)).join('');
+
+      } catch (error) {
+        console.error('Error loading insights:', error);
+        // Show fallback on error
         grid.innerHTML = `
-          <div class="insight-card alert" onclick="setQuestionSuggestion('Why did my CPA increase recently?'); submitHeroQuestion();">
+          <div class="insight-card info">
             <div class="insight-icon">⚠️</div>
-            <div class="insight-title">CPA trending up</div>
-            <div class="insight-detail">Your cost per acquisition has increased 12% over the past 7 days. Click to investigate.</div>
-            <div class="insight-action">Investigate →</div>
-          </div>
-          <div class="insight-card opportunity" onclick="setQuestionSuggestion('Which campaigns should I scale?'); submitHeroQuestion();">
-            <div class="insight-icon">📈</div>
-            <div class="insight-title">Scale opportunity</div>
-            <div class="insight-detail">2 campaigns are performing above target ROAS. Consider increasing budget.</div>
-            <div class="insight-action">View campaigns →</div>
-          </div>
-          <div class="insight-card info" onclick="setQuestionSuggestion('What is my overall performance this week?'); submitHeroQuestion();">
-            <div class="insight-icon">📊</div>
-            <div class="insight-title">Weekly summary ready</div>
-            <div class="insight-detail">Your weekly performance report is ready. Click to see the AI analysis.</div>
-            <div class="insight-action">View summary →</div>
+            <div class="insight-title">Unable to load insights</div>
+            <div class="insight-detail">We couldn't analyze your data right now. Please try again later.</div>
+            <div class="insight-action" onclick="refreshInsights()">Retry →</div>
           </div>
         `;
-      }, 1000);
+      }
+    }
+
+    function renderInsightCard(insight) {
+      // Map insight type to CSS class
+      const typeClass = insight.type === 'alert' ? 'alert' : insight.type === 'opportunity' ? 'opportunity' : 'info';
+
+      // Map icon names to emojis
+      const iconMap = {
+        'warning': '⚠️',
+        'trending_up': '📈',
+        'star': '⭐',
+        'chart': '📊',
+        'info': '💡',
+      };
+      const icon = iconMap[insight.icon] || '💡';
+
+      // Generate question for click action
+      let question = '';
+      if (insight.type === 'alert') {
+        if (insight.title.toLowerCase().includes('cpa')) {
+          question = 'Why did my CPA increase recently?';
+        } else if (insight.title.toLowerCase().includes('roas')) {
+          question = 'Why is my ROAS declining?';
+        } else {
+          question = 'What is causing this issue?';
+        }
+      } else if (insight.type === 'opportunity') {
+        question = 'Which campaigns should I scale?';
+      } else {
+        question = 'What is my overall performance this week?';
+      }
+
+      return `
+        <div class="insight-card ${typeClass}" onclick="setQuestionSuggestion('${question}'); submitHeroQuestion();">
+          <div class="insight-icon">${icon}</div>
+          <div class="insight-title">${escapeHtml(insight.title)}</div>
+          <div class="insight-detail">${escapeHtml(insight.detail)}</div>
+          <div class="insight-action">${escapeHtml(insight.action || 'Investigate')} →</div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
     function updateQuickStats(metrics) {

@@ -26,6 +26,7 @@ const webhookRoutes = require('./webhookRoutes');
 const websiteAuditRoutes = require('./websiteAuditRoutes');
 const experimentRoutes = require('./experimentRoutes');
 const demoRoutes = require('./demoRoutes');
+const insightsRoutes = require('./insightsRoutes');
 
 const router = express.Router();
 
@@ -57,5 +58,6 @@ router.use('/website-audit', websiteAuditRoutes);
 router.use('/experiments', experimentRoutes);
 router.use('/ai', aiRoutes);
 router.use('/demo', demoRoutes);
+router.use('/insights', insightsRoutes);
 
 module.exports = router;
