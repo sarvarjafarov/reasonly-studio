@@ -35,6 +35,15 @@ async function processAIAnalysisJob(jobId, widget, metricsData, options = {}) {
     // Perform the actual AI analysis (this can take 30+ seconds)
     const analysis = await aiWidgetAnalysis.analyzeWidget(widget, metricsData, options);
 
+    // Check if analysis returned an error (e.g., AI service not configured)
+    if (analysis && analysis.success === false) {
+      console.error(`[Background Job] AI analysis job ${jobId} returned error:`, analysis.error);
+      await setCache(`job:${jobId}:status`, JOB_STATUS.FAILED, 600);
+      await setCache(`job:${jobId}:error`, analysis.error || 'AI analysis failed', 600);
+      await deleteCache(`job:${jobId}:progress`);
+      return;
+    }
+
     // Store results
     await setCache(`job:${jobId}:status`, JOB_STATUS.COMPLETED, 600);
     await setCache(`job:${jobId}:result`, JSON.stringify(analysis), 600);

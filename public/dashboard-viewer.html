@@ -5867,7 +5867,12 @@
           }
 
           if (result.status === 'failed') {
-            throw new Error(result.error || 'AI analysis failed');
+            // Handle specific error messages with user-friendly text
+            let errorMsg = result.error || 'AI analysis failed';
+            if (errorMsg.includes('not configured') || errorMsg.includes('service not')) {
+              errorMsg = 'AI analysis service is temporarily unavailable. Please try again later.';
+            }
+            throw new Error(errorMsg);
           }
 
           // Still processing, wait and try again
