@@ -2583,35 +2583,47 @@
     }
 
     function displayAnalysisResults(data, question) {
-      document.getElementById('analysisLoading').style.display = 'none';
+      const loadingEl = document.getElementById('analysisLoading');
+      if (loadingEl) loadingEl.style.display = 'none';
 
       const execSummary = data.exec_summary || {};
       const content = document.getElementById('analysisContent');
 
       // Update meta
-      document.getElementById('analysisMeta').textContent =
-        `Analyzed ${data.scope?.source || 'your data'} • ${new Date().toLocaleString()}`;
+      const metaEl = document.getElementById('analysisMeta');
+      if (metaEl) {
+        metaEl.textContent = `Analyzed ${data.scope?.source || 'your data'} • ${new Date().toLocaleString()}`;
+      }
 
       // Executive headline
-      document.getElementById('execHeadline').textContent = execSummary.headline || 'Analysis Complete';
+      const headlineEl = document.getElementById('execHeadline');
+      if (headlineEl) {
+        headlineEl.textContent = execSummary.headline || 'Analysis Complete';
+      }
 
       // What changed
       const whatChangedList = document.getElementById('execWhatChanged');
-      whatChangedList.innerHTML = (execSummary.what_changed || ['No significant changes detected'])
-        .map(item => `<li>${item}</li>`).join('');
+      if (whatChangedList) {
+        whatChangedList.innerHTML = (execSummary.what_changed || ['No significant changes detected'])
+          .map(item => `<li>${item}</li>`).join('');
+      }
 
       // Why
       const whyList = document.getElementById('execWhy');
-      whyList.innerHTML = (execSummary.why || ['Further investigation needed'])
-        .map(item => `<li>${item}</li>`).join('');
+      if (whyList) {
+        whyList.innerHTML = (execSummary.why || ['Further investigation needed'])
+          .map(item => `<li>${item}</li>`).join('');
+      }
 
       // Actions
       const actionsList = document.getElementById('execActions');
-      const actions = data.actions || [];
-      actionsList.innerHTML = (execSummary.what_to_do_next || actions.map(a => a.action) || ['Continue monitoring'])
-        .map(item => `<li>${item}</li>`).join('');
+      if (actionsList) {
+        const actions = data.actions || [];
+        actionsList.innerHTML = (execSummary.what_to_do_next || actions.map(a => a.action) || ['Continue monitoring'])
+          .map(item => `<li>${item}</li>`).join('');
+      }
 
-      content.style.display = 'block';
+      if (content) content.style.display = 'block';
     }
 
     function closeAnalysisResults() {
