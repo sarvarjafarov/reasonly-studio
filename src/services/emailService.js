@@ -212,7 +212,7 @@ class EmailService {
           <div class="footer">
             <p>
               This is an automated report from AdsData Platform.<br>
-              <a href="http://localhost:3000/dashboard">View Full Dashboard</a>
+              <a href="${config.appUrl}/dashboard">View Full Dashboard</a>
             </p>
           </div>
         </div>
@@ -358,7 +358,7 @@ class EmailService {
     }
 
     text += '\n' + '-'.repeat(50) + '\n';
-    text += 'View full dashboard: http://localhost:3000/dashboard\n';
+    text += `View full dashboard: ${config.appUrl}/dashboard\n`;
 
     return text;
   }
@@ -395,7 +395,7 @@ class EmailService {
    */
   async sendVerificationEmail({ to, username, verificationToken }) {
     try {
-      const verificationUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+      const verificationUrl = `${config.appUrl}/verify-email?token=${verificationToken}`;
 
       const html = `
         <!DOCTYPE html>
