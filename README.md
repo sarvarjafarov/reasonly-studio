@@ -1,5 +1,11 @@
 # Reasonly Studio Backend API & CMS
 
+> **Gemini 3 Developer Challenge — Hackathon Edition**
+>
+> This project was created for the [Gemini 3 Developer Challenge](https://gemini3.devpost.com/) (February 2026).
+> Gemini 3 Flash powers the reasoning, insight generation, and recommendation prioritization throughout.
+> Demo mode uses simulated sample data. Real integrations use official APIs with read-only access and are optional.
+
 A Node.js backend API with a complete Admin Panel CMS for Reasonly Studio, built with Express.js.
 
 ## Features
