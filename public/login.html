@@ -78,6 +78,21 @@
             display: block;
         }
 
+        .success-message {
+            background-color: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -165,6 +180,7 @@
             <h1>Welcome Back</h1>
             <p class="subtitle">Sign in to your AI-powered marketing dashboard</p>
 
+            <div id="successMessage" class="success-message"></div>
             <div id="errorMessage" class="error-message"></div>
 
             <form id="loginForm">

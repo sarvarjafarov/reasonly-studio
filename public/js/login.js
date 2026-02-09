@@ -6,8 +6,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const fromLogout = urlParams.get('logout');
 
-    // Only check auth if not coming from logout
-    if (!fromLogout) {
+    // If coming from logout, clear any stale auth data and show success message
+    if (fromLogout) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('activeWorkspace');
+        showSuccess('You have been logged out successfully');
+        // Clean up URL
+        window.history.replaceState({}, '', '/login');
+    } else {
         checkAuth();
     }
 
@@ -55,6 +62,17 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             errorMessage.classList.remove('show');
         }, 5000);
+    }
+
+    function showSuccess(message) {
+        const successEl = document.getElementById('successMessage');
+        if (successEl) {
+            successEl.textContent = message;
+            successEl.classList.add('show');
+            setTimeout(() => {
+                successEl.classList.remove('show');
+            }, 5000);
+        }
     }
 
     async function checkAuth() {
