@@ -111,12 +111,12 @@
     }
 
     .widget {
-      background: linear-gradient(165deg, rgba(32, 32, 35, 0.98) 0%, rgba(20, 20, 22, 0.99) 100%);
+      background: linear-gradient(165deg, rgba(32, 32, 35, 0.95) 0%, rgba(18, 18, 20, 0.98) 100%);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 1.5rem;
-      padding: 1.75rem;
+      border-radius: 1.25rem;
+      padding: 1.5rem;
       cursor: grab;
-      min-height: 180px;
+      min-height: 160px;
       max-height: 420px;
       overflow-y: auto;
       overflow-x: hidden;
@@ -128,6 +128,7 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
+    /* Top gradient border - always visible */
     .widget::before {
       content: '';
       position: absolute;
@@ -136,22 +137,30 @@
       right: 0;
       height: 3px;
       background: linear-gradient(90deg, #b7fa31, #7dd3fc);
-      border-radius: 1.5rem 1.5rem 0 0;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      border-radius: 1.25rem 1.25rem 0 0;
+      opacity: 0.9;
     }
 
-    .widget:hover::before {
-      opacity: 1;
+    /* Subtle glow effect */
+    .widget::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: linear-gradient(180deg, rgba(183, 250, 49, 0.03) 0%, transparent 100%);
+      pointer-events: none;
+      border-radius: 1.25rem 1.25rem 0 0;
     }
 
     .widget:hover {
       transform: translateY(-4px);
-      border-color: rgba(183, 250, 49, 0.2);
+      border-color: rgba(183, 250, 49, 0.25);
       box-shadow:
-        0 20px 25px -5px rgba(0, 0, 0, 0.35),
+        0 20px 25px -5px rgba(0, 0, 0, 0.4),
         0 10px 10px -5px rgba(0, 0, 0, 0.2),
-        0 0 40px rgba(183, 250, 49, 0.06),
+        0 0 30px rgba(183, 250, 49, 0.08),
         inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
@@ -196,25 +205,23 @@
     .widget-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.25rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
       position: relative;
       z-index: 1;
-      gap: 1rem;
+      gap: 0.75rem;
     }
 
     .widget-title {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.55);
       text-transform: uppercase;
       letter-spacing: 0.08em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 200px;
+      max-width: 220px;
     }
 
     .widget-actions {
@@ -637,13 +644,33 @@
     }
 
     .metric-card {
-      text-align: center;
-      padding: 1.75rem 1.25rem;
+      padding: 0;
       position: relative;
     }
 
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .metric-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .metric-header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
     .metric-value {
-      font-size: 2.75rem;
+      font-size: 2.5rem;
       font-weight: 800;
       background: linear-gradient(135deg, #ffffff 0%, rgba(183, 250, 49, 0.9) 100%);
       -webkit-background-clip: text;
@@ -651,21 +678,22 @@
       background-clip: text;
       margin-bottom: 0.5rem;
       letter-spacing: -0.02em;
+      position: relative;
+      z-index: 1;
     }
 
     .metric-label {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: rgba(255, 255, 255, 0.55);
-      margin-bottom: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-weight: 600;
     }
 
     .metric-change {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 700;
-      padding: 0.4rem 0.75rem;
+      padding: 0.35rem 0.65rem;
       border-radius: 999px;
       display: inline-flex;
       align-items: center;
@@ -692,8 +720,10 @@
     }
 
     .metric-sparkline {
-      margin-top: 1rem;
+      margin-top: 0.75rem;
       height: 48px;
+      position: relative;
+      z-index: 1;
     }
 
     .metric-sparkline canvas {
@@ -711,6 +741,40 @@
       font-size: 0.7rem;
       color: rgba(255, 255, 255, 0.45);
       margin-top: 0.35rem;
+    }
+
+    /* Widget AI Analyze Button */
+    .widget-ai-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.4rem 0.75rem;
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.12) 0%, rgba(52, 168, 83, 0.12) 50%, rgba(251, 188, 5, 0.12) 100%);
+      border: 1px solid rgba(66, 133, 244, 0.25);
+      border-radius: 0.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.65rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .widget-ai-btn:hover {
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.2) 0%, rgba(52, 168, 83, 0.2) 50%, rgba(251, 188, 5, 0.2) 100%);
+      border-color: rgba(66, 133, 244, 0.4);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .widget-ai-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .widget-ai-btn .ai-icon {
+      font-size: 0.8rem;
     }
 
     /* Table Widget Styles */
@@ -3534,39 +3598,52 @@
       if (widgetType === 'kpi_card') {
         contentHTML = `
           <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-header-left">
+                <div class="metric-label">${formattedMetric}</div>
+              </div>
+              <div class="metric-header-right">
+                <div class="metric-change neutral" id="change-${widget.id}">
+                  <span>—</span>
+                </div>
+                <button class="widget-ai-btn" onclick="analyzeWidgetWithAI('${widget.id}', '${formattedMetric}')" title="Analyze with AI">
+                  <span class="ai-icon">✨</span> AI
+                </button>
+              </div>
+            </div>
             <div class="metric-value" id="metric-${widget.id}">
               <div class="widget-loading">
                 <div class="widget-loading-spinner"></div>
-                <div class="widget-loading-text">Loading...</div>
               </div>
-            </div>
-            <div class="metric-label">${formattedMetric}</div>
-            <div class="metric-change neutral" id="change-${widget.id}">
-              <span>—</span> vs previous period
             </div>
             <div class="metric-sparkline">
               <canvas id="sparkline-${widget.id}"></canvas>
-            </div>
-            <div class="metric-date-range">
-              ${formatDateRange(dataSource.dateRange || 'last_30_days')}
             </div>
           </div>
         `;
       } else if (widgetType === 'line_chart' || widgetType === 'bar_chart' || widgetType === 'pie_chart') {
         contentHTML = `
-          <div id="chart-summary-${widget.id}" style="padding: 0.75rem 1rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+          <div class="chart-header-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 0 0.5rem 0.75rem 0;">
+            <div class="chart-subtitle" style="font-size: 0.7rem; color: rgba(255,255,255,0.45);">${formatDateRange(dataSource.dateRange || 'last_30_days')}</div>
+            <button class="widget-ai-btn" onclick="analyzeWidgetWithAI('${widget.id}', '${formattedMetric}')" title="Analyze with AI">
+              <span class="ai-icon">✨</span> Analyze
+            </button>
+          </div>
+          <div id="chart-summary-${widget.id}" style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 0.5rem;">
             <!-- Summary stats will be populated by renderChart -->
           </div>
-          <div style="padding: 1rem; height: 200px;">
+          <div style="height: 200px;">
             <canvas id="chart-${widget.id}"></canvas>
-          </div>
-          <div style="text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.4); padding-bottom: 0.5rem;">
-            ${formattedMetric} - ${formatDateRange(dataSource.dateRange || 'last_30_days')}
           </div>
         `;
       } else if (widgetType === 'table') {
         contentHTML = `
           <div class="table-widget" id="table-${widget.id}">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
+              <button class="widget-ai-btn" onclick="analyzeWidgetWithAI('${widget.id}', '${formattedMetric}')" title="Analyze with AI">
+                <span class="ai-icon">✨</span> Analyze
+              </button>
+            </div>
             <div id="table-container-${widget.id}">
               <table class="data-table">
                 <thead>
@@ -5226,6 +5303,50 @@
       } catch (error) {
         console.error('Error applying template:', error);
         showAlert('Failed to apply template: ' + error.message, 'error');
+      }
+    }
+
+    // Analyze widget with AI
+    async function analyzeWidgetWithAI(widgetId, metricName) {
+      const metricElement = document.getElementById(`metric-${widgetId}`);
+      const changeElement = document.getElementById(`change-${widgetId}`);
+
+      const currentValue = metricElement ? metricElement.textContent : 'N/A';
+      const changeText = changeElement ? changeElement.textContent : 'N/A';
+
+      // Show loading state
+      showAlert('Analyzing with AI...', 'info');
+
+      try {
+        const question = `Analyze the ${metricName} metric which currently shows ${currentValue} with a change of ${changeText}. What insights can you provide and what actions should be taken?`;
+
+        const response = await fetch('/api/ai/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            question: question,
+            scope: {
+              source: 'widget_analysis',
+              widgetId: widgetId,
+              metric: metricName
+            }
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.analysis) {
+          // Show analysis in a modal or alert
+          const analysis = data.analysis;
+          const headline = analysis.exec_summary?.headline || 'Analysis complete';
+          showAlert(headline, 'success');
+        } else {
+          showAlert('AI analysis completed', 'success');
+        }
+      } catch (error) {
+        console.error('AI analysis error:', error);
+        showAlert('Could not complete AI analysis', 'error');
       }
     }
 
