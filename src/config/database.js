@@ -12,10 +12,13 @@ if (process.env.DATABASE_URL) {
     ssl: {
       rejectUnauthorized: false, // Don't verify SSL certificate (required for Heroku)
     },
-    max: 10, // Reduced to avoid exhausting Heroku's connection limit
-    idleTimeoutMillis: 10000, // Release idle connections faster
-    connectionTimeoutMillis: 5000,
-    allowExitOnIdle: true, // Allow pool to close when idle
+    max: 5, // Keep pool small for Heroku's connection limits
+    min: 1, // Minimum connections to keep alive
+    idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+    connectionTimeoutMillis: 10000, // Wait 10 seconds for connection
+    allowExitOnIdle: false, // Keep pool alive
+    keepAlive: true, // Enable TCP keepalive
+    keepAliveInitialDelayMillis: 10000, // Start keepalive after 10 seconds
   };
 } else {
   // Local development uses individual parameters
@@ -27,33 +30,51 @@ if (process.env.DATABASE_URL) {
     password: process.env.DB_PASSWORD || 'postgres',
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    connectionTimeoutMillis: 5000,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   };
 }
 
-const pool = new Pool(poolConfig);
+let pool = new Pool(poolConfig);
+
+// Track connection state
+let isConnected = false;
 
 // Test connection
 pool.on('connect', () => {
+  isConnected = true;
   console.log('✅ Database connected successfully');
 });
 
+// Handle pool errors gracefully - don't crash the process
 pool.on('error', (err) => {
-  console.error('❌ Unexpected error on idle client', err);
-  process.exit(-1);
+  console.error('❌ Database pool error:', err.message);
+  isConnected = false;
+  // Don't exit - let the pool try to recover
 });
 
-// Helper function to execute queries
-const query = async (text, params) => {
+// Helper function to execute queries with retry logic
+const query = async (text, params, retries = 2) => {
   const start = Date.now();
   try {
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
-    console.log('executed query', { text, duration, rows: res.rowCount });
+    if (duration > 1000) {
+      console.log('executed query', { text: text.substring(0, 100), duration, rows: res.rowCount });
+    }
+    isConnected = true;
     return res;
   } catch (error) {
-    console.error('Query error:', error);
+    isConnected = false;
+    console.error('Query error:', error.message);
+
+    // Retry on connection errors
+    if (retries > 0 && (error.message.includes('Connection terminated') || error.message.includes('timeout'))) {
+      console.log(`Retrying query... (${retries} attempts left)`);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return query(text, params, retries - 1);
+    }
+
     throw error;
   }
 };
