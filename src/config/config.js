@@ -72,7 +72,9 @@ module.exports = {
     password: process.env.EMAIL_PASSWORD,
     from: process.env.EMAIL_FROM || 'AdsData Platform <noreply@adsdata.com>',
   },
-  useGemini: process.env.USE_GEMINI === 'true',
+  // Gemini AI Configuration - Primary AI for Gemini 3 Hackathon
+  // Model: gemini-3-flash-preview (Gemini 3 Flash - required for hackathon)
+  useGemini: process.env.USE_GEMINI !== 'false', // Enabled by default
   geminiApiKey: process.env.GEMINI_API_KEY || '',
   geminiModel: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
 };

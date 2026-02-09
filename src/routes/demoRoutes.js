@@ -123,16 +123,23 @@ Return ONLY valid JSON in this exact format (no markdown):
 }`;
 
     const aiResponse = await generate(prompt);
+    console.log('[Demo] ✅ Gemini 3 responded successfully');
 
     // Parse AI response
     let result;
     try {
       const cleaned = aiResponse.replace(/```json|```/gi, '').trim();
       result = JSON.parse(cleaned);
+      result.ai_powered = true;
+      result.ai_provider = 'gemini-3';
     } catch (parseErr) {
-      // Fallback response
+      console.warn('[Demo] Failed to parse AI response, using structured fallback');
+      // Fallback response - still AI-powered but couldn't parse JSON
       result = {
         status: 'ok',
+        ai_powered: true,
+        ai_provider: 'gemini-3',
+        parse_fallback: true,
         exec_summary: {
           headline: `Based on the data, your overall ROAS of ${DEMO_METRICS.roas}x indicates strong campaign performance.`,
           what_changed: [
@@ -160,11 +167,14 @@ Return ONLY valid JSON in this exact format (no markdown):
 
     res.json(result);
   } catch (error) {
-    console.error('[Demo] Analysis error:', error);
+    console.error('[Demo] ❌ AI Analysis error:', error.message);
 
-    // Return fallback analysis when AI is not available
+    // Return fallback analysis when AI is not available - CLEARLY INDICATE AI FAILURE
     const fallbackResult = {
       status: 'ok',
+      ai_powered: false,
+      ai_error: error.message,
+      fallback_mode: true,
       exec_summary: {
         headline: `Based on the data, your overall ROAS of ${DEMO_METRICS.roas}x indicates strong campaign performance.`,
         what_changed: [
@@ -212,6 +222,7 @@ router.post('/generate-dashboard', async (req, res) => {
     });
 
     if (result.success) {
+      console.log('[Demo] ✅ Dashboard generated with Gemini 3');
       // Add demo data to each widget
       result.dashboard.widgets = result.dashboard.widgets.map(widget => ({
         ...widget,
@@ -221,6 +232,8 @@ router.post('/generate-dashboard', async (req, res) => {
       res.json({
         success: true,
         demo: true,
+        ai_powered: true,
+        ai_provider: 'gemini-3',
         message: 'Dashboard generated with Gemini 3',
         data: result.dashboard,
       });
@@ -228,9 +241,9 @@ router.post('/generate-dashboard', async (req, res) => {
       throw new Error('Dashboard generation failed');
     }
   } catch (error) {
-    console.error('[Demo] Dashboard generation error:', error);
+    console.error('[Demo] ❌ Dashboard generation error:', error.message);
 
-    // Return a fallback demo dashboard when AI is not available
+    // Return a fallback demo dashboard when AI is not available - CLEARLY INDICATE
     const fallbackDashboard = {
       name: 'Demo Dashboard',
       description: `Dashboard for: ${prompt}`,
@@ -250,7 +263,10 @@ router.post('/generate-dashboard', async (req, res) => {
     res.json({
       success: true,
       demo: true,
-      message: 'Dashboard generated (demo mode)',
+      ai_powered: false,
+      ai_error: error.message,
+      fallback_mode: true,
+      message: 'Dashboard generated (fallback mode - AI unavailable)',
       data: fallbackDashboard,
     });
   }

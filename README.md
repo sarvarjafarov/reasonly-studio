@@ -134,7 +134,7 @@ curl http://localhost:3000/api/ai/analyze \
   }'
 ```
 
-The tools under `src/tools/analyticsTools.js` read the sample CSV, aggregate KPIs, compare periods, build timeseries, and flag anomalies. The agent (`src/agents/marketingAnalyst.agent.js`) orchestrates the plan, evidence, findings, actions, dashboard spec, and executive summary. Later we will swap the deterministic logic with Gemini 3 (marked with TODOs). You can update `data/sample.csv` with richer data to prototype new behaviors before wiring a real warehouse.
+The tools under `src/tools/analyticsTools.js` read the sample CSV, aggregate KPIs, compare periods, build timeseries, and flag anomalies. The agent (`src/agents/marketingAnalyst.agent.js`) orchestrates the plan, evidence, findings, actions, dashboard spec, and executive summary using **Gemini 3 Flash** for intelligent analysis. You can update `data/sample.csv` with richer data to prototype new behaviors before wiring a real warehouse.
 
 #### Gemini configuration
 
@@ -153,7 +153,7 @@ USE_GEMINI=false curl -X POST http://localhost:3000/api/ai/analyze \
 2) Gemini mode:
 
 ```bash
-USE_GEMINI=true GEMINI_API_KEY=... GEMINI_MODEL=gemini-3-flash curl -X POST http://localhost:3000/api/ai/analyze \
+USE_GEMINI=true GEMINI_API_KEY=... GEMINI_MODEL=gemini-3-flash-preview curl -X POST http://localhost:3000/api/ai/analyze \
   -H "Content-Type: application/json" \
   -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"},"scope":{"source":"search_console","propertyUrl":"https://example.com","entityLevel":"account"}}'
 ```
@@ -161,7 +161,7 @@ USE_GEMINI=true GEMINI_API_KEY=... GEMINI_MODEL=gemini-3-flash curl -X POST http
 3) Gemini debug envelope:
 
 ```bash
-USE_GEMINI=true GEMINI_API_KEY=... GEMINI_MODEL=gemini-3-flash curl -X POST http://localhost:3000/api/ai/analyze \
+USE_GEMINI=true GEMINI_API_KEY=... GEMINI_MODEL=gemini-3-flash-preview curl -X POST http://localhost:3000/api/ai/analyze \
   -H "Content-Type: application/json" \
   -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"},"scope":{"source":"meta_ads","accountId":"1450722765742133","entityLevel":"account"},"debug":true}'
 ```
@@ -171,7 +171,7 @@ In debug responses, the agent returns `{result, trace}` and `trace.tool_calls` s
 #### How to test locally
 
 ```bash
-USE_GEMINI=true GEMINI_API_KEY=your_key GEMINI_MODEL=gemini-3-flash npm start
+USE_GEMINI=true GEMINI_API_KEY=your_key GEMINI_MODEL=gemini-3-flash-preview npm start
 
 curl http://localhost:3000/api/ai/analyze \
   -H "Content-Type: application/json" \

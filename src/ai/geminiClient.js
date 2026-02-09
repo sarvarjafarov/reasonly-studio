@@ -40,7 +40,8 @@ async function generateWithGemini(prompt, retries = 1) {
       if (!text) {
         throw new Error('Gemini response missing text');
       }
-      return { text, provider: 'gemini' };
+      console.log(`✅ [Gemini 3] Response received successfully (${text.length} chars)`);
+      return { text, provider: 'gemini', model };
     } catch (err) {
       if (err.response?.status === 429) {
         const data = err.response.data;
