@@ -1004,8 +1004,8 @@
 
     <!-- STEP 2: Analyze Your Dashboard -->
     <section class="question-hero" id="questionHero">
-      <h1>Analyze Your Data</h1>
-      <p>Select a dashboard above, then ask questions to get AI-powered insights.</p>
+      <h1>Analyze Your Dashboard</h1>
+      <p>Select a dashboard, ask a question, and get AI-powered insights.</p>
 
       <div class="question-form">
         <div class="question-input-row">
@@ -1022,11 +1022,10 @@
         </div>
 
         <div class="account-selector">
-          <span>Analyzing:</span>
-          <select id="accountSelect">
-            <option value="">Select account...</option>
+          <span>Dashboard:</span>
+          <select id="dashboardSelect" onchange="onDashboardSelected()">
+            <option value="">Select a dashboard to analyze...</option>
           </select>
-          <a href="/connections">Manage connections</a>
         </div>
 
         <div class="question-suggestions">
@@ -1306,9 +1305,24 @@
         // Render to both containers
         if (list) list.innerHTML = dashboardsHtml;
         if (topList) topList.innerHTML = dashboardsHtml;
+
+        // Also populate the dashboard selector dropdown
+        const dashboardSelect = document.getElementById('dashboardSelect');
+        if (dashboardSelect) {
+          dashboardSelect.innerHTML = '<option value="">Select a dashboard to analyze...</option>' +
+            dashboards.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+        }
       } catch (err) {
         console.error('Failed to load dashboards:', err);
       }
+    }
+
+    // Track selected dashboard for analysis
+    let selectedDashboardId = null;
+
+    function onDashboardSelected() {
+      const select = document.getElementById('dashboardSelect');
+      selectedDashboardId = select.value || null;
     }
 
     // Question & Analysis
@@ -1326,21 +1340,22 @@
         return;
       }
 
+      // Check if dashboard is selected
+      const dashboardSelect = document.getElementById('dashboardSelect');
+      if (!dashboardSelect.value) {
+        showAlert('Please select a dashboard to analyze', 'warning');
+        return;
+      }
+
       if (connectedAccounts.length === 0) {
         showAlert('Please connect an ad account first', 'warning');
         return;
       }
 
-      // Get selected account
-      const accountSelect = document.getElementById('accountSelect');
-      const selectedValue = accountSelect.value;
-
-      if (!selectedValue) {
-        showAlert('Please select an account to analyze', 'warning');
-        return;
-      }
-
-      const [platform, accountId] = selectedValue.split(':');
+      // Use the first connected account for analysis
+      const firstAccount = connectedAccounts[0];
+      const platform = firstAccount.platform;
+      const accountId = firstAccount.accountId;
 
       // Show analysis section
       const section = document.getElementById('analysisSection');
