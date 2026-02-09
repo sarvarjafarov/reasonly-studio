@@ -605,9 +605,11 @@ const createFromTemplate = async (req, res) => {
 // Generate dashboard from AI prompt
 const generateAIDashboard = async (req, res) => {
   try {
+    console.log('[AI Dashboard] Request received:', { body: req.body, userId: req.user?.id });
     const { prompt, workspaceId, adAccountId, customSourceIds = [], createDashboard: shouldCreate } = req.body;
 
     if (!prompt || !workspaceId) {
+      console.log('[AI Dashboard] Missing required fields:', { prompt: !!prompt, workspaceId: !!workspaceId });
       return res.status(400).json({
         success: false,
         message: 'Prompt and workspace ID are required',
@@ -615,10 +617,13 @@ const generateAIDashboard = async (req, res) => {
     }
 
     // Verify user has access to workspace
+    console.log('[AI Dashboard] Checking workspace access for user:', req.user?.id);
     const workspaces = await Workspace.findByUserId(req.user.id);
+    console.log('[AI Dashboard] User workspaces:', workspaces.map(w => w.id));
     const hasAccess = workspaces.some(w => w.id === workspaceId);
 
     if (!hasAccess) {
+      console.log('[AI Dashboard] Access denied - workspace not found in user workspaces');
       return res.status(403).json({
         success: false,
         message: 'Access denied to this workspace',
@@ -626,6 +631,7 @@ const generateAIDashboard = async (req, res) => {
     }
 
     // Generate dashboard configuration using AI
+    console.log('[AI Dashboard] Starting AI generation with prompt:', prompt.substring(0, 100) + '...');
     const result = await generateDashboardFromPrompt(prompt, {
       adAccountId,
       workspaceId,
@@ -681,10 +687,11 @@ const generateAIDashboard = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Generate AI dashboard error:', error);
+    console.error('[AI Dashboard] Error:', error.message);
+    console.error('[AI Dashboard] Stack:', error.stack);
     res.status(500).json({
       success: false,
-      message: 'Failed to generate dashboard',
+      message: 'Failed to generate dashboard: ' + error.message,
       error: error.message,
     });
   }

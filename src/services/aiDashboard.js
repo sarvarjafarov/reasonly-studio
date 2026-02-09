@@ -185,14 +185,17 @@ Respond ONLY with valid JSON in this exact format (no markdown, no code blocks, 
 }`;
 
   try {
-    console.log('Generating dashboard with Gemini AI...');
+    console.log('[AI Dashboard Service] Generating dashboard with Gemini AI...');
+    console.log('[AI Dashboard Service] Prompt length:', fullPrompt.length);
     const responseText = await geminiClient.generate(fullPrompt);
+    console.log('[AI Dashboard Service] Response received, length:', responseText?.length);
 
     // Parse JSON from response (handle potential markdown code blocks)
     let jsonStr = responseText.trim();
     const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (jsonMatch) {
       jsonStr = jsonMatch[1].trim();
+      console.log('[AI Dashboard Service] Extracted JSON from code block');
     }
 
     // Remove any leading/trailing non-JSON characters
@@ -202,10 +205,13 @@ Respond ONLY with valid JSON in this exact format (no markdown, no code blocks, 
       jsonStr = jsonStr.substring(jsonStart, jsonEnd + 1);
     }
 
+    console.log('[AI Dashboard Service] Parsing JSON, length:', jsonStr.length);
     const dashboardConfig = JSON.parse(jsonStr);
+    console.log('[AI Dashboard Service] JSON parsed successfully, widgets:', dashboardConfig.widgets?.length);
 
     // Validate and enhance the configuration
     const validatedConfig = validateAndEnhanceConfig(dashboardConfig, options);
+    console.log('[AI Dashboard Service] Config validated, widgets:', validatedConfig.widgets?.length);
 
     return {
       success: true,
@@ -213,7 +219,8 @@ Respond ONLY with valid JSON in this exact format (no markdown, no code blocks, 
       tokensUsed: 0, // Gemini doesn't report tokens the same way
     };
   } catch (error) {
-    console.error('AI Dashboard generation error:', error);
+    console.error('[AI Dashboard Service] Error:', error.message);
+    console.error('[AI Dashboard Service] Stack:', error.stack);
     throw error;
   }
 }
