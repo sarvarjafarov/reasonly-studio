@@ -1,453 +1,231 @@
-# Reasonly Studio Backend API & CMS
+# Reasonly Studio
+
+## 🏆 Gemini 3 Hackathon Submission
 
 > **Gemini 3 Developer Challenge — Hackathon Edition**
 >
-> This project was created for the [Gemini 3 Developer Challenge](https://gemini3.devpost.com/) (February 2026).
-> Gemini 3 Flash powers the reasoning, insight generation, and recommendation prioritization throughout.
-> Demo mode uses simulated sample data. Real integrations use official APIs with read-only access and are optional.
+> This repository represents a **Hackathon Edition** of Reasonly Studio, created for the [Gemini 3 Developer Challenge](https://gemini3.devpost.com/) (February 2026).
+>
+> **Key Points for Judges:**
+> - The public demo uses **simulated sample data** and does not require real account connections
+> - Real integrations are **optional** and use official platform APIs with read-only OAuth
+> - **Gemini 3 Flash** is the core reasoning engine for all insight generation and recommendations
+> - No endorsement by third-party platforms is implied
 
-A Node.js backend API with a complete Admin Panel CMS for Reasonly Studio, built with Express.js.
+---
 
-## Features
+## 📋 Judge / Reviewer Instructions
 
-- RESTful API architecture
-- Express.js web framework
-- **Full-featured Admin Panel CMS**
-- **B2B User Registration System with Admin Approval**
-- **User Management Dashboard**
-- JWT-based authentication
-- CRUD operations for ads management
-- User approval workflow (pending, approved, rejected)
-- Beautiful responsive UI
-- CORS enabled
-- Security headers with Helmet
-- Request logging with Morgan
-- Environment-based configuration
-- Error handling middleware
-- Health check endpoint
+1. **Public Demo (No Login Required):** Visit [https://reasonly-studio-prod-ac4360293096.herokuapp.com/demo.html](https://reasonly-studio-prod-ac4360293096.herokuapp.com/demo.html)
+2. **Click any platform card** (Meta, Google, TikTok, LinkedIn) to simulate a connection
+3. **Type a question** like "How are my campaigns performing?" and click "Ask Gemini 3"
+4. **Observe the AI analysis** — Gemini 3 reasons over the data and returns insights
+5. **Click "Analyze with AI"** on any widget to see Gemini 3's reasoning on specific metrics
+6. All data shown is simulated demo data — no real accounts needed
 
-## Project Structure
+---
+
+## 🚀 What Was Built During the Hackathon
+
+The following features were **implemented or significantly extended** during the Gemini 3 Developer Challenge contest period:
+
+### Core Gemini 3 Features
+- **Autonomous Marketing Analyst Agent** (`src/agents/marketingAnalyst.agent.js`) — A multi-step reasoning agent that plans investigations, calls tools, gathers evidence, and synthesizes findings using Gemini 3 Flash
+- **Gemini-Powered Analysis Pipeline** (`src/ai/geminiClient.js`) — Direct integration with Gemini 3 Flash API for reasoning and insight generation
+- **Widget-Level AI Analyzer** — Click "Analyze with AI" on any dashboard widget to get Gemini 3's interpretation of that specific metric
+- **Natural Language Query Interface** — Ask questions in plain English; Gemini 3 interprets intent and orchestrates the analysis
+
+### Demo Infrastructure
+- **Demo Mode Dataset Handler** (`src/routes/demoRoutes.js`) — Provides simulated marketing data for hackathon judging without requiring real account connections
+- **Hackathon-Specific UX Framing** — All pages display "Hackathon Edition" badges and explain demo mode clearly
+
+### Analytics Tools (Gemini 3 Orchestrated)
+- **KPI Aggregation Tool** — Computes spend, revenue, ROAS, CTR, CPA from data
+- **Period Comparison Tool** — Compares current vs. previous periods for trend detection
+- **Anomaly Detection Tool** — Identifies unusual patterns in metrics
+- **Time Series Builder** — Generates data for trend visualizations
+
+---
+
+## 🤖 Gemini 3 Integration
+
+Gemini 3 Flash is the **central reasoning engine** for this application. Here's exactly how it's used:
+
+### Modules That Call Gemini 3 API
+
+| Module | File | Purpose |
+|--------|------|---------|
+| Gemini Client | `src/ai/geminiClient.js` | Direct API calls to Gemini 3 Flash for text generation |
+| Marketing Analyst Agent | `src/agents/marketingAnalyst.agent.js` | Multi-turn reasoning with tool orchestration |
+| Dashboard Generator | `src/ai/dashboardGenerator.js` | Converts natural language to dashboard specs |
+| Demo Analysis | `src/routes/demoRoutes.js` | Powers the "/api/demo/analyze" endpoint |
+
+### What Gemini 3 Is Responsible For
+
+1. **Reasoning & Causality** — When users ask "Why did my ROAS drop?", Gemini 3 reasons through the data to identify potential causes
+2. **Insight Generation** — Gemini 3 synthesizes raw metrics into actionable executive summaries
+3. **Recommendation Prioritization** — Gemini 3 ranks suggested actions by potential impact
+4. **Natural Language Understanding** — Gemini 3 interprets user questions and determines which tools/data to use
+5. **Evidence Synthesis** — Gemini 3 combines outputs from multiple analytics tools into coherent findings
+
+### Gemini 3 Output is Central to the Demo
+
+Every AI-powered analysis in the demo flows through Gemini 3:
+- The "Ask Gemini 3" button sends queries to the Gemini 3 API
+- Widget-level analysis uses Gemini 3 to interpret specific metrics
+- Dashboard generation uses Gemini 3 to convert prompts to widget configurations
+
+---
+
+## 🔌 Third-Party Integrations
+
+### Disclosure
+
+- All platform integrations (Meta Ads, Google Ads, TikTok Ads, LinkedIn Ads, Search Console) use **official APIs** via **read-only OAuth**
+- Integrations are **optional** — the demo works fully without connecting real accounts
+- The demo uses **simulated data** that does not require any platform connection
+- **No endorsement** by Meta, Google, TikTok, LinkedIn, or any other platform is implied
+- Platform names are trademarks of their respective owners
+
+### How Integrations Work (When Used)
+
+1. User clicks "Connect" on a platform card
+2. OAuth flow redirects to the platform's authorization page
+3. User grants read-only permission
+4. Reasonly receives an access token (never the user's password)
+5. Reasonly fetches campaign metrics via official API endpoints
+
+---
+
+## 📁 Project Structure
 
 ```
-ads-data/
-├── public/              # Static files
-│   ├── css/            # Stylesheets
-│   │   └── style.css
-│   ├── js/             # Client-side JavaScript
-│   │   ├── admin.js
-│   │   ├── login.js
-│   │   └── register.js
-│   ├── admin.html      # Admin dashboard (Ads & User Management)
-│   ├── login.html      # Login page
-│   └── register.html   # B2B registration page
+reasonly_studio/
+├── public/                    # Frontend (HTML, CSS, JS)
+│   ├── demo.html             # Main hackathon demo page
+│   ├── dashboard.html        # Full dashboard experience
+│   └── index.html            # Landing page
 ├── src/
-│   ├── config/         # Configuration files
-│   ├── controllers/    # Request handlers
-│   │   ├── adsController.js
-│   │   ├── authController.js
-│   │   └── userController.js
-│   ├── middleware/     # Custom middleware (auth, error handling)
-│   ├── models/         # Data models
-│   │   ├── adsData.js
-│   │   └── userData.js
-│   ├── routes/         # API routes
-│   │   ├── adminRoutes.js
-│   │   ├── authRoutes.js
-│   │   └── adsRoutes.js
-│   ├── utils/          # Utility functions
-│   ├── app.js          # Express app setup
-│   └── server.js       # Server entry point
-├── .env.example        # Example environment variables
-├── .gitignore
-├── package.json
+│   ├── ai/                   # Gemini 3 integration
+│   │   ├── geminiClient.js   # Gemini API wrapper
+│   │   └── dashboardGenerator.js
+│   ├── agents/               # AI agents
+│   │   └── marketingAnalyst.agent.js  # Gemini-powered analyst
+│   ├── tools/                # Analytics tools (Gemini-orchestrated)
+│   │   └── analyticsTools.js
+│   ├── routes/               # API routes
+│   │   └── demoRoutes.js     # Demo-specific endpoints
+│   └── config/               # Configuration
+├── data/
+│   └── sample.csv            # Simulated demo data
 └── README.md
 ```
 
-## Getting Started
+---
 
-### Prerequisites
+## ⚙️ Configuration
 
-- Node.js (v14 or higher)
-- npm or yarn
+### Environment Variables
 
-### Installation
+Create a `.env` file based on `.env.example`:
 
-1. Clone the repository:
-```bash
-git clone https://github.com/sarvarjafarov/reasonly-studio.git
-cd reasonly-studio
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Create environment file:
-```bash
-cp .env.example .env
-```
-
-4. Configure your environment variables in `.env`:
 ```env
+# Required for Gemini 3
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-3-flash-preview
+USE_GEMINI=true
+
+# Server
 PORT=3000
 NODE_ENV=development
-CORS_ORIGIN=*
 
-# JWT Configuration
-JWT_SECRET=your-secret-key-change-in-production
+# JWT (use strong secret in production)
+JWT_SECRET=YOUR_STRONG_SECRET_HERE
 JWT_EXPIRE=7d
 
-# Admin Credentials (change in production!)
+# Admin (change in production!)
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin123
+ADMIN_PASSWORD=YOUR_SECURE_PASSWORD_HERE
 ```
 
-### Platform OAuth configuration
-
-The Connect cards on the dashboard rely on OAuth flows. Populate the following variables before trying to link any ad account:
-
-| Variable | Purpose |
-| --- | --- |
-| `META_APP_ID`, `META_APP_SECRET`, `META_REDIRECT_URI` | Meta Ads (Facebook/Instagram) OAuth credentials. See `META_OAUTH_SETUP.md` for the Meta-specific steps. |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `GOOGLE_DEVELOPER_TOKEN` | Google Ads OAuth configuration sourced from a Google Cloud OAuth client. Redirect URI must match `http://localhost:3000/api/oauth/google/callback` (or your production URL). |
-| `SEARCH_CONSOLE_CLIENT_ID`, `SEARCH_CONSOLE_CLIENT_SECRET`, `SEARCH_CONSOLE_REDIRECT_URI` | Google Search Console OAuth (can share the same Google project as Google Ads). |
-| `TIKTOK_APP_ID`, `TIKTOK_APP_SECRET`, `TIKTOK_REDIRECT_URI` | TikTok Ads OAuth credentials from TikTok for Business. |
-| `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, `LINKEDIN_REDIRECT_URI` | LinkedIn Campaign Manager OAuth credentials. |
-
-After updating the credentials, restart the server (`npm run dev`) so the backend picks up the new values. When you visit `http://localhost:3000/dashboard`, select a workspace and click a Connect button. Successful OAuth flows redirect you back with `?oauth=success&platform=...`, while failures show a warning in the alert area.
-
-For deployments, make sure the production callback URLs (`https://yourdomain.com/api/oauth/<platform>/callback`) are registered with each provider and that the same env vars are set through your hosting provider (Heroku `config:set`, Render secrets, etc.). `PROJECT_B_DEPLOYMENT_GUIDE.md` includes the exact Heroku commands used for each platform.
-
-### Hackathon Analyst Mode (Backend)
-
-The new `POST /api/ai/analyze` endpoint powers the Autonomous Marketing Analyst experience. It relies on deterministic tool outputs (KPIs, comparisons, time series, anomaly detection) derived from `data/sample.csv` and returns the strict `FinalResponse` JSON contract. Analyst Mode now requires a `scope` object that names the source and account/property (Meta Ads, Search Console, or a custom dataset). Without a valid scope, the response explicitly returns `status="insufficient_data"` and guides you to connect or select the connected account. To try it locally:
+### Running Locally
 
 ```bash
-curl http://localhost:3000/api/ai/analyze \
-  -H "Content-Type: application/json" \
-  -d '{
-    "workspaceId": "workspace-main",
-    "question": "How did January spend perform?",
-    "dateRange": { "start": "2026-01-15", "end": "2026-01-24" },
-    "compareMode": "previous_period",
-    "primaryKpi": "roas",
-    "scope": {
-      "source": "meta_ads",
-      "accountId": "123456789",
-      "entityLevel": "account"
-    }
-  }'
-```
+# Install dependencies
+npm install
 
-The tools under `src/tools/analyticsTools.js` read the sample CSV, aggregate KPIs, compare periods, build timeseries, and flag anomalies. The agent (`src/agents/marketingAnalyst.agent.js`) orchestrates the plan, evidence, findings, actions, dashboard spec, and executive summary using **Gemini 3 Flash** for intelligent analysis. You can update `data/sample.csv` with richer data to prototype new behaviors before wiring a real warehouse.
-
-#### Gemini configuration
-
-Set `GEMINI_API_KEY`, `GEMINI_MODEL`, and `USE_GEMINI=true` via your environment (Heroku config vars) to run the Gemini-driven path. The agent enforces function-calling, tool-backed numbers, and the strict `FinalResponse` JSON contract. Monitor the server logs for the `Gemini plan` and `Gemini tool call` entries so you can trace the investigation steps and tool usage that produced the response.
-
-#### Analyst Mode curl examples
-
-1) Deterministic (USE_GEMINI=false):
-
-```bash
-USE_GEMINI=false curl -X POST http://localhost:3000/api/ai/analyze \
-  -H "Content-Type: application/json" \
-  -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"},"scope":{"source":"meta_ads","accountId":"1450722765742133","entityLevel":"account"}}'
-```
-
-2) Gemini mode:
-
-```bash
-USE_GEMINI=true GEMINI_API_KEY=... GEMINI_MODEL=gemini-3-flash-preview curl -X POST http://localhost:3000/api/ai/analyze \
-  -H "Content-Type: application/json" \
-  -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"},"scope":{"source":"search_console","propertyUrl":"https://example.com","entityLevel":"account"}}'
-```
-
-3) Gemini debug envelope:
-
-```bash
-USE_GEMINI=true GEMINI_API_KEY=... GEMINI_MODEL=gemini-3-flash-preview curl -X POST http://localhost:3000/api/ai/analyze \
-  -H "Content-Type: application/json" \
-  -d '{"workspaceId":"workspace-main","question":"Why did ROAS dip?","dateRange":{"start":"2026-01-15","end":"2026-01-24"},"scope":{"source":"meta_ads","accountId":"1450722765742133","entityLevel":"account"},"debug":true}'
-```
-
-In debug responses, the agent returns `{result, trace}` and `trace.tool_calls` should list at least two tool executions so you can verify the plan → tool → decision pipeline.
-
-#### How to test locally
-
-```bash
-USE_GEMINI=true GEMINI_API_KEY=your_key GEMINI_MODEL=gemini-3-flash-preview npm start
-
-curl http://localhost:3000/api/ai/analyze \
-  -H "Content-Type: application/json" \
-  -d '{
-    "workspaceId": "workspace-main",
-    "question": "How did the latest sprint perform?",
-    "dateRange": { "start": "2026-01-15", "end": "2026-01-24" }
-  }'
-```
-
-If `USE_GEMINI=false`, the endpoint falls back to deterministic reasoning; setting it to `true` triggers the Gemini tool-calling workflow.
-
-### Email & Notification settings
-
-Verification and admin notification emails default to the SMTP credentials in `.env` (or your staging deploy). Set the following values so `emailService` can send real mail instead of just logging the payload:
-
-| Variable | Description |
-| --- | --- |
-| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_SECURE`, `EMAIL_USER`, `EMAIL_PASSWORD` | SMTP host/port/credentials. For Gmail you can use an App Password and `smtp.gmail.com` on port 587 (secure=false). |
-| `EMAIL_FROM` | The friendly sender address shown in verification emails (e.g., `Reasonly Studio <noreply@reasonly.com>`). |
-| `APP_URL` | The base URL your clients hit (`https://reasonly-studio-staging-...herokuapp.com`). Used to build the verification link and admin approval URL. |
-| `ADMIN_EMAILS` | Comma-separated list of admin contacts who should receive new-user notifications after email verification. |
-
-Once SMTP is configured and `NODE_ENV=production`, new signups will receive the verification link in Gmail (check Spam/Promotions if necessary) and the admin list will automatically be notified so you can approve the account. You can also resend verification via `/api/auth/resend-verification`.
-
-### Running the Application
-
-Development mode (with auto-reload):
-```bash
+# Start development server
 npm run dev
-```
 
-Production mode:
-```bash
+# Or start production server
 npm start
 ```
 
-The server will start on `http://localhost:3000`
+Visit `http://localhost:3000/demo.html` to see the demo.
 
-## Admin Panel (CMS)
+---
 
-### Accessing the Admin Panel
+## 🔧 API Endpoints
 
-1. Open your browser and navigate to:
-   ```
-   http://localhost:3000/admin/login
-   ```
+### Demo Endpoints (No Auth Required)
 
-2. Login with default credentials:
-   - **Username:** admin
-   - **Password:** admin123
+| Endpoint | Description |
+|----------|-------------|
+| `POST /api/demo/analyze` | Gemini 3 analyzes a question against demo data |
+| `POST /api/demo/dashboard` | Gemini 3 generates a dashboard from a prompt |
+| `GET /api/demo/widgets` | Returns available widget types |
 
-3. After successful login, you'll be redirected to the admin dashboard where you can:
-   - **Ads Management Tab:**
-     - View all ads in a table format
-     - Create new ads
-     - Edit existing ads
-     - Delete ads
-     - Filter and manage ad status (active, inactive, draft)
-   - **User Management Tab:**
-     - View all registered B2B users
-     - Approve pending user registrations
-     - Reject user registrations
-     - Filter users by status (all, pending, approved, rejected)
-     - Delete users
-     - Monitor user statistics
+### Example: Gemini 3 Analysis
 
-### Admin Panel Features
-
-- **Authentication:** Secure JWT-based authentication
-- **Dashboard:** Clean, modern interface with statistics and tabbed navigation
-- **Ads Management:**
-  - Complete CRUD operations
-  - Image support for ads
-  - Category organization (Electronics, Fashion, Home, etc.)
-  - Status management (active, inactive, draft)
-- **User Management:**
-  - B2B user approval workflow
-  - View pending registrations
-  - Approve/reject users
-  - User filtering by status
-  - Delete user accounts
-  - Protected admin account
-- **Responsive Design:** Works on desktop, tablet, and mobile devices
-
-## B2B User Registration
-
-### For New Users
-
-1. Navigate to the registration page:
-   ```
-   http://localhost:3000/register
-   ```
-
-2. Fill out the registration form with:
-   - Username
-   - Business Email
-   - Password
-   - Company Name
-   - Contact Person (optional)
-   - Phone Number (optional)
-
-3. After submitting, your account will be created with **pending** status
-
-4. Wait for admin approval before you can login
-
-### User Registration Flow
-
-1. **User Registers** → Status: `pending`
-2. **Admin Reviews** → Admin can approve or reject
-3. **User Approved** → Status: `approved` → User can now login
-4. **User Rejected** → Status: `rejected` → User cannot login
-
-### Login Restrictions
-
-- Users with `pending` status will see: "Your account is pending approval"
-- Users with `rejected` status will see: "Your account has been rejected"
-- Only `approved` users can access the system
-
-## API Endpoints
-
-### Health Check
-- `GET /api/health` - Check server health status
-
-### Authentication
-- `POST /api/auth/register` - Register new B2B user (creates user with pending status)
-- `POST /api/auth/login` - Login and get JWT token (checks approval status)
-- `POST /api/auth/logout` - Logout (requires authentication)
-- `GET /api/auth/me` - Get current user info (requires authentication)
-
-### Public Ads Endpoints
-- `GET /api/ads` - Get all ads
-- `GET /api/ads/:id` - Get ad by ID
-- `POST /api/ads` - Create new ad
-- `PUT /api/ads/:id` - Update ad by ID
-- `DELETE /api/ads/:id` - Delete ad by ID
-
-### Admin Endpoints (Require Authentication)
-
-**Ads Management:**
-- `GET /api/admin/ads` - Get all ads (admin)
-- `GET /api/admin/ads/:id` - Get ad by ID (admin)
-- `POST /api/admin/ads` - Create new ad (admin)
-- `PUT /api/admin/ads/:id` - Update ad by ID (admin)
-- `DELETE /api/admin/ads/:id` - Delete ad by ID (admin)
-
-**User Management:**
-- `GET /api/admin/users` - Get all users (admin)
-- `GET /api/admin/users/pending` - Get pending users (admin)
-- `GET /api/admin/users/:id` - Get user by ID (admin)
-- `POST /api/admin/users/:id/approve` - Approve user (admin)
-- `POST /api/admin/users/:id/reject` - Reject user (admin)
-- `DELETE /api/admin/users/:id` - Delete user (admin)
-
-## Example API Requests
-
-### Get Health Status
 ```bash
-curl http://localhost:3000/api/health
-```
-
-### Register New B2B User
-```bash
-curl -X POST http://localhost:3000/api/auth/register \
+curl -X POST http://localhost:3000/api/demo/analyze \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "johndoe",
-    "email": "john@company.com",
-    "password": "securepass123",
-    "companyName": "Acme Corp",
-    "contactPerson": "John Doe",
-    "phone": "+1234567890"
+    "question": "How are my campaigns performing?",
+    "platform": "meta"
   }'
 ```
 
-### Login
-```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "admin123"}'
+Response includes Gemini 3's reasoning:
+```json
+{
+  "ai_powered": true,
+  "ai_provider": "gemini-3",
+  "exec_summary": {
+    "headline": "Your campaigns show strong ROAS of 3.2x...",
+    "what_changed": ["..."],
+    "why": ["..."],
+    "what_to_do_next": ["..."]
+  }
+}
 ```
 
-### Approve User (Admin)
-```bash
-curl -X POST http://localhost:3000/api/admin/users/USER_ID/approve \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
+---
 
-### Get Pending Users (Admin)
-```bash
-curl http://localhost:3000/api/admin/users/pending \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
+## 📜 License & Ownership
 
-### Create Ad (Authenticated)
-```bash
-curl -X POST http://localhost:3000/api/admin/ads \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "title": "Sample Ad",
-    "description": "This is a sample ad",
-    "price": 99.99,
-    "category": "Electronics",
-    "status": "active"
-  }'
-```
+- **Ownership:** This submission is wholly owned by the submitter
+- **Code:** All application code is original work created for this hackathon
+- **Dependencies:** Third-party packages are used under their respective open-source licenses (MIT, ISC, Apache 2.0, etc.)
+- **Assets:** UI icons and fonts are permissively licensed (Inter font: OFL, icons: MIT)
+- **No Proprietary Code:** No proprietary third-party code is redistributed
 
-### Get All Ads
-```bash
-curl http://localhost:3000/api/ads
-```
+**License:** ISC
 
-### Update Ad (Authenticated)
-```bash
-curl -X PUT http://localhost:3000/api/admin/ads/1 \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{"title": "Updated Ad", "price": 149.99}'
-```
+---
 
-### Delete Ad (Authenticated)
-```bash
-curl -X DELETE http://localhost:3000/api/admin/ads/1 \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
+## 🛡️ Security Notes
 
-## Development
+For production deployment:
 
-### Adding New Routes
-
-1. Create a controller in `src/controllers/`
-2. Create a route file in `src/routes/`
-3. Register the route in `src/routes/index.js`
-
-### Error Handling
-
-All errors are handled by the error handling middleware in `src/middleware/errorHandler.js`. Errors will return JSON responses with appropriate status codes.
-
-## Security Notes
-
-⚠️ **IMPORTANT:** Before deploying to production:
-
-1. Change the `JWT_SECRET` in `.env` to a strong, random string
-2. Update admin credentials (`ADMIN_USERNAME` and `ADMIN_PASSWORD`)
+1. Generate a strong `JWT_SECRET` (32+ random characters)
+2. Change default admin credentials
 3. Set `NODE_ENV=production`
-4. Configure `CORS_ORIGIN` to your frontend domain
-5. Use HTTPS in production
-6. Consider adding rate limiting
-7. Implement proper password hashing for multiple users
+4. Use HTTPS
+5. Configure `CORS_ORIGIN` to your domain
 
-## Current Data Storage
+---
 
-The application currently uses **in-memory storage** for demonstration purposes. All data will be lost when the server restarts.
+## 📞 Support
 
-### Next Steps for Production
-
-- Add database integration (MongoDB, PostgreSQL, MySQL, etc.)
-- ✅ ~~Implement proper user management system~~ (Completed: B2B registration with approval workflow)
-- Add file upload for images
-- Add input validation and sanitization
-- Add email notifications for user approval/rejection
-- Write unit and integration tests
-- Add API documentation (Swagger/OpenAPI)
-- Implement rate limiting
-- Add caching layer
-- Set up logging and monitoring
-- Add password reset functionality
-- Implement two-factor authentication (2FA)
-
-## License
-
-ISC
+For hackathon-related questions, please refer to the [Gemini 3 Developer Challenge](https://gemini3.devpost.com/) page.
