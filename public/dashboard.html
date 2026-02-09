@@ -1941,10 +1941,27 @@
   <div class="container">
     <div id="alertContainer"></div>
 
-    <!-- QUESTION-FIRST HERO SECTION -->
+    <!-- STEP 1: MY DASHBOARDS (Create/View First) -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+          <h2 style="margin-bottom: 0.5rem;">My Dashboards</h2>
+          <p class="card-subtitle" style="margin-bottom: 0;">Create custom dashboards to track your marketing metrics, then analyze them with AI.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <button class="btn btn-secondary" onclick="openDashboardModal()" style="padding: 0.6rem 1.25rem; font-size: 0.85rem;">+ Create Dashboard</button>
+          <button class="btn btn-primary" onclick="openAIModal()" style="padding: 0.6rem 1.25rem; font-size: 0.85rem; background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 100%);">✨ Generate with AI</button>
+        </div>
+      </div>
+      <div id="dashboardsList">
+        <div class="loading">Loading dashboards...</div>
+      </div>
+    </div>
+
+    <!-- STEP 2: ANALYZE YOUR DATA -->
     <div class="question-hero">
-      <h1>What do you want to know about your marketing?</h1>
-      <p>Ask a question and let AI analyze your data, find insights, and recommend actions.</p>
+      <h1>Analyze Your Dashboard Data</h1>
+      <p>Select a dashboard above, then ask questions to get AI-powered insights.</p>
       <div class="question-input-container">
         <input
           type="text"
@@ -2412,13 +2429,6 @@
       </div>
     </div>
 
-    <div class="card">
-      <h2>My Dashboards</h2>
-      <p class="card-subtitle">Create custom dashboards with the metrics you want to track. Build manually or use AI to generate automatically.</p>
-      <div id="dashboardsList">
-        <div class="loading">Loading dashboards...</div>
-      </div>
-    </div>
   </div>
 
   <!-- Create/Edit Dashboard Modal -->
