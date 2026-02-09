@@ -21,6 +21,112 @@
       line-height: 1.6;
     }
 
+    /* Main Navbar */
+    .main-navbar {
+      background-color: #111;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .logo img {
+      height: 2.5rem;
+      width: auto;
+    }
+
+    .gemini-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.6rem;
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.15) 0%, rgba(52, 168, 83, 0.15) 50%, rgba(251, 188, 5, 0.15) 100%);
+      border: 1px solid rgba(66, 133, 244, 0.3);
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #7dd3fc;
+      margin-left: 0.75rem;
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      transition: all 0.15s ease;
+    }
+
+    .nav-link:hover {
+      color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.08);
+    }
+
+    .nav-link.active {
+      color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.12);
+    }
+
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-email {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.8rem;
+    }
+
+    .btn-logout {
+      padding: 0.5rem 1rem;
+      background-color: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .btn-logout:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+
+    @media (max-width: 640px) {
+      .main-navbar {
+        padding: 1rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .nav-menu {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
     .container {
       max-width: 1400px;
       margin: 0 auto;
@@ -312,12 +418,27 @@
   </style>
 </head>
 <body>
+  <!-- Main Navbar (consistent across all pages) -->
+  <header class="main-navbar">
+    <a href="/dashboard" class="logo">
+      <img src="/images/reasonlystudio-logo.png" alt="Reasonly Studio">
+      <span class="gemini-badge">✨ Gemini 3</span>
+    </a>
+    <nav class="nav-menu">
+      <a href="/dashboard" class="nav-link">Overview</a>
+      <a href="/campaigns.html" class="nav-link active">Campaigns</a>
+      <a href="/custom-data.html" class="nav-link">Data</a>
+      <a href="/connections" class="nav-link">Connections</a>
+    </nav>
+    <div class="user-section">
+      <span class="user-email" id="userEmail">Loading...</span>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
   <div class="container">
     <div class="header">
       <h1>Campaign Explorer</h1>
-      <a href="/dashboard" class="back-btn">
-        ← Back to Dashboard
-      </a>
     </div>
 
     <div class="breadcrumb" id="breadcrumb"></div>
@@ -341,7 +462,36 @@
     let currentAdSet = null;
     let adAccounts = [];
 
-    // Load ad accounts on page load
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUserInfo();
+      loadAdAccounts();
+    });
+
+    // Load user info from localStorage
+    function loadUserInfo() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const userEmailEl = document.getElementById('userEmail');
+      if (userEmailEl && user.email) {
+        userEmailEl.textContent = user.email;
+      } else if (userEmailEl && user.username) {
+        userEmailEl.textContent = user.username;
+      } else if (userEmailEl) {
+        userEmailEl.textContent = '';
+      }
+    }
+
+    // Logout function
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('activeWorkspace');
+      fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+        .then(() => window.location.href = '/login?logout=true')
+        .catch(() => window.location.href = '/login?logout=true');
+    }
+
+    // Load ad accounts
     async function loadAdAccounts() {
       try {
         const token = localStorage.getItem('token');
