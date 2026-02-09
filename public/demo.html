@@ -1677,15 +1677,155 @@
     /* Footer */
     .footer {
       text-align: center;
-      padding: 2rem;
+      padding: 2.5rem 2rem;
       border-top: 1px solid rgba(255, 255, 255, 0.06);
       color: rgba(255, 255, 255, 0.4);
       font-size: 0.8rem;
+      background: linear-gradient(180deg, transparent 0%, rgba(183, 250, 49, 0.02) 100%);
+    }
+
+    .footer-gemini {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.1) 0%, rgba(52, 168, 83, 0.1) 50%, rgba(251, 188, 5, 0.1) 100%);
+      border: 1px solid rgba(66, 133, 244, 0.2);
+      border-radius: 999px;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .footer-gemini-icon {
+      background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 1.1rem;
+    }
+
+    .footer-gemini strong {
+      background: linear-gradient(90deg, #4285f4, #34a853);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .footer a {
       color: #b7fa31;
       text-decoration: none;
+    }
+
+    .footer-tagline {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 500;
+    }
+
+    /* How It Works Section */
+    .how-it-works {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+
+    .how-header {
+      margin-bottom: 2.5rem;
+    }
+
+    .how-header h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.8) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .how-header p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 1rem;
+    }
+
+    .how-steps {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .how-step {
+      flex: 1;
+      max-width: 280px;
+      background: linear-gradient(165deg, rgba(32, 32, 35, 0.95) 0%, rgba(18, 18, 20, 0.98) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: left;
+      position: relative;
+    }
+
+    .how-step-num {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #b7fa31 0%, #7dd3fc 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #000;
+      margin-bottom: 1rem;
+    }
+
+    .how-step-content h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .how-step-content p {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    .how-example {
+      font-size: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(183, 250, 49, 0.08);
+      border: 1px solid rgba(183, 250, 49, 0.15);
+      border-radius: 0.5rem;
+      color: #b7fa31;
+      font-style: italic;
+    }
+
+    .how-arrow {
+      display: flex;
+      align-items: center;
+      font-size: 1.5rem;
+      color: rgba(255, 255, 255, 0.2);
+    }
+
+    @media (max-width: 768px) {
+      .how-steps {
+        flex-direction: column;
+        align-items: center;
+      }
+      .how-arrow {
+        transform: rotate(90deg);
+        margin: 0.5rem 0;
+      }
+      .how-step {
+        max-width: 100%;
+      }
     }
 
     /* Account Connection Section */
@@ -2068,45 +2208,45 @@
     <div class="hero-badge">
       <span>&#10024;</span> Gemini 3 Hackathon Submission
     </div>
-    <h1>Describe Your Dashboard,<br><span>AI Builds It Instantly</span></h1>
-    <p>Just tell Gemini what you want to see. It analyzes your marketing data and creates a complete dashboard with KPIs, charts, and insights.</p>
+    <h1>Talk to Your Marketing Data<br><span>Get Answers in Seconds</span></h1>
+    <p>Stop spending hours building dashboards. Just ask Gemini 3 what you want to know — it analyzes your ad data and shows you exactly what matters.</p>
 
     <div class="hero-input-container">
       <!-- Locked state - shown before account connection -->
       <div class="hero-locked" id="heroLocked">
-        <div class="locked-icon">🔒</div>
-        <div class="locked-text">Connect an ad account below to unlock dashboard generation</div>
+        <div class="locked-icon">👇</div>
+        <div class="locked-text">Click any platform below to try it — takes 3 seconds!</div>
       </div>
 
       <!-- Unlocked state - shown after account connection -->
       <div class="hero-unlocked" id="heroUnlocked" style="display: none;">
         <div class="hero-input-wrapper">
-          <input type="text" class="hero-input" id="dashboardInput" placeholder="e.g., Show me campaign performance with ROAS trends and top performers" onkeypress="if(event.key === 'Enter') generateDashboard()">
+          <input type="text" class="hero-input" id="dashboardInput" placeholder="Try: &quot;How are my campaigns performing?&quot; or &quot;Show me where I'm wasting money&quot;" onkeypress="if(event.key === 'Enter') generateDashboard()">
           <button class="hero-submit" onclick="generateDashboard()" id="generateBtn">
-            <span>&#10024;</span> Generate with Gemini 3
+            <span>&#10024;</span> Ask Gemini 3
           </button>
         </div>
         <div class="example-chips">
-          <span class="example-chip" onclick="setPromptAndGenerate('Performance overview with spend and ROAS trends')">Performance Overview</span>
-          <span class="example-chip" onclick="setPromptAndGenerate('Campaign comparison with conversions')">Campaign Comparison</span>
-          <span class="example-chip" onclick="setPromptAndGenerate('E-commerce metrics with revenue breakdown')">E-commerce Metrics</span>
-          <span class="example-chip" onclick="setPromptAndGenerate('Weekly trend analysis')">Weekly Trends</span>
+          <span class="example-chip" onclick="setPromptAndGenerate('How are my campaigns performing this week?')">📊 Campaign Performance</span>
+          <span class="example-chip" onclick="setPromptAndGenerate('Which campaigns should I scale?')">🚀 What to Scale</span>
+          <span class="example-chip" onclick="setPromptAndGenerate('Where am I wasting budget?')">💸 Find Waste</span>
+          <span class="example-chip" onclick="setPromptAndGenerate('Show me my best performing ads')">🏆 Top Performers</span>
         </div>
       </div>
     </div>
 
     <div class="preview-hint">
       <div class="hint-item">
-        <div class="hint-icon">📊</div>
-        <span>KPI Cards with Sparklines</span>
+        <div class="hint-icon">⚡</div>
+        <span>Instant Dashboard Generation</span>
       </div>
       <div class="hint-item">
-        <div class="hint-icon">📈</div>
-        <span>Trend & Bar Charts</span>
+        <div class="hint-icon">🧠</div>
+        <span>AI-Powered Insights</span>
       </div>
       <div class="hint-item">
-        <div class="hint-icon">🎯</div>
-        <span>Campaign Performance Table</span>
+        <div class="hint-icon">💬</div>
+        <span>Ask Questions in Plain English</span>
       </div>
     </div>
   </section>
@@ -2114,9 +2254,9 @@
   <!-- Account Connection Demo -->
   <section class="accounts-section">
     <div class="accounts-header">
-      <div class="step-badge">Step 1</div>
-      <h3>Connect Your Ad Accounts</h3>
-      <p>Click any platform to start - this unlocks AI dashboard generation</p>
+      <div class="step-badge">Try It Now</div>
+      <h3>Connect Any Ad Platform</h3>
+      <p>Click a platform below to see Gemini 3 in action — no real login required for demo</p>
     </div>
     <div class="platforms-grid">
       <div class="platform-card" id="platform-meta" onclick="connectPlatform('meta')">
@@ -2158,6 +2298,42 @@
           <div class="platform-status">Click to connect</div>
         </div>
         <span class="connect-badge">Connect</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works">
+    <div class="how-header">
+      <h2>How Gemini 3 Transforms Your Marketing</h2>
+      <p>From question to insight in under 10 seconds</p>
+    </div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-step-num">1</div>
+        <div class="how-step-content">
+          <h3>Ask Anything</h3>
+          <p>Type a question in plain English. No SQL, no filters, no complex queries.</p>
+          <div class="how-example">"Why did my ROAS drop last week?"</div>
+        </div>
+      </div>
+      <div class="how-arrow">→</div>
+      <div class="how-step">
+        <div class="how-step-num">2</div>
+        <div class="how-step-content">
+          <h3>Gemini 3 Analyzes</h3>
+          <p>AI reads your ad data, finds patterns, and identifies what matters.</p>
+          <div class="how-example">Analyzing 4 campaigns, 892 conversions...</div>
+        </div>
+      </div>
+      <div class="how-arrow">→</div>
+      <div class="how-step">
+        <div class="how-step-num">3</div>
+        <div class="how-step-content">
+          <h3>Get Clear Answers</h3>
+          <p>See dashboards, insights, and recommended actions — instantly.</p>
+          <div class="how-example">"Scale Summer Sale campaign by 20%"</div>
+        </div>
       </div>
     </div>
   </section>
@@ -2451,17 +2627,17 @@
     <div class="ai-section">
       <div class="ai-section-header">
         <span style="font-size: 1.25rem;">&#10024;</span>
-        <span class="ai-section-title">Ask AI About Your Data</span>
+        <span class="ai-section-title">Ask Gemini 3 Anything</span>
       </div>
       <div class="ai-input-row">
-        <input type="text" class="ai-input" id="questionInput" placeholder="e.g., Why did my ROAS improve this week?" onkeypress="if(event.key === 'Enter') analyzeData()">
-        <button class="ai-submit" onclick="analyzeData()" id="analyzeBtn">Analyze with Gemini 3</button>
+        <input type="text" class="ai-input" id="questionInput" placeholder="Type any question about your marketing data..." onkeypress="if(event.key === 'Enter') analyzeData()">
+        <button class="ai-submit" onclick="analyzeData()" id="analyzeBtn">Get Answer</button>
       </div>
       <div class="ai-chips">
-        <span class="ai-chip" onclick="setQuestion('Why did ROAS improve?')">Why did ROAS improve?</span>
-        <span class="ai-chip" onclick="setQuestion('Which campaign should I scale?')">Which campaign to scale?</span>
-        <span class="ai-chip" onclick="setQuestion('What is driving conversions?')">What drives conversions?</span>
-        <span class="ai-chip" onclick="setQuestion('Give me a performance summary')">Performance summary</span>
+        <span class="ai-chip" onclick="setQuestion('Why did my ROAS change?')">📈 Why ROAS changed</span>
+        <span class="ai-chip" onclick="setQuestion('Which campaign should I scale next?')">🚀 What to scale</span>
+        <span class="ai-chip" onclick="setQuestion('Where am I losing money?')">💸 Find waste</span>
+        <span class="ai-chip" onclick="setQuestion('Give me a quick performance summary')">📊 Quick summary</span>
       </div>
 
       <div class="analysis-result" id="analysisResult">
@@ -2489,8 +2665,12 @@
   </section>
 
   <footer class="footer">
-    <p>Built for the <a href="https://gemini3.devpost.com/" target="_blank">Gemini 3 Hackathon</a> by Reasonly</p>
-    <p style="margin-top: 0.5rem;">Leveraging Gemini 3 Flash for intelligent marketing analytics</p>
+    <div class="footer-gemini">
+      <span class="footer-gemini-icon">✦</span>
+      <span>100% Powered by <strong>Gemini 3 Flash</strong></span>
+    </div>
+    <p>Built for the <a href="https://gemini3.devpost.com/" target="_blank">Gemini 3 Hackathon</a> • February 2026</p>
+    <p class="footer-tagline">Transforming marketing analytics with conversational AI</p>
   </footer>
 
   <script>
