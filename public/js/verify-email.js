@@ -40,11 +40,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             showSuccess();
         } else {
             showError(data.message || 'Email verification failed. Please try again.');
-
-            // Show resend section if token is invalid/expired
-            if (data.message && (data.message.includes('expired') || data.message.includes('Invalid'))) {
-                resendSection.classList.add('show');
-            }
+            // Always show resend section on any error
+            resendSection.classList.add('show');
         }
     } catch (error) {
         console.error('Verification error:', error);

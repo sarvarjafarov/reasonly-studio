@@ -21,7 +21,7 @@ class User {
   static async findById(id) {
     const result = await query(
       `SELECT id, username, email, role, status, company_name,
-              contact_person, phone, created_at, updated_at, last_login_at
+              contact_person, phone, email_verified, created_at, updated_at, last_login_at
        FROM users WHERE id = $1`,
       [id]
     );
@@ -45,7 +45,7 @@ class User {
   static async findByEmail(email) {
     const result = await query(
       `SELECT id, username, email, role, status, company_name,
-              contact_person, phone, created_at, updated_at, last_login_at
+              contact_person, phone, email_verified, created_at, updated_at, last_login_at
        FROM users WHERE email = $1`,
       [email]
     );
