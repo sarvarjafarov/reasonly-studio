@@ -979,10 +979,33 @@
       <a href="/connections" class="btn btn-primary">Connect Your Accounts</a>
     </div>
 
-    <!-- Question Hero -->
+    <!-- STEP 1: Your Dashboards (Create First) -->
+    <section class="dashboards-section" style="margin-bottom: 2rem;">
+      <div class="dashboards-card" style="border-radius: 1rem;">
+        <div class="dashboards-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <div>
+            <h2 style="margin: 0;">My Dashboards</h2>
+            <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin: 0.25rem 0 0 0;">Create dashboards to track your metrics, then analyze them with AI.</p>
+          </div>
+        </div>
+        <div id="topDashboardsList">
+          <div class="no-insights">
+            <p>No dashboards yet.</p>
+          </div>
+        </div>
+        <div class="dashboard-actions" style="margin-top: 1rem;">
+          <button class="create-dashboard-btn" onclick="openCreateDashboardModal()">+ Create Dashboard</button>
+          <button class="create-dashboard-btn ai-btn" onclick="openAIDashboardModal()">
+            <span class="ai-icon">&#10024;</span> Generate with AI
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: Analyze Your Dashboard -->
     <section class="question-hero" id="questionHero">
-      <h1>What do you want to know?</h1>
-      <p>Ask a question and get AI-powered insights from your marketing data.</p>
+      <h1>Analyze Your Data</h1>
+      <p>Select a dashboard above, then ask questions to get AI-powered insights.</p>
 
       <div class="question-form">
         <div class="question-input-row">
@@ -1075,40 +1098,22 @@
       </div>
     </section>
 
-    <!-- Content Grid: Insights + Dashboards -->
-    <div class="content-grid">
-      <!-- Today's Insights -->
-      <section class="insights-card">
-        <div class="insights-header">
-          <h2>Today's Insights</h2>
-          <button class="refresh-btn" onclick="refreshInsights()">Refresh</button>
+    <!-- Today's Insights (Full Width) -->
+    <section class="insights-card" style="border-radius: 1rem; margin-bottom: 2rem;">
+      <div class="insights-header">
+        <h2>Today's Insights</h2>
+        <button class="refresh-btn" onclick="refreshInsights()">Refresh</button>
+      </div>
+      <div id="insightsList">
+        <div class="no-insights">
+          <p>Connect your ad accounts to see AI-generated insights.</p>
+          <a href="/connections">Connect accounts</a>
         </div>
-        <div id="insightsList">
-          <div class="no-insights">
-            <p>Connect your ad accounts to see AI-generated insights.</p>
-            <a href="/connections">Connect accounts</a>
-          </div>
-        </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Your Dashboards -->
-      <section class="dashboards-card">
-        <div class="dashboards-header">
-          <h2>Your Dashboards</h2>
-        </div>
-        <div id="dashboardsList">
-          <div class="no-insights">
-            <p>No dashboards yet.</p>
-          </div>
-        </div>
-        <div class="dashboard-actions">
-          <button class="create-dashboard-btn" onclick="openCreateDashboardModal()">+ Create Dashboard</button>
-          <button class="create-dashboard-btn ai-btn" onclick="openAIDashboardModal()">
-            <span class="ai-icon">&#10024;</span> Generate with AI
-          </button>
-        </div>
-      </section>
-    </div>
+    <!-- Hidden: Old dashboards section (now at top) -->
+    <div id="dashboardsList" style="display: none;"></div>
   </main>
 
   <!-- Create Dashboard Modal -->
@@ -1287,18 +1292,20 @@
         const dashboards = data.data || [];
 
         const list = document.getElementById('dashboardsList');
+        const topList = document.getElementById('topDashboardsList');
 
-        if (dashboards.length === 0) {
-          list.innerHTML = '<div class="no-insights"><p>No dashboards yet.</p></div>';
-          return;
-        }
+        const dashboardsHtml = dashboards.length === 0
+          ? '<div class="no-insights"><p>No dashboards yet.</p></div>'
+          : dashboards.map(d => `
+              <div class="dashboard-item" onclick="window.location.href='/dashboard-viewer?id=${d.id}'">
+                <div class="dashboard-name">${d.name}</div>
+                <div class="dashboard-meta">${d.widget_count || 0} widgets</div>
+              </div>
+            `).join('');
 
-        list.innerHTML = dashboards.map(d => `
-          <div class="dashboard-item" onclick="window.location.href='/dashboard-viewer?id=${d.id}'">
-            <div class="dashboard-name">${d.name}</div>
-            <div class="dashboard-meta">${d.widget_count || 0} widgets</div>
-          </div>
-        `).join('');
+        // Render to both containers
+        if (list) list.innerHTML = dashboardsHtml;
+        if (topList) topList.innerHTML = dashboardsHtml;
       } catch (err) {
         console.error('Failed to load dashboards:', err);
       }
