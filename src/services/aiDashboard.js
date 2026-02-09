@@ -9,14 +9,17 @@ const CustomDataSource = require('../models/CustomDataSource');
 
 // Available widget types and metrics for context
 const AVAILABLE_WIDGETS = [
-  'kpi_card',      // Single metric display
-  'line_chart',    // Time series data
-  'bar_chart',     // Comparison data
-  'pie_chart',     // Distribution data
-  'table',         // Detailed data table
-  'comparison',    // Before/after comparison
-  'gauge',         // Progress indicator
-  'heatmap',       // Time-based heatmap
+  'kpi_card',        // Single metric display with sparkline
+  'line_chart',      // Time series trend data
+  'bar_chart',       // Comparison data
+  'pie_chart',       // Distribution data (donut style with legend)
+  'table',           // Basic data table
+  'campaign_table',  // Campaign performance table with icons, status badges, ROAS bars
+  'comparison',      // Before/after comparison
+  'gauge',           // Progress indicator
+  'heatmap',         // Time-based heatmap (performance by day/hour)
+  'funnel',          // Conversion funnel (Impressions → Clicks → Conversions → Purchases)
+  'bubble_chart',    // Spend vs ROAS comparison (bubble size = conversions)
 ];
 
 const AVAILABLE_METRICS = [
@@ -92,10 +95,19 @@ async function generateDashboardFromPrompt(prompt, options = {}) {
 
   const allMetrics = [...AVAILABLE_METRICS, ...customMetrics];
 
-  const fullPrompt = `You are an expert advertising analytics dashboard designer. Your task is to create comprehensive, insightful dashboards based on user requirements.
+  const fullPrompt = `You are an expert advertising analytics dashboard designer. Your task is to create comprehensive, visually stunning dashboards with advanced widget types.
 
-Available widget types:
-${AVAILABLE_WIDGETS.map(w => `- ${w}`).join('\n')}
+Available widget types (USE ALL OF THESE for rich dashboards):
+- kpi_card: Single metric with value, change percentage, and sparkline (use for: spend, revenue, ROAS, conversions, CTR)
+- line_chart: Time series trend showing performance over time (use for: Revenue vs Spend trends)
+- pie_chart: Donut chart with legend showing distribution (use for: Spend by Campaign breakdown)
+- campaign_table: Rich table with campaign icons, status badges, and ROAS progress bars (use for: Campaign Performance)
+- funnel: Conversion funnel showing drop-off rates (Impressions → Clicks → Add to Cart → Conversions → Purchases)
+- bubble_chart: Campaign comparison with X=Spend, Y=ROAS, bubble size=conversions
+- heatmap: Performance by day of week and time of day
+- bar_chart: Comparison between items
+- comparison: Before/after period comparison
+- gauge: Progress toward a goal
 
 Available metrics:
 ${allMetrics.map(m => `- ${m.id}: ${m.name} - ${m.description}`).join('\n')}
@@ -115,17 +127,16 @@ When using custom data sources, set the widget's dataSource to:
 
 Dashboard grid is 12 columns wide. Widgets have positions: { x: 0-11, y: row, w: width (1-12), h: height (typically 4-8) }
 
-When designing dashboards:
-1. Start with high-level KPIs at the top (row 0)
-2. Add trend charts in the middle
-3. Include detailed breakdowns at the bottom
-4. Use appropriate widget types for each metric
-5. Ensure logical flow and grouping of related metrics
-6. Consider visual hierarchy and balance
+IMPORTANT - Create a RICH dashboard with these widget combinations:
+1. Row 0 (y=0): 4 KPI cards (w=3 each) for Spend, Revenue, ROAS, Conversions
+2. Row 1 (y=4): 1 line_chart (w=8) for trends + 1 pie_chart (w=4) for Spend by Campaign
+3. Row 2 (y=8): 1 funnel (w=6) for Conversion Funnel + 1 bubble_chart (w=6) for Campaign Comparison
+4. Row 3 (y=12): 1 heatmap (w=12) for Performance by Day & Time
+5. Row 4 (y=16): 1 campaign_table (w=12) for detailed Campaign Performance
 
 User Request: "${prompt}"
 
-Create a comprehensive advertising analytics dashboard for this requirement. Generate a well-structured dashboard with appropriate widgets and metrics. Make it detailed and actionable.
+Create a comprehensive advertising analytics dashboard. ALWAYS include: kpi_cards, pie_chart, funnel, bubble_chart, campaign_table, and heatmap for the richest experience.
 
 Respond ONLY with valid JSON in this exact format (no markdown, no code blocks, just pure JSON):
 {
@@ -133,11 +144,39 @@ Respond ONLY with valid JSON in this exact format (no markdown, no code blocks, 
   "description": "Brief description of what this dashboard tracks",
   "widgets": [
     {
-      "widgetType": "widget_type",
-      "title": "Widget title",
-      "metric": "metric_id",
-      "position": { "x": 0, "y": 0, "w": 4, "h": 4 },
-      "description": "What this widget shows"
+      "widgetType": "kpi_card",
+      "title": "Total Spend",
+      "metric": "spend",
+      "position": { "x": 0, "y": 0, "w": 3, "h": 4 },
+      "description": "Total advertising spend"
+    },
+    {
+      "widgetType": "pie_chart",
+      "title": "Spend by Campaign",
+      "metric": "spend",
+      "position": { "x": 8, "y": 4, "w": 4, "h": 6 },
+      "description": "Budget allocation across campaigns"
+    },
+    {
+      "widgetType": "funnel",
+      "title": "Conversion Funnel",
+      "metric": "conversions",
+      "position": { "x": 0, "y": 8, "w": 6, "h": 6 },
+      "description": "User journey from impression to purchase"
+    },
+    {
+      "widgetType": "bubble_chart",
+      "title": "Campaign Comparison",
+      "metric": "roas",
+      "position": { "x": 6, "y": 8, "w": 6, "h": 6 },
+      "description": "Spend vs ROAS (bubble size = conversions)"
+    },
+    {
+      "widgetType": "campaign_table",
+      "title": "Campaign Performance",
+      "metric": "campaigns",
+      "position": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "description": "Detailed campaign metrics with status and ROAS"
     }
   ],
   "insights": [
@@ -193,7 +232,20 @@ function validateAndEnhanceConfig(config, options) {
 
   // Validate and enhance each widget
   config.widgets = config.widgets.map((widget, index) => {
-    // Ensure valid widget type
+    // Ensure valid widget type (normalize aliases)
+    const widgetTypeAliases = {
+      'donut_chart': 'pie_chart',
+      'donut': 'pie_chart',
+      'scatter_chart': 'bubble_chart',
+      'scatter': 'bubble_chart',
+      'data_table': 'campaign_table',
+      'performance_table': 'campaign_table',
+    };
+
+    if (widgetTypeAliases[widget.widgetType]) {
+      widget.widgetType = widgetTypeAliases[widget.widgetType];
+    }
+
     if (!AVAILABLE_WIDGETS.includes(widget.widgetType)) {
       widget.widgetType = 'kpi_card';
     }

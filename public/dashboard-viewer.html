@@ -1087,6 +1087,93 @@
       background: linear-gradient(90deg, rgba(183, 250, 49, 0.15), rgba(183, 250, 49, 0.5), rgba(125, 211, 252, 0.7));
     }
 
+    .heatmap-grid {
+      width: 100%;
+    }
+
+    .heatmap-row.header {
+      margin-bottom: 4px;
+    }
+
+    .heatmap-label {
+      width: 40px;
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.5);
+      display: flex;
+      align-items: center;
+      font-weight: 500;
+    }
+
+    .heatmap-hour {
+      flex: 1;
+      text-align: center;
+      font-size: 0.6rem;
+      color: rgba(255, 255, 255, 0.4);
+      padding: 0.25rem 0;
+    }
+
+    /* ROAS Bar Styles */
+    .roas-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .roas-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Status Badge Styles */
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* Campaign Icon */
+    .campaign-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+
+    /* Funnel Summary */
+    .funnel-summary {
+      display: flex;
+      justify-content: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .funnel-metric {
+      text-align: center;
+    }
+
+    .funnel-metric-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #b7fa31;
+    }
+
+    .funnel-metric-label {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     /* Table Widget Styles */
     .table-widget {
       padding: 0.75rem;
@@ -4081,6 +4168,113 @@
             </div>
           </div>
         `;
+      } else if (widgetType === 'funnel') {
+        // Conversion Funnel Widget
+        contentHTML = `
+          <div class="funnel-widget" id="funnel-${widget.id}">
+            <div class="funnel-container">
+              <div class="funnel-stage">
+                <div class="funnel-label">Impressions</div>
+                <div class="funnel-bar-container">
+                  <div class="funnel-bar" style="width: 100%; background: linear-gradient(90deg, #b7fa31, #a8eb22);">
+                    <span class="funnel-bar-value" id="funnel-impressions-${widget.id}">--</span>
+                  </div>
+                </div>
+                <div class="funnel-rate"></div>
+                <div class="funnel-connector"></div>
+              </div>
+              <div class="funnel-stage">
+                <div class="funnel-label">Clicks</div>
+                <div class="funnel-bar-container">
+                  <div class="funnel-bar" style="width: 60%; background: linear-gradient(90deg, #b7fa31, #7dd3fc);">
+                    <span class="funnel-bar-value" id="funnel-clicks-${widget.id}">--</span>
+                  </div>
+                </div>
+                <div class="funnel-rate" id="funnel-ctr-${widget.id}">--</div>
+                <div class="funnel-connector"></div>
+              </div>
+              <div class="funnel-stage">
+                <div class="funnel-label">Add to Cart</div>
+                <div class="funnel-bar-container">
+                  <div class="funnel-bar" style="width: 30%; background: linear-gradient(90deg, #7dd3fc, #60a5fa);">
+                    <span class="funnel-bar-value" id="funnel-cart-${widget.id}">--</span>
+                  </div>
+                </div>
+                <div class="funnel-rate" id="funnel-cart-rate-${widget.id}">--</div>
+                <div class="funnel-connector"></div>
+              </div>
+              <div class="funnel-stage">
+                <div class="funnel-label">Conversions</div>
+                <div class="funnel-bar-container">
+                  <div class="funnel-bar" style="width: 15%; background: linear-gradient(90deg, #60a5fa, #818cf8);">
+                    <span class="funnel-bar-value" id="funnel-conversions-${widget.id}">--</span>
+                  </div>
+                </div>
+                <div class="funnel-rate" id="funnel-conv-rate-${widget.id}">--</div>
+              </div>
+            </div>
+            <div class="funnel-summary">
+              <div class="funnel-metric">
+                <div class="funnel-metric-value" id="funnel-click-rate-${widget.id}">--</div>
+                <div class="funnel-metric-label">Click Rate</div>
+              </div>
+              <div class="funnel-metric">
+                <div class="funnel-metric-value" id="funnel-conversion-rate-${widget.id}">--</div>
+                <div class="funnel-metric-label">Conv. Rate</div>
+              </div>
+              <div class="funnel-metric">
+                <div class="funnel-metric-value" id="funnel-overall-rate-${widget.id}">--</div>
+                <div class="funnel-metric-label">Overall Rate</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (widgetType === 'bubble_chart') {
+        // Bubble Chart Widget (Campaign Comparison)
+        contentHTML = `
+          <div class="bubble-chart-widget" id="bubble-${widget.id}">
+            <div style="height: 280px;">
+              <canvas id="bubble-canvas-${widget.id}"></canvas>
+            </div>
+          </div>
+        `;
+      } else if (widgetType === 'campaign_table') {
+        // Campaign Performance Table
+        contentHTML = `
+          <div class="campaign-table-widget" id="campaign-table-${widget.id}">
+            <table class="campaign-table">
+              <thead>
+                <tr>
+                  <th style="text-align: left;">Campaign</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Spend</th>
+                  <th style="text-align: right;">Revenue</th>
+                  <th style="text-align: right;">ROAS</th>
+                  <th style="text-align: right;">Conversions</th>
+                </tr>
+              </thead>
+              <tbody id="campaign-tbody-${widget.id}">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: rgba(255,255,255,0.4); padding: 2rem;">Loading campaigns...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (widgetType === 'heatmap') {
+        // Performance Heatmap
+        contentHTML = `
+          <div class="heatmap-widget" id="heatmap-${widget.id}">
+            <div class="heatmap-legend">
+              <span>Low</span>
+              <div class="heatmap-legend-bar"></div>
+              <span>High</span>
+            </div>
+            <div class="heatmap-container" id="heatmap-grid-${widget.id}">
+              <div style="text-align: center; color: rgba(255,255,255,0.4); padding: 2rem;">Loading heatmap data...</div>
+            </div>
+          </div>
+        `;
       } else {
         contentHTML = `
           <div class="metric-card">
@@ -4252,6 +4446,18 @@
           } else if (widgetType === 'budget_pacing') {
             // Render budget pacing widget
             renderBudgetPacing(widget, currency);
+          } else if (widgetType === 'funnel') {
+            // Render funnel widget with real data
+            renderFunnelWidget(widget, result.data);
+          } else if (widgetType === 'bubble_chart') {
+            // Render bubble chart widget
+            renderBubbleChartWidget(widget, result.data);
+          } else if (widgetType === 'campaign_table') {
+            // Render campaign table widget
+            renderCampaignTableWidget(widget, result.data);
+          } else if (widgetType === 'heatmap') {
+            // Render heatmap widget
+            renderHeatmapWidget(widget, result.data);
           }
         } catch (error) {
           console.error(`Error loading metrics for widget ${widget.id}:`, error);
@@ -5163,6 +5369,345 @@
         // Show error state
         document.getElementById(`budget-current-${widgetId}`).textContent = 'Error loading data';
       }
+    }
+
+    // ========================================
+    // NEW WIDGET TYPE RENDERERS
+    // ========================================
+
+    function renderFunnelWidget(widget, data) {
+      const widgetId = widget.id;
+      const funnelContainer = document.getElementById(`funnel-${widgetId}`);
+      if (!funnelContainer) return;
+
+      // Extract metrics from data or use defaults
+      const impressions = data?.impressions || data?.value || 100000;
+      const clicks = data?.clicks || Math.round(impressions * 0.035);
+      const cartAdds = data?.cart_adds || data?.addToCart || Math.round(clicks * 0.25);
+      const conversions = data?.conversions || Math.round(cartAdds * 0.4);
+      const purchases = data?.purchases || Math.round(conversions * 0.8);
+
+      // Calculate percentages relative to impressions (for bar widths)
+      const clicksWidth = Math.max(5, (clicks / impressions) * 100);
+      const cartWidth = Math.max(4, (cartAdds / impressions) * 100);
+      const convWidth = Math.max(3, (conversions / impressions) * 100);
+      const purchWidth = Math.max(2, (purchases / impressions) * 100);
+
+      // Calculate conversion rates between stages
+      const ctr = impressions > 0 ? ((clicks / impressions) * 100).toFixed(2) : '0.00';
+      const cartRate = clicks > 0 ? ((cartAdds / clicks) * 100).toFixed(1) : '0.0';
+      const convRate = cartAdds > 0 ? ((conversions / cartAdds) * 100).toFixed(1) : '0.0';
+      const purchRate = conversions > 0 ? ((purchases / conversions) * 100).toFixed(1) : '0.0';
+      const overallRate = impressions > 0 ? ((purchases / impressions) * 100).toFixed(3) : '0.000';
+
+      funnelContainer.innerHTML = `
+        <div class="funnel-container">
+          <div class="funnel-stage">
+            <div class="funnel-label">Impressions</div>
+            <div class="funnel-bar-container">
+              <div class="funnel-bar" style="width: 100%; background: linear-gradient(90deg, #b7fa31, #a8eb22);">
+                <span class="funnel-value">${formatNumber(impressions)}</span>
+              </div>
+            </div>
+            <div class="funnel-rate"></div>
+            <div class="funnel-connector"></div>
+          </div>
+          <div class="funnel-stage">
+            <div class="funnel-label">Clicks</div>
+            <div class="funnel-bar-container">
+              <div class="funnel-bar" style="width: ${Math.min(100, clicksWidth * 3)}%; background: linear-gradient(90deg, #b7fa31, #7dd3fc);">
+                <span class="funnel-value">${formatNumber(clicks)}</span>
+              </div>
+            </div>
+            <div class="funnel-rate">${ctr}% CTR</div>
+            <div class="funnel-connector"></div>
+          </div>
+          <div class="funnel-stage">
+            <div class="funnel-label">Add to Cart</div>
+            <div class="funnel-bar-container">
+              <div class="funnel-bar" style="width: ${Math.min(100, cartWidth * 8)}%; background: linear-gradient(90deg, #7dd3fc, #60a5fa);">
+                <span class="funnel-value">${formatNumber(cartAdds)}</span>
+              </div>
+            </div>
+            <div class="funnel-rate">${cartRate}% of clicks</div>
+            <div class="funnel-connector"></div>
+          </div>
+          <div class="funnel-stage">
+            <div class="funnel-label">Conversions</div>
+            <div class="funnel-bar-container">
+              <div class="funnel-bar" style="width: ${Math.min(100, convWidth * 15)}%; background: linear-gradient(90deg, #60a5fa, #818cf8);">
+                <span class="funnel-value">${formatNumber(conversions)}</span>
+              </div>
+            </div>
+            <div class="funnel-rate">${convRate}% conv rate</div>
+            <div class="funnel-connector"></div>
+          </div>
+          <div class="funnel-stage">
+            <div class="funnel-label">Purchases</div>
+            <div class="funnel-bar-container">
+              <div class="funnel-bar" style="width: ${Math.min(100, purchWidth * 25)}%; background: linear-gradient(90deg, #818cf8, #a78bfa);">
+                <span class="funnel-value">${formatNumber(purchases)}</span>
+              </div>
+            </div>
+            <div class="funnel-rate">${purchRate}% completion</div>
+          </div>
+        </div>
+        <div class="funnel-summary">
+          <div class="funnel-metric">
+            <div class="funnel-metric-value">${overallRate}%</div>
+            <div class="funnel-metric-label">Overall Rate</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBubbleChartWidget(widget, data) {
+      const widgetId = widget.id;
+      const canvas = document.getElementById(`bubble-canvas-${widgetId}`);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+
+      // Destroy existing chart if any
+      if (chartInstances[`bubble-${widgetId}`]) {
+        chartInstances[`bubble-${widgetId}`].destroy();
+      }
+
+      // Sample campaign data (in production, use data from API)
+      const campaigns = data?.campaigns || [
+        { name: 'Brand Awareness', spend: 2500, roas: 3.2, conversions: 145 },
+        { name: 'Retargeting', spend: 1800, roas: 4.5, conversions: 210 },
+        { name: 'Prospecting', spend: 4200, roas: 2.1, conversions: 180 },
+        { name: 'Product Launch', spend: 3100, roas: 3.8, conversions: 290 },
+        { name: 'Sale Event', spend: 1500, roas: 5.2, conversions: 165 }
+      ];
+
+      const colors = ['#b7fa31', '#7dd3fc', '#60a5fa', '#818cf8', '#a78bfa', '#f472b6', '#fb923c'];
+
+      const bubbleData = campaigns.map((c, i) => ({
+        label: c.name,
+        data: [{
+          x: c.spend,
+          y: c.roas,
+          r: Math.max(8, Math.sqrt(c.conversions) * 1.5)
+        }],
+        backgroundColor: colors[i % colors.length] + '80',
+        borderColor: colors[i % colors.length],
+        borderWidth: 2
+      }));
+
+      chartInstances[`bubble-${widgetId}`] = new Chart(ctx, {
+        type: 'bubble',
+        data: { datasets: bubbleData },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: {
+                color: 'rgba(255,255,255,0.7)',
+                font: { size: 10 },
+                boxWidth: 12,
+                padding: 10
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              titleColor: '#fff',
+              bodyColor: 'rgba(255,255,255,0.8)',
+              padding: 12,
+              callbacks: {
+                label: function(context) {
+                  const c = campaigns[context.datasetIndex];
+                  return [
+                    `Spend: $${c.spend.toLocaleString()}`,
+                    `ROAS: ${c.roas}x`,
+                    `Conversions: ${c.conversions}`
+                  ];
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Ad Spend ($)',
+                color: 'rgba(255,255,255,0.5)',
+                font: { size: 11 }
+              },
+              ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10 } },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'ROAS',
+                color: 'rgba(255,255,255,0.5)',
+                font: { size: 11 }
+              },
+              ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10 } },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderCampaignTableWidget(widget, data) {
+      const widgetId = widget.id;
+      const tableContainer = document.getElementById(`campaign-table-${widgetId}`);
+      if (!tableContainer) return;
+
+      // Get campaigns from data or use sample data
+      const campaigns = data?.campaigns || data?.data || [
+        { name: 'Summer Sale 2024', status: 'active', spend: 12450, roas: 3.2, conversions: 245 },
+        { name: 'Brand Awareness Q1', status: 'active', spend: 8320, roas: 2.8, conversions: 189 },
+        { name: 'Retargeting - Cart Abandoners', status: 'active', spend: 5670, roas: 4.5, conversions: 312 },
+        { name: 'New Product Launch', status: 'paused', spend: 3200, roas: 1.9, conversions: 67 },
+        { name: 'Holiday Special', status: 'completed', spend: 15800, roas: 3.8, conversions: 456 }
+      ];
+
+      const statusColors = {
+        active: { bg: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', text: 'Active' },
+        paused: { bg: 'rgba(251, 191, 36, 0.15)', color: '#fbbf24', text: 'Paused' },
+        completed: { bg: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', text: 'Completed' },
+        draft: { bg: 'rgba(148, 163, 184, 0.15)', color: '#64748b', text: 'Draft' }
+      };
+
+      const rows = campaigns.map(c => {
+        const status = statusColors[c.status] || statusColors.active;
+        const roasWidth = Math.min(100, (c.roas / 5) * 100);
+        const roasColor = c.roas >= 3 ? '#b7fa31' : c.roas >= 2 ? '#fbbf24' : '#ef4444';
+
+        return `
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <div class="campaign-icon" style="background: linear-gradient(135deg, ${roasColor}20, ${roasColor}10);">
+                  <span style="color: ${roasColor};">📊</span>
+                </div>
+                <span>${c.name}</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge" style="background: ${status.bg}; color: ${status.color};">
+                ${status.text}
+              </span>
+            </td>
+            <td style="text-align: right; font-weight: 600;">$${c.spend.toLocaleString()}</td>
+            <td style="text-align: right;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end;">
+                <div class="roas-bar" style="width: 60px;">
+                  <div class="roas-fill" style="width: ${roasWidth}%; background: ${roasColor};"></div>
+                </div>
+                <span style="font-weight: 600; color: ${roasColor};">${c.roas}x</span>
+              </div>
+            </td>
+            <td style="text-align: right; font-weight: 500;">${c.conversions.toLocaleString()}</td>
+          </tr>
+        `;
+      }).join('');
+
+      tableContainer.innerHTML = `
+        <table class="campaign-table">
+          <thead>
+            <tr>
+              <th style="text-align: left;">Campaign</th>
+              <th>Status</th>
+              <th style="text-align: right;">Spend</th>
+              <th style="text-align: right;">ROAS</th>
+              <th style="text-align: right;">Conversions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderHeatmapWidget(widget, data) {
+      const widgetId = widget.id;
+      const container = document.getElementById(`heatmap-grid-${widgetId}`);
+      if (!container) return;
+
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const hours = ['12am', '4am', '8am', '12pm', '4pm', '8pm'];
+
+      // Generate heatmap data (in production, use real data)
+      const heatmapData = data?.heatmap || generateSampleHeatmapData();
+
+      // Find min/max for color scaling
+      const allValues = heatmapData.flat();
+      const maxVal = Math.max(...allValues);
+      const minVal = Math.min(...allValues);
+
+      function getHeatColor(value) {
+        const normalized = maxVal > minVal ? (value - minVal) / (maxVal - minVal) : 0.5;
+        // Color gradient from dark blue to green to yellow
+        if (normalized < 0.33) {
+          return `rgba(96, 165, 250, ${0.2 + normalized * 0.4})`;
+        } else if (normalized < 0.66) {
+          return `rgba(183, 250, 49, ${0.3 + (normalized - 0.33) * 0.5})`;
+        } else {
+          return `rgba(183, 250, 49, ${0.6 + (normalized - 0.66) * 0.4})`;
+        }
+      }
+
+      let gridHTML = '<div class="heatmap-grid">';
+
+      // Header row with hours
+      gridHTML += '<div class="heatmap-row header"><div class="heatmap-label"></div>';
+      hours.forEach(h => {
+        gridHTML += `<div class="heatmap-hour">${h}</div>`;
+      });
+      gridHTML += '</div>';
+
+      // Data rows
+      days.forEach((day, dayIndex) => {
+        gridHTML += `<div class="heatmap-row"><div class="heatmap-label">${day}</div>`;
+        for (let hourIndex = 0; hourIndex < 6; hourIndex++) {
+          const value = heatmapData[dayIndex]?.[hourIndex] || 0;
+          const color = getHeatColor(value);
+          gridHTML += `
+            <div class="heatmap-cell" style="background: ${color};" title="${day} ${hours[hourIndex]}: ${value.toFixed(1)}%">
+              ${value > maxVal * 0.7 ? `<span style="font-size: 0.6rem; color: #000; font-weight: 600;">${Math.round(value)}</span>` : ''}
+            </div>
+          `;
+        }
+        gridHTML += '</div>';
+      });
+
+      gridHTML += '</div>';
+
+      container.innerHTML = gridHTML;
+    }
+
+    function generateSampleHeatmapData() {
+      // Generate sample performance data (7 days x 6 time slots)
+      const data = [];
+      for (let day = 0; day < 7; day++) {
+        const dayData = [];
+        for (let hour = 0; hour < 6; hour++) {
+          // Higher performance during business hours (8am-8pm), lower on weekends
+          let base = 50;
+          if (hour >= 2 && hour <= 4) base += 30; // Business hours boost
+          if (day >= 5) base -= 20; // Weekend reduction
+          const variation = (Math.random() - 0.5) * 30;
+          dayData.push(Math.max(0, base + variation));
+        }
+        data.push(dayData);
+      }
+      return data;
+    }
+
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return num.toLocaleString();
     }
 
     function onGlobalDateRangeChange() {
