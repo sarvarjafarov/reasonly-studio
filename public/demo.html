@@ -729,6 +729,445 @@
       color: rgba(255, 255, 255, 0.6);
     }
 
+    /* Heatmap Styles */
+    .heatmap-card {
+      background: linear-gradient(165deg, rgba(32, 32, 35, 0.95) 0%, rgba(18, 18, 20, 0.98) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.3),
+        0 2px 4px -1px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .heatmap-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow:
+        0 10px 15px -3px rgba(0, 0, 0, 0.35),
+        0 4px 6px -2px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .heatmap-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+    }
+
+    .heatmap-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .heatmap-subtitle {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.45);
+      margin-top: 0.25rem;
+    }
+
+    .heatmap-legend {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .heatmap-legend-bar {
+      width: 100px;
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(90deg,
+        rgba(183, 250, 49, 0.15) 0%,
+        rgba(183, 250, 49, 0.4) 25%,
+        rgba(183, 250, 49, 0.7) 50%,
+        #b7fa31 75%,
+        #7dd3fc 100%);
+    }
+
+    .heatmap-container {
+      display: grid;
+      grid-template-columns: 50px repeat(6, 1fr);
+      gap: 3px;
+    }
+
+    .heatmap-row-label {
+      display: flex;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      padding-right: 0.5rem;
+    }
+
+    .heatmap-col-labels {
+      display: contents;
+    }
+
+    .heatmap-col-label {
+      text-align: center;
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.5);
+      padding-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .heatmap-cell {
+      aspect-ratio: 1.8;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: rgba(0, 0, 0, 0.7);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      position: relative;
+      min-height: 36px;
+    }
+
+    .heatmap-cell:hover {
+      transform: scale(1.08);
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .heatmap-cell.low {
+      background: rgba(183, 250, 49, 0.15);
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .heatmap-cell.medium-low {
+      background: rgba(183, 250, 49, 0.35);
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .heatmap-cell.medium {
+      background: rgba(183, 250, 49, 0.55);
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    .heatmap-cell.medium-high {
+      background: rgba(183, 250, 49, 0.8);
+      color: rgba(0, 0, 0, 0.7);
+    }
+
+    .heatmap-cell.high {
+      background: linear-gradient(135deg, #b7fa31 0%, #7dd3fc 100%);
+      color: rgba(0, 0, 0, 0.8);
+      font-weight: 700;
+    }
+
+    .heatmap-tooltip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+      z-index: 100;
+      color: #fff;
+    }
+
+    .heatmap-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: rgba(0, 0, 0, 0.9);
+    }
+
+    .heatmap-cell:hover .heatmap-tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .heatmap-insight {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      padding: 0.875rem 1rem;
+      background: rgba(183, 250, 49, 0.08);
+      border: 1px solid rgba(183, 250, 49, 0.2);
+      border-radius: 0.75rem;
+    }
+
+    .heatmap-insight-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #b7fa31 0%, #7dd3fc 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .heatmap-insight-text {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.5;
+    }
+
+    .heatmap-insight-highlight {
+      color: #b7fa31;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .heatmap-container {
+        grid-template-columns: 40px repeat(6, 1fr);
+        gap: 2px;
+      }
+      .heatmap-cell {
+        min-height: 28px;
+        font-size: 0.55rem;
+      }
+      .heatmap-row-label {
+        font-size: 0.6rem;
+      }
+    }
+
+    /* Funnel Chart Styles */
+    .funnel-card {
+      background: linear-gradient(165deg, rgba(32, 32, 35, 0.95) 0%, rgba(18, 18, 20, 0.98) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.3),
+        0 2px 4px -1px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .funnel-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .funnel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+
+    .funnel-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .funnel-subtitle {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.45);
+      margin-top: 0.25rem;
+    }
+
+    .funnel-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0 1rem;
+    }
+
+    .funnel-stage {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .funnel-bar-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    .funnel-bar {
+      height: 48px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .funnel-bar:hover {
+      transform: scaleX(1.02);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .funnel-bar-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: rgba(0, 0, 0, 0.8);
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
+    }
+
+    .funnel-label {
+      width: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+      text-align: right;
+    }
+
+    .funnel-rate {
+      width: 70px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .funnel-rate.positive {
+      color: #34d399;
+    }
+
+    .funnel-connector {
+      position: absolute;
+      left: 50%;
+      top: 100%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .funnel-connector::after {
+      content: '▼';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.5rem;
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .funnel-summary {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .funnel-metric {
+      text-align: center;
+    }
+
+    .funnel-metric-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #b7fa31 0%, #7dd3fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .funnel-metric-label {
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
+    }
+
+    /* Bubble Chart Styles */
+    .bubble-card {
+      background: linear-gradient(165deg, rgba(32, 32, 35, 0.95) 0%, rgba(18, 18, 20, 0.98) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.3),
+        0 2px 4px -1px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .bubble-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .bubble-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .bubble-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .bubble-subtitle {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.45);
+      margin-top: 0.25rem;
+    }
+
+    .bubble-legend {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .bubble-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .bubble-legend-icon {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .bubble-container {
+      height: 280px;
+      position: relative;
+    }
+
+    /* Charts Grid - Updated for 2x2 layout */
+    .charts-grid-2x2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .charts-grid-2x2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* AI Analysis Section */
     .ai-section {
       background: linear-gradient(165deg, rgba(32, 32, 35, 0.95) 0%, rgba(18, 18, 20, 0.98) 100%);
@@ -957,6 +1396,282 @@
 
     @keyframes spin {
       to { transform: rotate(360deg); }
+    }
+
+    /* Widget AI Analyze Button Styles */
+    .widget-ai-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.4rem 0.75rem;
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.12) 0%, rgba(52, 168, 83, 0.12) 50%, rgba(251, 188, 5, 0.12) 100%);
+      border: 1px solid rgba(66, 133, 244, 0.25);
+      border-radius: 0.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.65rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .widget-ai-btn:hover {
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.2) 0%, rgba(52, 168, 83, 0.2) 50%, rgba(251, 188, 5, 0.2) 100%);
+      border-color: rgba(66, 133, 244, 0.4);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .widget-ai-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .widget-ai-btn .ai-icon {
+      font-size: 0.8rem;
+    }
+
+    .kpi-card .kpi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .kpi-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .kpi-header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chart-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Widget AI Analysis Modal */
+    .widget-analysis-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .widget-analysis-modal.show {
+      display: flex;
+    }
+
+    .widget-analysis-content {
+      background: linear-gradient(165deg, rgba(32, 32, 35, 0.98) 0%, rgba(18, 18, 20, 0.99) 100%);
+      border: 1px solid rgba(183, 250, 49, 0.2);
+      border-radius: 1.25rem;
+      padding: 0;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow: hidden;
+      animation: slideUp 0.3s ease;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .widget-analysis-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.08) 0%, rgba(52, 168, 83, 0.08) 50%, rgba(251, 188, 5, 0.08) 100%);
+    }
+
+    .widget-analysis-header h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .widget-analysis-header .gemini-tag {
+      font-size: 0.6rem;
+      background: linear-gradient(135deg, #4285f4, #34a853);
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.25rem;
+      font-weight: 600;
+    }
+
+    .widget-analysis-close {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 1.25rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .widget-analysis-close:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    .widget-analysis-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+      max-height: calc(80vh - 70px);
+    }
+
+    .widget-analysis-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      gap: 1rem;
+    }
+
+    .widget-analysis-loading .spinner-large {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(183, 250, 49, 0.2);
+      border-top-color: #b7fa31;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .widget-analysis-loading p {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+    }
+
+    .widget-analysis-result {
+      display: none;
+    }
+
+    .widget-analysis-result.show {
+      display: block;
+    }
+
+    .widget-analysis-metric {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: rgba(183, 250, 49, 0.08);
+      border: 1px solid rgba(183, 250, 49, 0.15);
+      border-radius: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .widget-analysis-metric-value {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #b7fa31 0%, #7dd3fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .widget-analysis-metric-info {
+      flex: 1;
+    }
+
+    .widget-analysis-metric-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .widget-analysis-metric-change {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-top: 0.25rem;
+    }
+
+    .widget-analysis-metric-change.positive { color: #34d399; }
+    .widget-analysis-metric-change.negative { color: #f87171; }
+
+    .widget-insight-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .widget-insight-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .widget-insight-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 0.75rem;
+    }
+
+    .widget-insight-title .icon {
+      font-size: 0.9rem;
+    }
+
+    .widget-insight-content {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.6;
+    }
+
+    .widget-insight-content ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .widget-insight-content li {
+      padding: 0.35rem 0;
+      padding-left: 1.25rem;
+      position: relative;
+    }
+
+    .widget-insight-content li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: #b7fa31;
+      font-weight: 600;
+    }
+
+    .widget-analysis-error {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+      color: #f87171;
+    }
+
+    .widget-analysis-error.show {
+      display: block;
     }
 
     /* Footer */
@@ -1484,6 +2199,73 @@
     </div>
   </div>
 
+  <!-- Widget AI Analysis Modal -->
+  <div class="widget-analysis-modal" id="widgetAnalysisModal">
+    <div class="widget-analysis-content">
+      <div class="widget-analysis-header">
+        <h3>
+          <span>✨</span> AI Analysis
+          <span class="gemini-tag">Gemini 3</span>
+        </h3>
+        <button class="widget-analysis-close" onclick="closeWidgetAnalysis()">&times;</button>
+      </div>
+      <div class="widget-analysis-body">
+        <!-- Loading State -->
+        <div class="widget-analysis-loading" id="widgetAnalysisLoading">
+          <div class="spinner-large"></div>
+          <p>Gemini 3 is analyzing your data...</p>
+        </div>
+
+        <!-- Error State -->
+        <div class="widget-analysis-error" id="widgetAnalysisError">
+          <p>Analysis failed. Please try again.</p>
+        </div>
+
+        <!-- Results -->
+        <div class="widget-analysis-result" id="widgetAnalysisResult">
+          <!-- Metric Display -->
+          <div class="widget-analysis-metric" id="widgetMetricDisplay">
+            <div class="widget-analysis-metric-value" id="widgetMetricValue">-</div>
+            <div class="widget-analysis-metric-info">
+              <div class="widget-analysis-metric-label" id="widgetMetricLabel">Metric</div>
+              <div class="widget-analysis-metric-change positive" id="widgetMetricChange">+0%</div>
+            </div>
+          </div>
+
+          <!-- Summary -->
+          <div class="widget-insight-card">
+            <div class="widget-insight-title">
+              <span class="icon">📊</span> Summary
+            </div>
+            <div class="widget-insight-content" id="widgetSummary">
+              Loading analysis...
+            </div>
+          </div>
+
+          <!-- Key Insights -->
+          <div class="widget-insight-card">
+            <div class="widget-insight-title">
+              <span class="icon">💡</span> Key Insights
+            </div>
+            <div class="widget-insight-content">
+              <ul id="widgetInsightsList"></ul>
+            </div>
+          </div>
+
+          <!-- Recommendations -->
+          <div class="widget-insight-card">
+            <div class="widget-insight-title">
+              <span class="icon">🎯</span> Recommendations
+            </div>
+            <div class="widget-insight-content">
+              <ul id="widgetRecommendationsList"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Generated Dashboard Section - Hidden by Default -->
   <section class="generated-section" id="generatedSection">
     <div class="generated-header">
@@ -1499,22 +2281,32 @@
 
     <!-- Charts Row -->
     <div class="charts-grid">
-      <div class="chart-card">
+      <div class="chart-card" data-widget-id="trend-chart" data-widget-type="chart">
         <div class="chart-header">
           <div>
             <div class="chart-title">Revenue vs Spend Trend</div>
             <div class="chart-subtitle">Last 7 days performance</div>
+          </div>
+          <div class="chart-header-actions">
+            <button class="widget-ai-btn" onclick="analyzeWidget('trend-chart', 'Revenue vs Spend Trend', null, null, 'trend')" title="Analyze with Gemini 3">
+              <span class="ai-icon">✨</span> Analyze
+            </button>
           </div>
         </div>
         <div class="chart-container">
           <canvas id="trendChart"></canvas>
         </div>
       </div>
-      <div class="chart-card">
+      <div class="chart-card" data-widget-id="donut-chart" data-widget-type="chart">
         <div class="chart-header">
           <div>
             <div class="chart-title">Spend by Campaign</div>
             <div class="chart-subtitle">Budget allocation</div>
+          </div>
+          <div class="chart-header-actions">
+            <button class="widget-ai-btn" onclick="analyzeWidget('donut-chart', 'Spend by Campaign', null, null, 'distribution')" title="Analyze with Gemini 3">
+              <span class="ai-icon">✨</span> Analyze
+            </button>
           </div>
         </div>
         <div class="chart-container" style="height: 180px;">
@@ -1524,10 +2316,121 @@
       </div>
     </div>
 
+    <!-- Performance Heatmap -->
+    <div class="heatmap-card" data-widget-id="heatmap" data-widget-type="heatmap">
+      <div class="heatmap-header">
+        <div>
+          <div class="heatmap-title">Performance by Day & Time</div>
+          <div class="heatmap-subtitle">ROAS performance across the week</div>
+        </div>
+        <div class="chart-header-actions">
+          <button class="widget-ai-btn" onclick="analyzeWidget('heatmap', 'Performance Heatmap', null, null, 'heatmap')" title="Analyze with Gemini 3">
+            <span class="ai-icon">✨</span> Analyze
+          </button>
+          <div class="heatmap-legend">
+            <span>Low</span>
+            <div class="heatmap-legend-bar"></div>
+            <span>High</span>
+          </div>
+        </div>
+      </div>
+      <div class="heatmap-container" id="heatmapContainer">
+        <!-- Column labels -->
+        <div class="heatmap-col-label"></div>
+        <div class="heatmap-col-label">12am-4am</div>
+        <div class="heatmap-col-label">4am-8am</div>
+        <div class="heatmap-col-label">8am-12pm</div>
+        <div class="heatmap-col-label">12pm-4pm</div>
+        <div class="heatmap-col-label">4pm-8pm</div>
+        <div class="heatmap-col-label">8pm-12am</div>
+        <!-- Rows will be generated by JS -->
+      </div>
+      <div class="heatmap-insight" id="heatmapInsight">
+        <div class="heatmap-insight-icon">&#128161;</div>
+        <div class="heatmap-insight-text">
+          <span class="heatmap-insight-highlight">Peak performance</span> detected on <span class="heatmap-insight-highlight" id="peakDay">Tuesday</span> during <span class="heatmap-insight-highlight" id="peakTime">12pm-4pm</span> with <span class="heatmap-insight-highlight" id="peakRoas">3.8x</span> ROAS
+        </div>
+      </div>
+    </div>
+
+    <!-- Funnel & Bubble Charts Row -->
+    <div class="charts-grid-2x2">
+      <!-- Conversion Funnel -->
+      <div class="funnel-card" data-widget-id="funnel" data-widget-type="funnel">
+        <div class="funnel-header">
+          <div>
+            <div class="funnel-title">Conversion Funnel</div>
+            <div class="funnel-subtitle">User journey from impression to purchase</div>
+          </div>
+          <div class="chart-header-actions">
+            <button class="widget-ai-btn" onclick="analyzeWidget('funnel', 'Conversion Funnel', null, null, 'funnel')" title="Analyze with Gemini 3">
+              <span class="ai-icon">✨</span> Analyze
+            </button>
+          </div>
+        </div>
+        <div class="funnel-container" id="funnelContainer">
+          <!-- Funnel stages will be generated by JS -->
+        </div>
+        <div class="funnel-summary">
+          <div class="funnel-metric">
+            <div class="funnel-metric-value" id="funnelCtr">4.2%</div>
+            <div class="funnel-metric-label">Click Rate</div>
+          </div>
+          <div class="funnel-metric">
+            <div class="funnel-metric-value" id="funnelConvRate">8.7%</div>
+            <div class="funnel-metric-label">Conv. Rate</div>
+          </div>
+          <div class="funnel-metric">
+            <div class="funnel-metric-value" id="funnelOverall">0.37%</div>
+            <div class="funnel-metric-label">Overall Rate</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bubble Chart - Campaign Performance -->
+      <div class="bubble-card" data-widget-id="bubble-chart" data-widget-type="bubble">
+        <div class="bubble-header">
+          <div>
+            <div class="bubble-title">Campaign Comparison</div>
+            <div class="bubble-subtitle">Spend vs ROAS (bubble size = conversions)</div>
+          </div>
+          <div class="chart-header-actions" style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+            <button class="widget-ai-btn" onclick="analyzeWidget('bubble-chart', 'Campaign Comparison', null, null, 'bubble')" title="Analyze with Gemini 3">
+              <span class="ai-icon">✨</span> Analyze
+            </button>
+            <div class="bubble-legend">
+            <div class="bubble-legend-item">
+              <div class="bubble-legend-icon" style="background: #f59e0b;"></div>
+              <span>Summer Sale</span>
+            </div>
+            <div class="bubble-legend-item">
+              <div class="bubble-legend-icon" style="background: #3b82f6;"></div>
+              <span>Brand</span>
+            </div>
+            <div class="bubble-legend-item">
+              <div class="bubble-legend-icon" style="background: #10b981;"></div>
+              <span>Retargeting</span>
+            </div>
+            <div class="bubble-legend-item">
+              <div class="bubble-legend-icon" style="background: #8b5cf6;"></div>
+              <span>New Cust.</span>
+            </div>
+            </div>
+          </div>
+        </div>
+        <div class="bubble-container">
+          <canvas id="bubbleChart"></canvas>
+        </div>
+      </div>
+    </div>
+
     <!-- Campaign Table -->
-    <div class="table-card">
+    <div class="table-card" data-widget-id="campaign-table" data-widget-type="table">
       <div class="table-header">
         <div class="table-title">Campaign Performance</div>
+        <button class="widget-ai-btn" onclick="analyzeWidget('campaign-table', 'Campaign Performance', null, null, 'table')" title="Analyze with Gemini 3">
+          <span class="ai-icon">✨</span> Analyze
+        </button>
       </div>
       <table class="campaign-table">
         <thead>
@@ -1562,6 +2465,10 @@
       </div>
 
       <div class="analysis-result" id="analysisResult">
+        <div class="ai-provider-badge" id="aiProviderBadge" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.8rem; background: linear-gradient(135deg, rgba(66, 133, 244, 0.15) 0%, rgba(52, 168, 83, 0.15) 50%, rgba(251, 188, 5, 0.15) 100%); border: 1px solid rgba(66, 133, 244, 0.3); border-radius: 999px; font-size: 0.7rem; font-weight: 600; margin-bottom: 1rem;">
+          <span style="font-size: 1rem;">✦</span>
+          <span id="aiProviderText">Powered by Gemini 3</span>
+        </div>
         <div class="analysis-headline" id="analysisHeadline"></div>
         <div class="analysis-grid">
           <div class="analysis-group">
@@ -1751,6 +2658,45 @@
         { label: 'Revenue', value: '$48,392', change: 12.1, data: [6892, 7234, 7012, 7891, 6543, 7123, 6097], color: '#7dd3fc' },
         { label: 'ROAS', value: '3.77x', change: 3.5, data: [3.78, 3.70, 3.92, 3.70, 3.90, 3.77, 3.87], color: '#b7fa31' },
         { label: 'Conversions', value: '892', change: 15.2, data: [118, 124, 121, 136, 113, 123, 105], color: '#f59e0b' }
+      ],
+      // Heatmap data: ROAS by day (rows) and time slot (columns)
+      // Days: Mon-Sun, Time slots: 12am-4am, 4am-8am, 8am-12pm, 12pm-4pm, 4pm-8pm, 8pm-12am
+      heatmap: {
+        days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        timeSlots: ['12am-4am', '4am-8am', '8am-12pm', '12pm-4pm', '4pm-8pm', '8pm-12am'],
+        // ROAS values for each day/time combination
+        data: [
+          [1.2, 1.8, 2.9, 3.4, 3.1, 2.4],  // Mon
+          [1.1, 2.1, 3.2, 3.8, 3.5, 2.6],  // Tue - peak day
+          [1.3, 1.9, 2.8, 3.3, 3.0, 2.3],  // Wed
+          [1.0, 1.7, 2.7, 3.2, 2.9, 2.2],  // Thu
+          [1.4, 2.0, 2.6, 3.0, 2.8, 2.5],  // Fri
+          [1.6, 2.2, 2.4, 2.7, 2.5, 2.1],  // Sat
+          [1.5, 2.0, 2.3, 2.5, 2.3, 1.9]   // Sun
+        ],
+        peak: { day: 'Tuesday', timeSlot: '12pm-4pm', roas: 3.8 }
+      },
+      // Funnel data: conversion stages
+      funnel: {
+        stages: [
+          { name: 'Impressions', value: 2450000, color: '#b7fa31' },
+          { name: 'Clicks', value: 102900, color: '#9ee025' },
+          { name: 'Add to Cart', value: 24680, color: '#7dd3fc' },
+          { name: 'Conversions', value: 8950, color: '#60a5fa' },
+          { name: 'Purchases', value: 892, color: '#3b82f6' }
+        ],
+        rates: {
+          ctr: 4.2,
+          conversionRate: 8.7,
+          overallRate: 0.037
+        }
+      },
+      // Bubble chart data: campaigns with spend (x), ROAS (y), conversions (size)
+      bubbles: [
+        { name: 'Summer Sale 2026', x: 4521, y: 4.03, r: 314, color: '#f59e0b' },
+        { name: 'Brand Awareness', x: 3892, y: 3.63, r: 268, color: '#3b82f6' },
+        { name: 'Retargeting - Cart', x: 2134, y: 4.33, r: 198, color: '#10b981' },
+        { name: 'New Customer Acq', x: 2300, y: 2.96, r: 112, color: '#8b5cf6' }
       ]
     };
 
@@ -1800,6 +2746,8 @@
           // Render the dashboard
           renderKPIs();
           renderCampaignTable();
+          renderHeatmap();
+          renderFunnel();
 
           // Show the section
           section.classList.add('show');
@@ -1808,6 +2756,7 @@
           if (!chartsInitialized) {
             setTimeout(() => {
               initializeCharts();
+              initializeBubbleChart();
               chartsInitialized = true;
             }, 100);
           }
@@ -1831,12 +2780,19 @@
     function renderKPIs() {
       const grid = document.getElementById('kpiGrid');
       grid.innerHTML = demoData.kpis.map((kpi, idx) => `
-        <div class="kpi-card">
+        <div class="kpi-card" data-widget-id="kpi-${idx}" data-widget-type="kpi" data-metric="${kpi.label}">
           <div class="kpi-header">
-            <span class="kpi-label">${kpi.label}</span>
-            <span class="kpi-change ${kpi.change >= 0 ? 'positive' : 'negative'}">
-              ${kpi.change >= 0 ? '▲' : '▼'} ${Math.abs(kpi.change)}%
-            </span>
+            <div class="kpi-header-left">
+              <span class="kpi-label">${kpi.label}</span>
+            </div>
+            <div class="kpi-header-right">
+              <span class="kpi-change ${kpi.change >= 0 ? 'positive' : 'negative'}">
+                ${kpi.change >= 0 ? '▲' : '▼'} ${Math.abs(kpi.change)}%
+              </span>
+              <button class="widget-ai-btn" onclick="analyzeWidget('kpi-${idx}', '${kpi.label}', '${kpi.value}', ${kpi.change})" title="Analyze with Gemini 3">
+                <span class="ai-icon">✨</span> AI
+              </button>
+            </div>
           </div>
           <div class="kpi-value">${kpi.value}</div>
           <div class="kpi-sparkline-container">
@@ -1875,6 +2831,190 @@
           <td>${c.conversions}</td>
         </tr>
       `).join('');
+    }
+
+    function renderHeatmap() {
+      const container = document.getElementById('heatmapContainer');
+      if (!container) return;
+
+      // Keep the column labels, clear the rest
+      const colLabels = container.querySelectorAll('.heatmap-col-label');
+
+      // Find min and max ROAS for color scaling
+      let minRoas = Infinity, maxRoas = -Infinity;
+      demoData.heatmap.data.forEach(row => {
+        row.forEach(val => {
+          if (val < minRoas) minRoas = val;
+          if (val > maxRoas) maxRoas = val;
+        });
+      });
+
+      // Generate rows
+      let rowsHtml = '';
+      demoData.heatmap.days.forEach((day, dayIdx) => {
+        rowsHtml += `<div class="heatmap-row-label">${day}</div>`;
+
+        demoData.heatmap.data[dayIdx].forEach((roas, timeIdx) => {
+          const normalizedValue = (roas - minRoas) / (maxRoas - minRoas);
+          let cellClass = 'low';
+          if (normalizedValue > 0.8) cellClass = 'high';
+          else if (normalizedValue > 0.6) cellClass = 'medium-high';
+          else if (normalizedValue > 0.4) cellClass = 'medium';
+          else if (normalizedValue > 0.2) cellClass = 'medium-low';
+
+          const timeSlot = demoData.heatmap.timeSlots[timeIdx];
+          rowsHtml += `
+            <div class="heatmap-cell ${cellClass}">
+              ${roas.toFixed(1)}x
+              <div class="heatmap-tooltip">
+                <strong>${day} ${timeSlot}</strong><br>
+                ROAS: ${roas.toFixed(2)}x
+              </div>
+            </div>
+          `;
+        });
+      });
+
+      // Append rows after column labels
+      const lastColLabel = colLabels[colLabels.length - 1];
+      if (lastColLabel) {
+        lastColLabel.insertAdjacentHTML('afterend', rowsHtml);
+      }
+
+      // Update insight text
+      const peak = demoData.heatmap.peak;
+      document.getElementById('peakDay').textContent = peak.day;
+      document.getElementById('peakTime').textContent = peak.timeSlot;
+      document.getElementById('peakRoas').textContent = peak.roas + 'x';
+    }
+
+    function renderFunnel() {
+      const container = document.getElementById('funnelContainer');
+      if (!container) return;
+
+      const stages = demoData.funnel.stages;
+      const maxValue = stages[0].value;
+
+      let html = '';
+      stages.forEach((stage, idx) => {
+        const widthPercent = (stage.value / maxValue) * 100;
+        const dropRate = idx > 0 ? ((1 - stage.value / stages[idx - 1].value) * 100).toFixed(1) : null;
+
+        html += `
+          <div class="funnel-stage">
+            <div class="funnel-label">${stage.name}</div>
+            <div class="funnel-bar-container">
+              <div class="funnel-bar" style="width: ${widthPercent}%; background: linear-gradient(90deg, ${stage.color}, ${stage.color}cc);">
+                <span class="funnel-bar-value">${formatNumber(stage.value)}</span>
+              </div>
+            </div>
+            <div class="funnel-rate ${dropRate ? '' : ''}">
+              ${dropRate ? `↓ ${dropRate}%` : ''}
+            </div>
+            ${idx < stages.length - 1 ? '<div class="funnel-connector"></div>' : ''}
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+
+      // Update summary metrics
+      document.getElementById('funnelCtr').textContent = demoData.funnel.rates.ctr + '%';
+      document.getElementById('funnelConvRate').textContent = demoData.funnel.rates.conversionRate + '%';
+      document.getElementById('funnelOverall').textContent = demoData.funnel.rates.overallRate + '%';
+    }
+
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return num.toString();
+    }
+
+    function initializeBubbleChart() {
+      const ctx = document.getElementById('bubbleChart')?.getContext('2d');
+      if (!ctx) return;
+
+      // Transform bubble data for Chart.js
+      const bubbleData = demoData.bubbles.map(b => ({
+        x: b.x,
+        y: b.y,
+        r: Math.sqrt(b.r) * 2, // Scale radius for visibility
+        label: b.name
+      }));
+
+      new Chart(ctx, {
+        type: 'bubble',
+        data: {
+          datasets: demoData.bubbles.map((b, idx) => ({
+            label: b.name,
+            data: [{ x: b.x, y: b.y, r: Math.sqrt(b.r) * 1.5 }],
+            backgroundColor: b.color + 'cc',
+            borderColor: b.color,
+            borderWidth: 2,
+            hoverBackgroundColor: b.color,
+            hoverBorderWidth: 3
+          }))
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const bubble = demoData.bubbles[context.datasetIndex];
+                  return [
+                    bubble.name,
+                    `Spend: $${bubble.x.toLocaleString()}`,
+                    `ROAS: ${bubble.y}x`,
+                    `Conversions: ${bubble.r}`
+                  ];
+                }
+              },
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              titleColor: '#b7fa31',
+              bodyColor: '#fff',
+              borderColor: 'rgba(183, 250, 49, 0.3)',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: false
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Spend ($)',
+                color: 'rgba(255, 255, 255, 0.5)',
+                font: { size: 11, weight: 600 }
+              },
+              grid: { color: 'rgba(255, 255, 255, 0.03)' },
+              ticks: {
+                callback: v => '$' + (v / 1000).toFixed(1) + 'K',
+                color: 'rgba(255, 255, 255, 0.5)'
+              },
+              min: 1500,
+              max: 5500
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'ROAS',
+                color: 'rgba(255, 255, 255, 0.5)',
+                font: { size: 11, weight: 600 }
+              },
+              grid: { color: 'rgba(255, 255, 255, 0.03)' },
+              ticks: {
+                callback: v => v + 'x',
+                color: 'rgba(255, 255, 255, 0.5)'
+              },
+              min: 2.5,
+              max: 5
+            }
+          }
+        }
+      });
     }
 
     function createSparkline(canvasId, data, color = '#b7fa31') {
@@ -2010,6 +3150,123 @@
     }
 
     // AI Analysis Functions
+
+    // Widget-level AI analysis
+    async function analyzeWidget(widgetId, label, value, change, widgetType) {
+      const modal = document.getElementById('widgetAnalysisModal');
+      const loadingEl = document.getElementById('widgetAnalysisLoading');
+      const errorEl = document.getElementById('widgetAnalysisError');
+      const resultEl = document.getElementById('widgetAnalysisResult');
+      const metricDisplay = document.getElementById('widgetMetricDisplay');
+
+      // Show modal with loading state
+      modal.classList.add('show');
+      loadingEl.style.display = 'flex';
+      errorEl.classList.remove('show');
+      resultEl.classList.remove('show');
+
+      try {
+        // Get widget-specific data for the prompt
+        let context = '';
+        let metricData = { value: value, label: label, change: change };
+
+        if (widgetType === 'kpi') {
+          const kpi = demoData.kpis.find(k => k.label === label);
+          if (kpi) {
+            context = `KPI "${label}" with value ${kpi.value}, showing ${kpi.change >= 0 ? '+' : ''}${kpi.change}% change. Historical data: ${kpi.data.join(', ')}`;
+            metricData = { value: kpi.value, label: kpi.label, change: kpi.change };
+          }
+        } else if (widgetType === 'trend') {
+          context = `Revenue vs Spend Trend chart showing 7-day data. Spend: $${demoData.spend.reduce((a,b) => a+b, 0).toLocaleString()} total, Revenue: $${demoData.revenue.reduce((a,b) => a+b, 0).toLocaleString()} total. Daily ROAS: ${demoData.roas.map(r => r.toFixed(2) + 'x').join(', ')}`;
+          metricData = null;
+        } else if (widgetType === 'distribution') {
+          const totalSpend = demoData.campaigns.reduce((a, c) => a + c.spend, 0);
+          context = `Spend distribution by campaign: ${demoData.campaigns.map(c => c.name + ': $' + c.spend.toLocaleString() + ' (' + ((c.spend/totalSpend)*100).toFixed(1) + '%)').join(', ')}`;
+          metricData = null;
+        } else if (widgetType === 'heatmap') {
+          context = `Performance heatmap showing ROAS by day and time. Peak performance: ${demoData.heatmap.peak.day} at ${demoData.heatmap.peak.timeSlot} with ${demoData.heatmap.peak.roas}x ROAS. Lowest performance typically during early morning hours (12am-4am).`;
+          metricData = null;
+        } else if (widgetType === 'funnel') {
+          context = `Conversion funnel: Impressions (${demoData.funnel.stages[0].value.toLocaleString()}) → Clicks (${demoData.funnel.stages[1].value.toLocaleString()}) → Add to Cart (${demoData.funnel.stages[2].value.toLocaleString()}) → Conversions (${demoData.funnel.stages[3].value.toLocaleString()}) → Purchases (${demoData.funnel.stages[4].value.toLocaleString()}). CTR: ${demoData.funnel.rates.ctr}%, Conv Rate: ${demoData.funnel.rates.conversionRate}%`;
+          metricData = null;
+        } else if (widgetType === 'bubble') {
+          context = `Campaign comparison (Spend vs ROAS, bubble size = conversions): ${demoData.bubbles.map(b => b.name + ': $' + b.x.toLocaleString() + ' spend, ' + b.y + 'x ROAS, ' + b.r + ' conversions').join('; ')}`;
+          metricData = null;
+        } else if (widgetType === 'table') {
+          context = `Campaign performance table: ${demoData.campaigns.map(c => c.name + ': $' + c.spend.toLocaleString() + ' spend, $' + c.revenue.toLocaleString() + ' revenue, ' + c.roas + 'x ROAS, ' + c.conversions + ' conversions').join('; ')}`;
+          metricData = null;
+        }
+
+        // Call the demo analyze API
+        const res = await fetch('/api/demo/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            question: `Analyze this ${widgetType} widget data and provide specific insights: ${context}`,
+            widgetType: widgetType,
+            widgetLabel: label
+          })
+        });
+
+        const data = await res.json();
+
+        // Hide loading, show results
+        loadingEl.style.display = 'none';
+
+        if (data.exec_summary) {
+          resultEl.classList.add('show');
+
+          // Update metric display if applicable
+          if (metricData && metricData.value) {
+            metricDisplay.style.display = 'flex';
+            document.getElementById('widgetMetricValue').textContent = metricData.value;
+            document.getElementById('widgetMetricLabel').textContent = metricData.label;
+            const changeEl = document.getElementById('widgetMetricChange');
+            if (metricData.change !== null && metricData.change !== undefined) {
+              changeEl.textContent = `${metricData.change >= 0 ? '+' : ''}${metricData.change}% vs last period`;
+              changeEl.className = `widget-analysis-metric-change ${metricData.change >= 0 ? 'positive' : 'negative'}`;
+            } else {
+              changeEl.style.display = 'none';
+            }
+          } else {
+            metricDisplay.style.display = 'none';
+          }
+
+          // Summary
+          document.getElementById('widgetSummary').textContent = data.exec_summary.headline || 'Analysis complete.';
+
+          // Insights
+          const insightsList = document.getElementById('widgetInsightsList');
+          const insights = data.exec_summary.what_changed || [];
+          insightsList.innerHTML = insights.map(i => `<li>${i}</li>`).join('');
+
+          // Recommendations
+          const recsList = document.getElementById('widgetRecommendationsList');
+          const recs = data.exec_summary.what_to_do_next || [];
+          recsList.innerHTML = recs.map(r => `<li>${r}</li>`).join('');
+        } else {
+          throw new Error('Invalid response format');
+        }
+
+      } catch (err) {
+        console.error('Widget analysis error:', err);
+        loadingEl.style.display = 'none';
+        errorEl.classList.add('show');
+        errorEl.querySelector('p').textContent = err.message || 'Analysis failed. Please try again.';
+      }
+    }
+
+    function closeWidgetAnalysis() {
+      document.getElementById('widgetAnalysisModal').classList.remove('show');
+    }
+
+    // Close modal on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeWidgetAnalysis();
+      }
+    });
+
     function setQuestion(q) {
       document.getElementById('questionInput').value = q;
       document.getElementById('questionInput').focus();
@@ -2042,6 +3299,21 @@
 
         if (data.exec_summary) {
           result.classList.add('show');
+
+          // Update AI provider badge
+          const badge = document.getElementById('aiProviderBadge');
+          const badgeText = document.getElementById('aiProviderText');
+          if (data.ai_powered) {
+            badge.style.background = 'linear-gradient(135deg, rgba(66, 133, 244, 0.15) 0%, rgba(52, 168, 83, 0.15) 50%, rgba(251, 188, 5, 0.15) 100%)';
+            badge.style.borderColor = 'rgba(52, 168, 83, 0.4)';
+            badgeText.textContent = '✓ Powered by Gemini 3';
+            badgeText.style.color = '#34d399';
+          } else {
+            badge.style.background = 'rgba(239, 68, 68, 0.1)';
+            badge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+            badgeText.textContent = '⚠ Fallback Mode (AI unavailable)';
+            badgeText.style.color = '#f87171';
+          }
 
           // Typewriter effect for headline
           const headline = data.exec_summary.headline || 'Analysis complete';
