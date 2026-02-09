@@ -3750,7 +3750,8 @@
 
       await loadDashboard();
       await loadAdAccounts();
-      startAutoRefresh();
+      // Auto-refresh disabled by default - users can enable via dropdown or use manual refresh button
+      // startAutoRefresh();
     });
 
     // Load user info from localStorage
