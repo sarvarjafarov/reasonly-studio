@@ -114,34 +114,103 @@
       padding: 2rem 1.5rem;
     }
 
-    /* Alert Container */
+    /* Alert Container - Fixed Toast Style */
     #alertContainer {
-      margin-bottom: 1rem;
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-width: 400px;
     }
 
     .alert {
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      font-size: 0.85rem;
-      margin-bottom: 0.5rem;
+      padding: 1rem 1.25rem;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      animation: slideIn 0.3s ease-out;
+      backdrop-filter: blur(12px);
+    }
+
+    .alert::before {
+      font-size: 1.1rem;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .alert.fade-out {
+      animation: slideOut 0.3s ease-in forwards;
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
     }
 
     .alert-success {
-      background-color: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    .alert-success::before {
+      content: '✓';
       color: #10b981;
     }
 
     .alert-error {
-      background-color: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.1) 100%);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    .alert-error::before {
+      content: '✕';
       color: #ef4444;
     }
 
     .alert-warning {
-      background-color: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    .alert-warning::before {
+      content: '⚠';
       color: #f59e0b;
+    }
+
+    .alert-info {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+    }
+
+    .alert-info::before {
+      content: 'ℹ';
+      color: #3b82f6;
     }
 
     /* Question Hero */
@@ -1677,10 +1746,14 @@
       const container = document.getElementById('alertContainer');
       const alert = document.createElement('div');
       alert.className = `alert alert-${type}`;
-      alert.textContent = message;
+      alert.innerHTML = `<span>${message}</span>`;
       container.appendChild(alert);
 
-      setTimeout(() => alert.remove(), 5000);
+      // Fade out before removing
+      setTimeout(() => {
+        alert.classList.add('fade-out');
+        setTimeout(() => alert.remove(), 300);
+      }, 4700);
     }
 
     function checkOAuthCallback() {
